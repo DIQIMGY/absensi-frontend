@@ -1,0 +1,834 @@
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  CheckCircle, 
+  Calendar, 
+  AlertCircle, 
+  Clock,
+  CalendarDays,
+  CalendarRange,
+  Layers,
+  BookOpen,
+  Award,
+  Info,
+  ChevronDown,
+  XCircle,
+  FileText,
+  Hash,
+  Eye  // <-- Tambahkan jika diperlukan
+} from 'lucide-react'
+import DataTable from '../../components/DataTable'
+import Modal from '../../components/Modal'
+import { adminApi } from '../../services/adminService'
+import { confirmDelete, showSuccess, confirmAction } from '../../components/ConfirmDialog'
+import toast from 'react-hot-toast'
+
+export default function TahunAjarans() {
+  const [tahunAjarans, setTahunAjarans] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [pagination, setPagination] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [viewingTahunAjaran, setViewingTahunAjaran] = useState(null)
+  const [editingTahunAjaran, setEditingTahunAjaran] = useState(null)
+  const [formData, setFormData] = useState({
+    tahun_ajaran: '',
+    semester: 'ganjil',
+    tanggal_mulai: '',
+    tanggal_selesai: '',
+    is_active: false,
+  })
+  const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    fetchTahunAjarans()
+  }, [currentPage, search])
+
+  const fetchTahunAjarans = async () => {
+    try {
+      setLoading(true)
+      const response = await adminApi.getTahunAjarans({
+        page: currentPage,
+        search: search,
+        per_page: 10,
+      })
+      const res = response.data
+      setTahunAjarans(Array.isArray(res?.data) ? res.data : [])
+      setPagination(res?.pagination || null)
+    } catch (error) {
+      console.error('Error fetching tahun ajaran:', error)
+      toast.error('Gagal memuat data tahun ajaran')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+    
+    if (!formData.tahun_ajaran) {
+      newErrors.tahun_ajaran = 'Tahun ajaran wajib diisi'
+    } else if (!/^\d{4}\/\d{4}$/.test(formData.tahun_ajaran)) {
+      newErrors.tahun_ajaran = 'Format harus YYYY/YYYY (contoh: 2024/2025)'
+    }
+    
+    if (!formData.tanggal_mulai) {
+      newErrors.tanggal_mulai = 'Tanggal mulai wajib diisi'
+    }
+    
+    if (!formData.tanggal_selesai) {
+      newErrors.tanggal_selesai = 'Tanggal selesai wajib diisi'
+    }
+    
+    if (formData.tanggal_mulai && formData.tanggal_selesai) {
+      if (new Date(formData.tanggal_mulai) >= new Date(formData.tanggal_selesai)) {
+        newErrors.tanggal_selesai = 'Tanggal selesai harus lebih besar dari tanggal mulai'
+      }
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      toast.error('Mohon periksa kembali form Anda')
+      return
+    }
+    
+    try {
+      if (editingTahunAjaran) {
+        await adminApi.updateTahunAjaran(editingTahunAjaran.id, formData)
+        toast.success('Tahun ajaran berhasil diperbarui')
+      } else {
+        await adminApi.createTahunAjaran(formData)
+        toast.success('Tahun ajaran berhasil ditambahkan')
+      }
+      setIsModalOpen(false)
+      resetForm()
+      fetchTahunAjarans()
+    } catch (error) {
+      console.error('Error saving tahun ajaran:', error)
+      const message = error.response?.data?.message || 'Terjadi kesalahan'
+      toast.error(message)
+      
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors)
+      }
+    }
+  }
+
+  const handleDelete = async (item) => {
+    if (item.is_active) {
+      toast.error('Tidak dapat menghapus tahun ajaran yang sedang aktif')
+      return
+    }
+    
+    if (await confirmDelete('Hapus Tahun Ajaran?', `Tahun ajaran ${item.tahun_ajaran} akan dihapus permanen`)) {
+      try {
+        await adminApi.deleteTahunAjaran(item.id)
+        showSuccess('Tahun ajaran berhasil dihapus')
+        fetchTahunAjarans()
+      } catch (error) {
+        console.error('Error deleting tahun ajaran:', error)
+        toast.error(error.response?.data?.message || 'Gagal menghapus tahun ajaran')
+      }
+    }
+  }
+
+  const handleSetActive = async (item) => {
+    if (await confirmAction(
+      'Aktifkan Tahun Ajaran?', 
+      `Tahun ajaran ${item.tahun_ajaran} akan diaktifkan dan tahun ajaran lain akan dinonaktifkan otomatis`
+    )) {
+      try {
+        await adminApi.setActiveTahunAjaran(item.id)
+        showSuccess('Tahun ajaran berhasil diaktifkan')
+        fetchTahunAjarans()
+      } catch (error) {
+        console.error('Error activating tahun ajaran:', error)
+        toast.error(error.response?.data?.message || 'Gagal mengaktifkan tahun ajaran')
+      }
+    }
+  }
+
+  const handleViewDetail = (item) => {
+    setViewingTahunAjaran(item)
+    setIsDetailModalOpen(true)
+  }
+
+  const openModal = (item = null) => {
+    if (item) {
+      setEditingTahunAjaran(item)
+      setFormData({
+        tahun_ajaran: item.tahun_ajaran,
+        semester: item.semester,
+        tanggal_mulai: item.tanggal_mulai,
+        tanggal_selesai: item.tanggal_selesai,
+        is_active: item.is_active,
+      })
+    } else {
+      resetForm()
+    }
+    setErrors({})
+    setIsModalOpen(true)
+  }
+
+  const resetForm = () => {
+    setEditingTahunAjaran(null)
+    setFormData({
+      tahun_ajaran: '',
+      semester: 'ganjil',
+      tanggal_mulai: '',
+      tanggal_selesai: '',
+      is_active: false,
+    })
+    setErrors({})
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('id-ID', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    })
+  }
+
+  const getDuration = (start, end) => {
+    if (!start || !end) return '-'
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+    const diffTime = Math.abs(endDate - startDate)
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const months = Math.floor(diffDays / 30)
+    const days = diffDays % 30
+    return `${months} bulan ${days > 0 ? `${days} hari` : ''}`
+  }
+
+  const getSemesterBadge = (semester) => {
+    return semester === 'ganjil' ? (
+      <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg text-[10px] sm:text-xs font-medium border border-blue-200 dark:border-blue-800 whitespace-nowrap">
+        <Layers size={10} className="mr-0.5 sm:mr-1 flex-shrink-0" />
+        <span className="truncate max-w-[40px] sm:max-w-none">Ganjil</span>
+      </span>
+    ) : (
+      <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-[10px] sm:text-xs font-medium border border-purple-200 dark:border-purple-800 whitespace-nowrap">
+        <Layers size={10} className="mr-0.5 sm:mr-1 flex-shrink-0" />
+        <span className="truncate max-w-[40px] sm:max-w-none">Genap</span>
+      </span>
+    )
+  }
+
+  const getStatusBadge = (isActive) => {
+    return isActive ? (
+      <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-[10px] sm:text-xs font-medium border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
+        <CheckCircle size={10} className="mr-0.5 sm:mr-1 flex-shrink-0" />
+        <span className="truncate max-w-[40px] sm:max-w-none">Aktif</span>
+      </span>
+    ) : (
+      <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-lg text-[10px] sm:text-xs font-medium border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+        <XCircle size={10} className="mr-0.5 sm:mr-1 flex-shrink-0" />
+        <span className="truncate max-w-[45px] sm:max-w-none">Nonaktif</span>
+      </span>
+    )
+  }
+
+  const columns = [
+    { 
+      header: 'Tahun Ajaran', 
+      accessor: 'tahun_ajaran',
+      cell: (row) => (
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+          <div className="p-1 sm:p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex-shrink-0">
+            <CalendarDays size={12} className="text-teal-600 dark:text-teal-400" />
+          </div>
+          <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+            {row.tahun_ajaran}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: 'Semester',
+      accessor: 'semester',
+      cell: (row) => getSemesterBadge(row.semester),
+    },
+    { 
+      header: 'Periode', 
+      cell: (row) => (
+        <div className="hidden lg:block space-y-1">
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">
+            <Calendar size={10} className="text-slate-400 flex-shrink-0" />
+            <span className="truncate">Mulai: {formatDate(row.tanggal_mulai)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">
+            <Calendar size={10} className="text-slate-400 flex-shrink-0" />
+            <span className="truncate">Selesai: {formatDate(row.tanggal_selesai)}</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Durasi',
+      cell: (row) => (
+        <div className="hidden md:flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+          <Clock size={12} className="text-slate-400 flex-shrink-0" />
+          <span className="truncate max-w-[80px] sm:max-w-[100px]">{getDuration(row.tanggal_mulai, row.tanggal_selesai)}</span>
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      accessor: 'is_active',
+      cell: (row) => getStatusBadge(row.is_active),
+    },
+    {
+      header: 'Aksi',
+      cell: (row) => (
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleViewDetail(row)}
+            className="p-1 sm:p-1.5 md:p-2 text-teal-600 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+            title="Lihat" Detail
+          >
+            <Info size={14} />
+          </motion.button>
+          
+          {!row.is_active && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleSetActive(row)}
+              className="p-1 sm:p-1.5 md:p-2 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+              title="Aktifkantahunajaranini"
+            >
+              <CheckCircle size={14} />
+            </motion.button>
+          )}
+          
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => openModal(row)}
+            className="p-1 sm:p-1.5 md:p-2 text-slate-600 hover:bg-teal-50 hover:text-teal-600 dark:text-slate-400 dark:hover:bg-teal-900/20 dark:hover:text-teal-400 rounded-lg transition-colors"
+            title="Edit"
+          >
+            <Edit2 size={14} />
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleDelete(row)}
+            disabled={row.is_active}
+            className={`p-1 sm:p-1.5 md:p-2 rounded-lg transition-colors ${
+              row.is_active 
+                ? 'text-slate-300 cursor-not-allowed dark:text-slate-600' 
+                : 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20'
+            }`}
+            title={row.is_active ? 'Tidak dapat menghapus tahun ajaran aktif' : 'Hapus'}
+          >
+            <Trash2 size={14} />
+          </motion.button>
+        </div>
+      ),
+    },
+  ]
+
+  const activeTahunAjaran = tahunAjarans.find(ta => ta.is_active)
+
+  return (
+    <div className="w-full max-w-full overflow-x-hidden space-y-4 sm:space-y-6 px-2 sm:px-0">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+      >
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="p-1.5 sm:p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg sm:rounded-xl flex-shrink-0">
+            <CalendarRange size={18} className="text-teal-600 dark:text-teal-400" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white truncate">
+              Manajemen Tahun Ajaran
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+              Kelola tahun ajaran dan semester untuk sistem absensi
+            </p>
+          </div>
+        </div>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => openModal()}
+          className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 shadow-lg shadow-teal-500/30 transition-all text-xs sm:text-sm flex-shrink-0"
+        >
+          <Plus size={14} />
+          <span className="hidden xs:inline font-medium">Add Year</span>
+        </motion.button>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4"
+      >
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Total Tahun Ajaran</p>
+              <p className="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-slate-900 dark:text-white mt-0.5 sm:mt-1 truncate">
+                {tahunAjarans.length}
+              </p>
+            </div>
+            <div className="p-1.5 sm:p-2 md:p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg sm:rounded-xl flex-shrink-0">
+              <CalendarRange size={16} className="text-teal-600 dark:text-teal-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Semester Ganjil</p>
+              <p className="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-0.5 sm:mt-1 truncate">
+                {tahunAjarans.filter(ta => ta.semester === 'ganjil').length}
+              </p>
+            </div>
+            <div className="p-1.5 sm:p-2 md:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl flex-shrink-0">
+              <Layers size={16} className="text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Semester Genap</p>
+              <p className="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5 sm:mt-1 truncate">
+                {tahunAjarans.filter(ta => ta.semester === 'genap').length}
+              </p>
+            </div>
+            <div className="p-1.5 sm:p-2 md:p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg sm:rounded-xl flex-shrink-0">
+              <Layers size={16} className="text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Tahun Aktif</p>
+              <p className="text-sm sm:text-base md:text-lg lg:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1 truncate">
+                {activeTahunAjaran ? '1' : '0'}
+              </p>
+            </div>
+            <div className="p-1.5 sm:p-2 md:p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg sm:rounded-xl flex-shrink-0">
+              <Award size={16} className="text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Info Card - Tahun Ajaran Aktif */}
+      <AnimatePresence>
+        {activeTahunAjaran && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg sm:rounded-xl md:rounded-2xl p-4 sm:p-5 border border-emerald-200 dark:border-emerald-800 shadow-sm"
+          >
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+                <Award className="text-emerald-600 dark:text-emerald-400" size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                  <h3 className="text-sm font-semibold text-emerald-900 dark:text-emerald-300 truncate">
+                    Tahun Ajaran Aktif
+                  </h3>
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 text-[10px] sm:text-xs rounded-full w-fit">
+                    Berjalan
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-200 truncate">
+                  {activeTahunAjaran.tahun_ajaran} - {activeTahunAjaran.semester === 'ganjil' ? 'Semester Ganjil' : 'Semester Genap'}
+                </p>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 sm:mt-3">
+                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
+                    <Calendar size={12} />
+                    <span className="truncate">{formatDate(activeTahunAjaran.tanggal_mulai)}</span>
+                  </div>
+                  <span className="text-emerald-400 hidden xs:inline">→</span>
+                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
+                    <Calendar size={12} />
+                    <span className="truncate">{formatDate(activeTahunAjaran.tanggal_selesai)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
+                    <Clock size={12} />
+                    <span className="truncate">{getDuration(activeTahunAjaran.tanggal_mulai, activeTahunAjaran.tanggal_selesai)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden"
+      >
+        <div className="p-3 sm:p-4 md:p-6">
+          <DataTable
+            columns={columns}
+            data={tahunAjarans}
+            pagination={pagination}
+            onPageChange={setCurrentPage}
+            onSearch={setSearch}
+            loading={loading}
+            searchPlaceholder="Cari tahun ajaran..."
+          />
+        </div>
+      </motion.div>
+
+      {/* Modal Detail */}
+      <AnimatePresence>
+        {isDetailModalOpen && (
+          <Modal
+            isOpen={isDetailModalOpen}
+            onClose={() => {
+              setIsDetailModalOpen(false)
+              setViewingTahunAjaran(null)
+            }}
+            title={
+              <div className="flex items-center gap-2">
+                <div className="p-1 sm:p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                  <Info size={16} className="text-teal-600" />
+                </div>
+                <span className="text-sm sm:text-base">Detail Tahun Ajaran</span>
+              </div>
+            }
+            size="md"
+          >
+            {viewingTahunAjaran && (
+              <div className="space-y-4 sm:space-y-6 p-4 sm:p-5 md:p-6">
+                {/* Header Info */}
+                <div className={`rounded-lg sm:rounded-xl p-4 sm:p-5 ${
+                  viewingTahunAjaran.is_active 
+                    ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800'
+                    : 'bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1">Tahun Ajaran</p>
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white truncate">
+                        {viewingTahunAjaran.tahun_ajaran}
+                      </h2>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        {getSemesterBadge(viewingTahunAjaran.semester)}
+                        {getStatusBadge(viewingTahunAjaran.is_active)}
+                      </div>
+                    </div>
+                    <div className="p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-sm self-start flex-shrink-0">
+                      <CalendarRange size={24} className="text-teal-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Detail */}
+                <div className="space-y-3 sm:space-y-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg sm:rounded-xl p-4 sm:p-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                        <Calendar size={12} />
+                        Tanggal Mulai
+                      </p>
+                      <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                        {formatDate(viewingTahunAjaran.tanggal_mulai)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                        <Calendar size={12} />
+                        Tanggal Selesai
+                      </p>
+                      <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                        {formatDate(viewingTahunAjaran.tanggal_selesai)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                      <Clock size={12} />
+                      Durasi
+                    </p>
+                    <p className="font-medium text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                      {getDuration(viewingTahunAjaran.tanggal_mulai, viewingTahunAjaran.tanggal_selesai)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-wrap justify-end gap-2 pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700">
+                  {!viewingTahunAjaran.is_active && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setIsDetailModalOpen(false)
+                        handleSetActive(viewingTahunAjaran)
+                      }}
+                      className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 shadow-lg shadow-emerald-500/30 transition-colors text-xs sm:text-sm"
+                    >
+                      <CheckCircle size={14} />
+                      Aktifkan
+                    </motion.button>
+                  )}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setIsDetailModalOpen(false)
+                      openModal(viewingTahunAjaran)
+                    }}
+                    className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 shadow-lg shadow-teal-500/30 transition-colors text-xs sm:text-sm"
+                  >
+                    <Edit2 size={14} />
+                    Edit Data
+                  </motion.button>
+                </div>
+              </div>
+            )}
+          </Modal>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Form */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false)
+              resetForm()
+            }}
+            title={
+              <div className="flex items-center gap-2">
+                <div className="p-1 sm:p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                  {editingTahunAjaran ? <Edit2 size={16} className="text-teal-600" /> : <Plus size={16} className="text-teal-600" />}
+                </div>
+                <span className="text-sm sm:text-base">{editingTahunAjaran ? 'Edit Tahun Ajaran' : 'Tambah Tahun Ajaran Baru'}</span>
+              </div>
+            }
+            maxWidth="max-w-lg"
+          >
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 p-4 sm:p-5 md:p-6">
+              {/* Tahun Ajaran */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">
+                  Tahun Ajaran <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <input
+                    type="text"
+                    required
+                    value={formData.tahun_ajaran}
+                    onChange={(e) => {
+                      setFormData({ ...formData, tahun_ajaran: e.target.value })
+                      if (errors.tahun_ajaran) setErrors({ ...errors, tahun_ajaran: '' })
+                    }}
+                    className={`w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 md:py-2.5 bg-white dark:bg-slate-800 border ${
+                      errors.tahun_ajaran 
+                        ? 'border-rose-500 focus:ring-rose-500' 
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-teal-500'
+                    } rounded-lg sm:rounded-xl focus:ring-2 focus:border-transparent transition-all text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400`}
+                    placeholder="Contoh: 2024/2025"
+                  />
+                </div>
+                {errors.tahun_ajaran && (
+                  <p className="mt-1 text-[10px] sm:text-xs text-rose-500 flex items-center gap-1">
+                    <AlertCircle size={10} />
+                    {errors.tahun_ajaran}
+                  </p>
+                )}
+                <p className="mt-1 text-[10px] sm:text-xs text-slate-400">
+                  Format: YYYY/YYYY (contoh: 2024/2025)
+                </p>
+              </div>
+
+              {/* Semester */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">
+                  Semester <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Layers className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={14} />
+                  <select
+                    value={formData.semester}
+                    onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                    className="w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-1.5 sm:py-2 md:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all text-xs sm:text-sm text-slate-900 dark:text-white appearance-none"
+                    required
+                  >
+                    <option value="ganjil">Ganjil (Juli - Desember)</option>
+                    <option value="genap">Genap (Januari - Juni)</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                </div>
+              </div>
+
+              {/* Tanggal Mulai dan Selesai */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">
+                    Tanggal Mulai <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <input
+                      type="date"
+                      required
+                      value={formData.tanggal_mulai}
+                      onChange={(e) => {
+                        setFormData({ ...formData, tanggal_mulai: e.target.value })
+                        if (errors.tanggal_mulai) setErrors({ ...errors, tanggal_mulai: '' })
+                      }}
+                      className={`w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 md:py-2.5 bg-white dark:bg-slate-800 border ${
+                        errors.tanggal_mulai 
+                          ? 'border-rose-500 focus:ring-rose-500' 
+                          : 'border-slate-200 dark:border-slate-700 focus:ring-teal-500'
+                      } rounded-lg sm:rounded-xl focus:ring-2 focus:border-transparent transition-all text-xs sm:text-sm text-slate-900 dark:text-white`}
+                    />
+                  </div>
+                  {errors.tanggal_mulai && (
+                    <p className="mt-1 text-[10px] sm:text-xs text-rose-500">{errors.tanggal_mulai}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">
+                    Tanggal Selesai <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <input
+                      type="date"
+                      required
+                      value={formData.tanggal_selesai}
+                      onChange={(e) => {
+                        setFormData({ ...formData, tanggal_selesai: e.target.value })
+                        if (errors.tanggal_selesai) setErrors({ ...errors, tanggal_selesai: '' })
+                      }}
+                      min={formData.tanggal_mulai}
+                      className={`w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 md:py-2.5 bg-white dark:bg-slate-800 border ${
+                        errors.tanggal_selesai 
+                          ? 'border-rose-500 focus:ring-rose-500' 
+                          : 'border-slate-200 dark:border-slate-700 focus:ring-teal-500'
+                      } rounded-lg sm:rounded-xl focus:ring-2 focus:border-transparent transition-all text-xs sm:text-sm text-slate-900 dark:text-white`}
+                    />
+                  </div>
+                  {errors.tanggal_selesai && (
+                    <p className="mt-1 text-[10px] sm:text-xs text-rose-500">{errors.tanggal_selesai}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Active Status */}
+              <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg sm:rounded-xl">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="mt-0.5 w-3 h-3 sm:w-4 sm:h-4 text-teal-600 bg-white border-slate-300 rounded focus:ring-teal-500 dark:bg-slate-800 dark:border-slate-600 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <label htmlFor="is_active" className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Aktifkan Tahun Ajaran Ini
+                  </label>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                    Jika dicentang, tahun ajaran lain akan dinonaktifkan otomatis
+                  </p>
+                </div>
+              </div>
+
+              {/* Error Summary */}
+              <AnimatePresence>
+                {Object.keys(errors).length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg sm:rounded-xl p-3 sm:p-4"
+                  >
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <AlertCircle className="text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" size={14} />
+                      <div className="min-w-0">
+                        <h4 className="text-xs sm:text-sm font-medium text-rose-800 dark:text-rose-300">
+                          Terdapat kesalahan pada form:
+                        </h4>
+                        <ul className="mt-1 sm:mt-2 space-y-1">
+                          {Object.values(errors).map((error, index) => (
+                            <li key={index} className="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 flex items-start gap-1">
+                              <span className="flex-shrink-0">•</span>
+                              <span className="truncate">{error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Form Actions */}
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 md:pt-5 border-t border-slate-200 dark:border-slate-700">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false)
+                    resetForm()
+                  }}
+                  className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Batal
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm font-medium text-white bg-teal-500 hover:bg-teal-600 rounded-lg sm:rounded-xl shadow-lg shadow-teal-500/30 transition-colors"
+                >
+                  {editingTahunAjaran ? 'Simpan' : 'Tambah'}
+                </motion.button>
+              </div>
+            </form>
+          </Modal>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}

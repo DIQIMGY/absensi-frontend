@@ -1,0 +1,197 @@
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  User, Hash, QrCode, Camera, CheckCircle, AlertCircle, X, Clock, Calendar,
+  Loader, School, ScanLine, Fingerprint, ArrowRight, Info, Sparkles, Shield,
+  FileText, Moon, Sun, GraduationCap, Menu, X as XIcon, Zap, MapPin, Star
+} from 'lucide-react'
+import { publicApi } from '../services/publicApi'
+import QrScanner from '../components/QrScanner'
+import FormIzin from '../components/FormIzin'
+import { showWarning, showSuccess, showError } from '../components/ConfirmDialog'
+import { Link } from 'react-router-dom'
+import { playSuccessSound, playErrorSound, playWarningSound, playScanSound, playLateSound } from '../utils/soundNotification'
+import { usePengaturanStore } from '../stores/pengaturanStore'
+import { useThemeStore } from '../stores/themeStore'
+
+export default function PublicAbsen() {
+  const [userRole, setUserRole] = useState('siswa')
+  const [activeTab, setActiveTab] = useState('manual')
+  const [loading, setLoading] = useState(false)
+  const [loadingPengaturan, setLoadingPengaturan] = useState(true)
+  const [showScanner, setShowScanner] = useState(false)
+  const [formData, setFormData] = useState({ nisn: '', nip: '' })
+  const [errors, setErrors] = useState({})
+  const [absenResult, setAbsenResult] = useState(null)
+  const [waktuSekarang, setWaktuSekarang] = useState(new Date())
+  const [jamMasuk, setJamMasuk] = useState('07:15')
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { pengaturan, fetchPengaturan } = usePengaturanStore()
+  const { isDark, toggleTheme } = useThemeStore()
+
+  const getKeterangan = () => {
+    try { return `public-absen; ua=${navigator.userAgent}` } catch { return 'public-absen' }
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setWaktuSekarang(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => wil', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const loadPengaturan = async () => {
+      setLoadingPengaturan(true)
+      const cachedData = localStorage.getItem('pengaturan-storage')
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData)
+          const jamPulang = parsed?.state?.pengaturan?.jam_pulang
+          if (jamPulang && jamPulang < '06:00') localStorage.removeItem('pengaturan-storage')
+        } catch {}
+      }
+      await fetchPengaturan(true)
+      fetchPengaturanLocal()
+      setLoadingPengaturan(false)
+    }
+    loadPengaturan()
+    const pollInterval = setInterval(() => fetchPengaturan(true), 30000)
+    const handleStorageChange = (e) => {
+      if (e.key === 'pengaturan-storage' && e.newValue) {
+        try { const d = JSON.parse(e.newValue); if (d?.state?.pengaturan) fetchPengaturan(true) } catch {}
+      }
+    }
+    const handlePengaturanUpdate = () => fetchPengaturan(true)
+    window.addEventListener('storage', handleStorageChange)
+    wr('pengaturan-updated', handlePengaturanUpdate)
+    return () => {
+      clearInterval(pollInterval)
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('pengaturan-updated', handlePengaturanUpdate)
+    }
+  }, [])
+
+  const fetchPengaturanLocal = async () => {
+    try {
+      const response = await publicApi.getPengaturan()
+      const data = response.data.data
+      if (data.jam_masuk) setJamMasuk(data.jam_masuk.substring(0, 5))
+    } catch { if (pengaturan.jam_masuk) setJamMasuk(pengaturan.jam_masuk) }
+  }
+
+  const formatWaktu = (date) => date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const formatTanggal = (date) => date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+  const isHariAktif = () => {
+    const hariIni = new Date().toLocaleDateString('id-ID', { weekday: 'long' })
+    return (pengaturan.hari_aktif || []).includes(hariIni)
+  }
+  const isLibur = () => {
+    if (!pengaturan.status_libur || !pengaturan.tanggal_libur_mulai || !pengaturan.tanggal_libur_selesai) return false
+    const today = new Date(); today.setHours(0,0,0,0)
+    const mulai = new Date(pengaturan.tanggal_libur_mulai); mulai.setHours(0,0,0,0)
+    const selesai = new Date(pengaturan.tanggal_libur_selesai); selesai.setHours(0,0,0,0)
+    return today >= mulai && today <= selesai
+  }
+  const isSudahPulang = () => {
+    if (!pengaturan.jam_pulang) return false
+    const [h, m] = pengaturan.jam_pulang.split(':')
+    const jp = new Date(); jp.setHours(parseInt(h), parseInt(m), 0)
+    return new Date() > jp
+  }
+  const isBelumBuka = () => {
+    if (!pengaturan.jam_buka_absen) return false
+    const [h, m] = pengaturan.jam_buka_absen.split(':')
+    const jb = new Date(); jb.setHours(parseInt(h), parseInt(m), 0)
+    return new Date() < jb
+  }
+  const bolehAbsenAtauIzin = () => isHariAktif() && !isLibur() && !isSudahPulang() && !isBelumBuka()
+  const getPesanTidakBisa = () => {
+   lum Dibuka', message: `Dibuka jam ${pengaturan.jam_buka_absen?.substring(0,5)}`, icon: '⏰' }
+    if (isSudahPulang()) return { title: 'Waktu Absensi Ditutup', message: `Ditutup jam ${pengaturan.jam_pulang?.substring(0,5)}`, icon: '🏠' }
+    if (isLibur()) return { title: 'Hari Libur', message: pengaturan.keterangan_libur || 'Sekolah sedang libur', icon: '🏖️' }
+    if (!isHariAktif()) return { title: 'Bukan Hari Aktif', message: 'Hari ini bukan hari aktif sekolah', icon: '📅' }
+    return null
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
+  }
+  const validateForm = () => {
+    const newErrors = {}
+    if (userRole === 'siswa') {
+      if (!formData.nisn.trim()) newErrors.nisn = 'NIS/NISN wajib diisi'
+      else if (formData.nisn.length < 4) newErrors.nisn = 'Minimal 4 karakter'
+    } else {
+      if (!formData.nip.trim()) newErrors.nip = 'NIP wajib diisi'
+      else if (formData.nip.length < 4) newErrors.nip = 'Minimal 4 karakter'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleManualAbsen = async (e) => {
+    e.preventDefault()
+    if (!bolehAbsenAtauIzin()) { const p = getPesanTidakBisa(); playWarningSound(); await showWarning(p.title, p.message); return }
+    if (!validateForm()) return
+    setLoading(true); setAbsenResult(null)
+    try {
+      const response = userRole === 'siswa'
+        ? await publicApi.absenManual({ nisn: formData.nisn, keterangan: getKeterangan() })
+        : await publicApi.absenGuruManual({ nip: formData.nip, keterangan: getKeterangan() })
+      const result = response.data.data
+      setAbsenResult({ success: true, data: result, message: response.data.message, role: userRole })
+      setFormData({ nisn: '', nip: '' })
+      if (result.is_terlambat) { playLateSound(); await showWarning('Terlambat!', `Terlambat ${result.menit_terlambat} menit dari jam masuk (${jamMasuk})`) }
+      else { playSuccessSound(); showSuccess('Absensi Berhasil', 'Anda telah berhasil absen tepat waktu') }
+    } catch (error) {
+      const res = error.response?.data
+      setAbsenResult({ success: false, message: res?.message || 'Terjadi kesalahan', role: userRole })
+      if (res?.errors) setErrors(res.errors)
+      if (res?.message?.includes('belum dibuka')) { playWarningSound(); await showWarning('Belum Dibuka', res.message); return }
+      if (res?.message?.includes('sudah ditutup')) { playWarningSound(); await showWarning('Sah Ditutup', res.message); return }
+      if (res?.message?.includes('sudah melakukan absensi')) { playWarningSound(); await showWarning('Sudah Absen', 'Anda sudah absen hari ini'); return }
+      playErrorSound()
+      if (res?.message?.includes('belum terdaftar') || res?.errors?.registrasi) showError('Belum Registrasi', 'Data ditemukan tapi belum punya akun. Silakan registrasi.')
+      else if (res?.message?.includes('tidak ditemukan')) showError('Tidak Ditemukan', `${userRole === 'siswa' ? 'NISN' : 'NIP'} tidak terdaftar di sistem.`)
+      else showError('Gagal', res?.message || 'Terjadi kesalahan')
+    } finally { setLoading(false) }
+  }
+
+  const handleQrScan = async (qrCode) => {
+    if (!bolehAbsenAtauIzin()) { const p = getPesanTidakBisa(); playWarningSound(); await showWarning(p.title, p.message); return }
+    setLoading(true); setShowScanner(false); playScanSound()
+    try {
+      const response = userRole === 'siswa'
+        ? await publicApi.absenQr({ qr_code: qrCode, keterangan: getKeterangan() })
+        : await publicApi.absenGuruQr({ qr_code: qrCode, keterangan: getKeterangan() })
+      const result = response.data.data
+      setAbsenResult({ success: true, data: result, message: response.data.message, role: userRole })
+      if (result.is_terlambat) { playLateSound(); await showWarning('Terlambat!', `Terlambat ${result.menit_terlambat} menit`) }
+      else { playSuccessSound(); showSuccess('Absensi Berhasil', 'Berhasil absen tepat waktu') }
+    } catch (error) {
+      const res = error.response?.data
+      setAbsenResult({ success: false, message: res?.message || 'Terjadi kesalahan', role: userRole })
+      if (res?.message?.includes('belum dibuka')) { playWarningSound(); await showWarning('Belum Dibuka', res.message); return }
+      if (res?.message?.includes('sudah ditutup')) { playWarningSound(); await showWarning('Sudah Ditutup', res.message); return }
+      if (res?.message?.includes('sudah melakukan absensi')) { playWarningSound(); 
+      playErrorSound()
+      if (res?.message?.includes('belum terdaftar')) showError('Belum Registrasi', 'QR valid tapi belum punya akun.')
+      else if (res?.message?.includes('tidak valid')) showError('QR Tidak Valid', 'QR Code tidak dikenali.')
+      else showError('Gagal', res?.message || 'Terjadi kesalahan')
+    } finally { setLoading(false) }
+  }
+
+  const handleScanError = (error) => showError('Kamera Error', error)
+  const resetAbsen = () => { setAbsenResult(null); setErrors({}) }
+
+  const boleh = bolehAbsenAtauIzin()
+  const pesanTidakBisa = getPesanTidakBisa()

@@ -1,0 +1,271 @@
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  User, Hash, Calendar, FileText, Upload, AlertCircle,
+  CheckCircle, Loader, Image as ImageIcon, Search, X,
+  Heart, FileWarning, Trash2
+} from 'lucide-react'
+import { publicApi } from '../services/publicApi'
+import { showSuccess, showError } from './ConfirmDialog'
+import { useThemeStore } from '../stores/themeStore'
+
+export default function FormIzin() {
+  const { isDark } = useThemeStore()
+  const [step, setStep] = useState('form') // 'form' | 'success'
+  const [loading, setLoading] = useState(false)
+  const [loadingCek, setLoadingCek] = useState(false)
+  const [siswaFound, setSiswaFound] = useState(null)
+  const [previewFoto, setPreviewFoto] = useState(null)
+  const [errors, setErrors] = useState({})
+  const [formData, setFormData] = useState({
+    nis: '',
+    nama_lengkap: '',
+    tanggal: new Date().toISOString().split('T')[0],
+    jenis: 'izin',
+    alasan: '',
+    bukti_foto: null,
+  })
+
+  const inputClass = (field) =>
+    `w-full px-3 py-2.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${
+      errors[field]
+        ? 'border-red-400 focus:ring-red-400/20'
+        : isDark
+          ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20'
+          : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20'
+    }`
+
+  const labelClass = `block text-xs font-semibold mb-1.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
+    // Reset siswa found jika NIS berubah
+    if (name === 'nis') setSiswaFound(null)
+  }
+
+  const handleCekSiswa = async () => {
+    if (!formData.nis.trim()) { setErrors(prev => ({ ...prev, nis: 'NIS wajib diisi' })); return }
+    setLoadingCek(true)
+    try {
+      const res = await publicApi.checkSiswa({ nis: formData.nis.trim() })
+      const siswa = res.data.data
+      setSiswaFound(siswa)
+      setFormData(prev => ({ ...prev, nama_lengkap: siswa.nama_lengkap }))
+      setErrors(prev => ({ ...prev, nis: '', nama_lengkap: '' }))
+    } catch (err) {
+      setSiswaFound(null)
+      setErrors(prev => ({ ...prev, nis: err.response?.data?.message || 'NIS tidak ditemukan' }))
+    } finally {
+      setLoadingCek(false)
+    }
+  }
+
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { setErrors(prev => ({ ...prev, bukti_foto: 'Ukuran maksimal 2MB' })); return }
+    setFormData(prev => ({ ...prev, bukti_foto: file }))
+    setPreviewFoto(URL.createObjectURL(file))
+    setErrors(prev => ({ ...prev, bukti_foto: '' }))
+  }
+
+  const removeFoto = () => {
+    setFormData(prev => ({ ...prev, bukti_foto: null }))
+    setPreviewFoto(null)
+  }
+
+  const validate = () => {
+    const e = {}
+    if (!formData.nis.trim()) e.nis = 'NIS wajib diisi'
+    if (!formData.nama_lengkap.trim()) e.nama_lengkap = 'Nama lengkap wajib diisi'
+    if (!formData.tanggal) e.tanggal = 'Tanggal wajib diisi'
+    if (!formData.jenis) e.jenis = 'Jenis izin wajib dipilih'
+    if (!formData.alasan.trim()) e.alasan = 'Alasan wajib diisi'
+    else if (formData.alasan.trim().length < 10) e.alasan = 'Alasan minimal 10 karakter'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validate()) return
+    setLoading(true)
+    try {
+      const data = new FormData()
+      data.append('nis', formData.nis.trim())
+      data.append('nama_lengkap', formData.nama_lengkap.trim())
+      data.append('tanggal', formData.tanggal)
+      data.append('jenis', formData.jenis)
+      data.append('alasan', formData.alasan.trim())
+      if (formData.bukti_foto) data.append('bukti_foto', formData.bukti_foto)
+      await publicApi.submitIzin(data)
+      setStep('success')
+      showSuccess('Berhasil', 'Pengajuan izin berhasil dikirim. Menunggu persetujuan.')
+    } catch (err) {
+      const res = err.response?.data
+      if (res?.errors) setErrors(res.errors)
+      else showError('Gagal', res?.message || 'Terjadi kesalahan saat mengirim izin')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const reset = () => {
+    setStep('form')
+    setSiswaFound(null)
+    setPreviewFoto(null)
+    setErrors({})
+    setFormData({ nis: '', nama_lengkap: '', tanggal: new Date().toISOString().split('T')[0], jenis: 'izin', alasan: '', bukti_foto: null })
+  }
+
+  if (step === 'success') {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+        className={`rounded-2xl p-6 text-center border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-emerald-50 border-emerald-200'}`}>
+        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle size={28} className="text-emerald-600"/>
+        </div>
+        <h3 className={`font-bold text-base mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>Izin Terkirim</h3>
+        <p className={`text-xs mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          Pengajuan izin berhasil dikirim dan menunggu persetujuan dari guru/admin.
+        </p>
+        <button onClick={reset}
+          className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all">
+          Ajukan Lagi
+        </button>
+      </motion.div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* NIS */}
+      <div>
+        <label className={labelClass}>NIS</label>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" size={14}/>
+            <input
+              type="text" name="nis" value={formData.nis}
+              onChange={handleChange}
+              placeholder="Masukkan NIS"
+              className={`${inputClass('nis')} pl-9`}
+            />
+          </div>
+          <button type="button" onClick={handleCekSiswa} disabled={loadingCek}
+            className="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap">
+            {loadingCek ? <Loader size={12} className="animate-spin"/> : <Search size={12}/>}
+            Cek
+          </button>
+        </div>
+        {errors.nis && <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.nis}</p>}
+        {siswaFound && (
+          <div className={`mt-1.5 px-3 py-2 rounded-lg text-[11px] flex items-center gap-2 ${isDark ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-50 text-emerald-700'}`}>
+            <CheckCircle size={11}/>{siswaFound.nama_lengkap} — {siswaFound.kelas || 'Kelas tidak diketahui'}
+          </div>
+        )}
+      </div>
+
+      {/* Nama */}
+      <div>
+        <label className={labelClass}>Nama Lengkap</label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" size={14}/>
+          <input
+            type="text" name="nama_lengkap" value={formData.nama_lengkap}
+            onChange={handleChange}
+            placeholder="Nama sesuai data sekolah"
+            className={`${inputClass('nama_lengkap')} pl-9`}
+          />
+        </div>
+        {errors.nama_lengkap && <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.nama_lengkap}</p>}
+      </div>
+
+      {/* Tanggal + Jenis */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelClass}>Tanggal</label>
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" size={14}/>
+            <input
+              type="date" name="tanggal" value={formData.tanggal}
+              onChange={handleChange}
+              className={`${inputClass('tanggal')} pl-9`}
+            />
+          </div>
+          {errors.tanggal && <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.tanggal}</p>}
+        </div>
+        <div>
+          <label className={labelClass}>Jenis</label>
+          <div className="flex gap-1.5">
+            {[{ key: 'izin', label: 'Izin', icon: FileWarning }, { key: 'sakit', label: 'Sakit', icon: Heart }].map(j => (
+              <button key={j.key} type="button"
+                onClick={() => setFormData(prev => ({ ...prev, jenis: j.key }))}
+                className={`flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                  formData.jenis === j.key
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-emerald-500' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'
+                }`}>
+                <j.icon size={11}/>{j.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Alasan */}
+      <div>
+        <label className={labelClass}>Alasan</label>
+        <div className="relative">
+          <FileText className="absolute left-3 top-3 text-emerald-500" size={14}/>
+          <textarea
+            name="alasan" value={formData.alasan}
+            onChange={handleChange}
+            rows={3}
+            placeholder="Jelaskan alasan izin/sakit (min. 10 karakter)"
+            className={`${inputClass('alasan')} pl-9 resize-none`}
+          />
+        </div>
+        {errors.alasan && <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.alasan}</p>}
+      </div>
+
+      {/* Bukti Foto */}
+      <div>
+        <label className={labelClass}>Bukti Foto <span className={`font-normal ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>(opsional, maks 2MB)</span></label>
+        <AnimatePresence>
+          {previewFoto ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="relative rounded-xl overflow-hidden border border-emerald-400/40">
+              <img src={previewFoto} alt="Preview" className="w-full h-32 object-cover"/>
+              <button type="button" onClick={removeFoto}
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all">
+                <Trash2 size={11}/>
+              </button>
+            </motion.div>
+          ) : (
+            <label className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+              isDark ? 'border-slate-700 hover:border-emerald-500 text-slate-500' : 'border-slate-200 hover:border-emerald-400 text-slate-400'
+            }`}>
+              <Upload size={18} className="text-emerald-500"/>
+              <span className="text-xs">Klik untuk upload foto surat</span>
+              <span className="text-[10px]">JPEG, JPG, PNG</span>
+              <input type="file" accept="image/jpeg,image/jpg,image/png" onChange={handleFotoChange} className="hidden"/>
+            </label>
+          )}
+        </AnimatePresence>
+        {errors.bukti_foto && <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.bukti_foto}</p>}
+      </div>
+
+      <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} type="submit"
+        disabled={loading}
+        className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm">
+        {loading
+          ? <><Loader size={15} className="animate-spin"/>Mengirim...</>
+          : <><CheckCircle size={15}/>Kirim Pengajuan Izin</>
+        }
+      </motion.button>
+    </form>
+  )
+}

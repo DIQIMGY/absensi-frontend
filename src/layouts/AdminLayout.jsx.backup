@@ -1,0 +1,1935 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  LayoutDashboard,
+  Users,
+  GraduationCap,
+  UserCheck,
+  School,
+  BookOpen,
+  Calendar,
+  BookMarked,
+  ClipboardList,
+  Settings,
+  FileText,
+  Trophy,
+  Menu,
+  X,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Moon,
+  Sun,
+  Bell,
+  Search,
+  Sparkles,
+  AlertCircle,
+  AlertTriangle,
+  Activity,
+  BarChart3,
+  Clock,
+  Shield,
+  ChevronDown,
+  HelpCircle,
+  Keyboard,
+  Maximize2,
+  Minimize2,
+  ChevronRight as ChevronRightIcon,
+  Home,
+  LineChart,
+  TrendingUp,
+  CreditCard,
+  DollarSign,
+  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  MoreVertical,
+  Download,
+  Filter,
+  Eye,
+  EyeOff,
+  Star,
+  Zap,
+  Globe,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Github,
+  Twitter,
+  Linkedin,
+  Mail,
+  Lock,
+  UserPlus,
+  LogIn,
+  Upload,
+  Download as DownloadIcon,
+  RefreshCw,
+  Check,
+  AlertCircle as AlertCircleIcon,
+  Info,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  Heart,
+  ShoppingCart,
+  Package,
+  Truck,
+  Store,
+  Gift,
+  Award,
+  Briefcase,
+  Calendar as CalendarIcon,
+  Clock as ClockIcon,
+  MapPin,
+  Phone,
+  Video,
+  Camera,
+  Image,
+  File,
+  Folder,
+  Trash2,
+  Edit,
+  Copy,
+  Printer,
+  Save,
+  Send,
+  Inbox,
+  Archive,
+  Tag,
+  Tags,
+  Hash,
+  AtSign,
+  Link,
+  Unlink,
+  ExternalLink,
+  Share2,
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  MessageSquare,
+  MailPlus,
+  MailOpen,
+  MailCheck,
+  MailQuestion,
+  MailX,
+  MailWarning,
+  MailMinus,
+  MailPlus as MailPlusIcon,
+  MailOpen as MailOpenIcon,
+  MailCheck as MailCheckIcon,
+  MailQuestion as MailQuestionIcon,
+  MailX as MailXIcon,
+  MailWarning as MailWarningIcon,
+  MailMinus as MailMinusIcon,
+  FolderOpen,
+  FolderPlus,
+  FolderMinus,
+  FolderTree,
+  FileText as FileTextIcon,
+  FilePlus,
+  FileMinus,
+  FileCheck,
+  FileWarning,
+  FileX,
+  FileEdit,
+  FileSearch,
+  FileSpreadsheet,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileArchive,
+  FileCode,
+  FileJson,
+  FileJs,
+  FileTs,
+  FileHtml,
+  FileCss,
+  FileScss,
+  FileLess,
+  FileSass,
+  FileStylus,
+  FilePostcss,
+  FileMarkdown,
+  FileYaml,
+  FileToml,
+  FileIni,
+  FileConf,
+  FileEnv,
+  FileGitignore,
+  FileNpmignore,
+  FileDockerignore,
+  FileEsLintignore,
+  FilePrettierignore,
+  FileStylelintignore,
+  FileHuskyrc,
+  FileLintstagedrc,
+  FileCommitlintrc,
+  FileReleaseItRc,
+  FileVersionRc,
+  FileNvmrc,
+  FileNodeVersion,
+  FilePythonVersion,
+  FileRubyVersion,
+  FilePhpVersion,
+  FileJavaVersion,
+  FileGoVersion,
+  FileRustVersion,
+  FileCVersion,
+  FileCppVersion,
+  FileCSharpVersion,
+  FileFSharpVersion,
+  FileVisualBasicVersion,
+  FileKotlinVersion,
+  FileSwiftVersion,
+  FileObjectiveCVersion,
+  FileDartVersion,
+  FileTypeScriptVersion,
+  FileJavaScriptVersion,
+  FileHtmlVersion,
+  FileCssVersion,
+  FileScssVersion,
+  FileLessVersion,
+  FileSassVersion,
+  FileStylusVersion,
+  FilePostcssVersion,
+  FileMarkdownVersion,
+  FileYamlVersion,
+  FileTomlVersion,
+  FileIniVersion,
+  FileConfVersion,
+  FileEnvVersion,
+  FileGitignoreVersion,
+  FileNpmignoreVersion,
+  FileDockerignoreVersion,
+  FileEsLintignoreVersion,
+  FilePrettierignoreVersion,
+  FileStylelintignoreVersion
+} from 'lucide-react'
+import { useAuthStore } from '../stores/authStore'
+import { useThemeStore } from '../stores/themeStore'
+import { usePengaturanStore } from '../stores/pengaturanStore'
+import { adminApi } from '../services/adminService'
+import toast from 'react-hot-toast'
+import Swal from 'sweetalert2'
+
+export default function AdminLayout() {
+  // Menu items dengan grouping yang lebih rapi (sama persis)
+  const menuGroups = [
+    {
+      title: 'Utama',
+      items: [
+        { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'from-violet-500 to-violet-600' },
+      ]
+    },
+    {
+      title: 'Manajemen Data',
+      items: [
+        { path: '/admin/users', icon: Users, label: 'Pengguna', color: 'from-blue-500 to-blue-600' },
+        { path: '/admin/siswas', icon: GraduationCap, label: 'Siswa', color: 'from-emerald-500 to-emerald-600' },
+        { path: '/admin/gurus', icon: UserCheck, label: 'Guru', color: 'from-teal-500 to-teal-600' },
+        { path: '/admin/kelas', icon: School, label: 'Kelas', color: 'from-amber-500 to-amber-600' },
+        { path: '/admin/jurusans', icon: BookOpen, label: 'Jurusan', color: 'from-indigo-500 to-indigo-600' },
+        { path: '/admin/tahun-ajarans', icon: Calendar, label: 'Tahun Ajaran', color: 'from-purple-500 to-purple-600' },
+        { path: '/admin/mata-pelajarans', icon: BookMarked, label: 'Mata Pelajaran', color: 'from-pink-500 to-pink-600' },
+      ]
+    },
+    {
+      title: 'Operasional',
+      items: [
+        { path: '/admin/absensis', icon: ClipboardList, label: 'Absensi Siswa', color: 'from-orange-500 to-orange-600' },
+        { path: '/admin/absensi-guru', icon: UserCheck, label: 'Absensi Guru', color: 'from-teal-500 to-teal-600' },
+        { path: '/admin/ranking', icon: Trophy, label: 'Ranking', color: 'from-yellow-500 to-yellow-600' },
+        { path: '/admin/izins', icon: AlertCircle, label: 'Izin', color: 'from-rose-500 to-rose-600' },
+      ]
+    },
+    {
+      title: 'Laporan & Log',
+      items: [
+        { path: '/admin/laporan', icon: FileText, label: 'Laporan', color: 'from-cyan-500 to-cyan-600' },
+        { path: '/admin/logging', icon: Activity, label: 'Log Aktivitas', color: 'from-slate-500 to-slate-600' },
+      ]
+    },
+    {
+      title: 'Pengaturan',
+      items: [
+        { path: '/admin/pengaturan', icon: Settings, label: 'Pengaturan', color: 'from-gray-500 to-gray-600' },
+      ]
+    }
+  ]
+
+  const allMenuItems = menuGroups.flatMap(group => group.items)
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [expandedGroups, setExpandedGroups] = useState({})
+  const [scrolled, setScrolled] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
+  const [hoveredMenuItem, setHoveredMenuItem] = useState(null)
+  const [keyboardShortcuts, setKeyboardShortcuts] = useState(false)
+  
+  const { user, logout } = useAuthStore()
+  const { isDark, toggleTheme, sidebarCollapsed, toggleSidebar } = useThemeStore()
+  const { pengaturan, fetchPengaturan } = usePengaturanStore()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const searchRef = useRef(null)
+  const headerRef = useRef(null)
+
+  useEffect(() => {
+    fetchPengaturan(true)
+    
+    const handlePengaturanUpdate = (e) => {
+      fetchPengaturan(true)
+    }
+
+    window.addEventListener('pengaturan-updated', handlePengaturanUpdate)
+    
+    return () => {
+      window.removeEventListener('pengaturan-updated', handlePengaturanUpdate)
+    }
+  }, [])
+
+  // Scroll effect untuk header
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl/Cmd + K untuk search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+        setMobileSearchOpen(true)
+      }
+      // Ctrl/Cmd + B untuk toggle sidebar
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault()
+        toggleSidebar()
+      }
+      // Esc untuk close modal
+      if (e.key === 'Escape') {
+        setSearchOpen(false)
+        setMobileSearchOpen(false)
+        setNotificationOpen(false)
+        setShowHelp(false)
+      }
+      // ? untuk show help
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+        setShowHelp(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleSidebar])
+
+  // Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+      setFullscreen(true)
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+        setFullscreen(false)
+      }
+    }
+  }
+
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: 'Konfirmasi Logout',
+      text: 'Apakah Anda yakin ingin keluar?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Ya, Keluar',
+      cancelButtonText: 'Batal',
+      reverseButtons: true,
+      customClass: {
+        popup: 'rounded-2xl shadow-2xl backdrop-blur-xl bg-white/95 dark:bg-slate-900/95',
+        confirmButton: 'rounded-lg px-6 py-2.5 font-medium hover:scale-105 transition-transform',
+        cancelButton: 'rounded-lg px-6 py-2.5 font-medium hover:scale-105 transition-transform'
+      }
+    })
+
+    if (result.isConfirmed) {
+      await logout()
+      navigate('/login')
+      toast.success('Berhasil logout', {
+        icon: '👋',
+        duration: 2000,
+        style: {
+          borderRadius: '12px',
+          background: isDark ? '#1e293b' : '#ffffff',
+          color: isDark ? '#ffffff' : '#0f172a',
+          border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+        }
+      })
+    }
+  }
+
+  const getFotoProfile = () => {
+    if (user?.foto_url) return user.foto_url
+    if (user?.foto) return user.foto
+    if (user?.siswa?.foto_url) return user.siswa.foto_url
+    if (user?.guru?.foto_url) return user.guru.foto_url
+    if (user?.siswa?.foto) return user.siswa.foto
+    if (user?.guru?.foto) return user.guru.foto
+    if (user?.profile?.foto_url) return user.profile.foto_url
+    if (user?.profile?.foto) return user.profile.foto
+    return null
+  }
+
+  const fotoProfile = getFotoProfile()
+
+  const getCurrentPageTitle = () => {
+    const currentItem = allMenuItems.find(item => item.path === location.pathname)
+    return currentItem?.label || 'Dashboard'
+  }
+
+  const getCurrentPageIcon = () => {
+    const currentItem = allMenuItems.find(item => item.path === location.pathname)
+    const IconComponent = currentItem?.icon || LayoutDashboard
+    return <IconComponent size={20} className="text-emerald-600 dark:text-emerald-400" />
+  }
+
+  const filteredMenuItems = allMenuItems.filter(item =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const handleSearchSelect = (path) => {
+    navigate(path)
+    setSearchQuery('')
+    setSearchOpen(false)
+    setMobileSearchOpen(false)
+  }
+
+  const iconMap = {
+    ClipboardList,
+    Users,
+    GraduationCap,
+    AlertCircle,
+    AlertTriangle,
+    FileText,
+    Settings,
+    Trophy,
+    Calendar,
+    School
+  }
+
+  const getIcon = (iconName) => {
+    return iconMap[iconName] || Bell
+  }
+
+  const getReadNotifications = () => {
+    try {
+      const read = localStorage.getItem('readNotifications')
+      const lastClear = localStorage.getItem('lastNotificationClear')
+      const today = new Date().toDateString()
+      
+      if (lastClear !== today) {
+        localStorage.setItem('lastNotificationClear', today)
+        localStorage.removeItem('readNotifications')
+        return []
+      }
+      
+      return read ? JSON.parse(read) : []
+    } catch {
+      return []
+    }
+  }
+
+  const saveReadNotification = (id) => {
+    try {
+      const read = getReadNotifications()
+      if (!read.includes(id)) {
+        read.push(id)
+        localStorage.setItem('readNotifications', JSON.stringify(read))
+      }
+    } catch (error) {
+      console.error('Error saving read notification:', error)
+    }
+  }
+
+  const loadNotifications = async () => {
+    try {
+      const response = await adminApi.getNotifications()
+      const data = response.data.data
+      
+      const readIds = getReadNotifications()
+      
+      const notificationsWithReadStatus = (data.notifications || []).map(notif => ({
+        ...notif,
+        read: readIds.includes(notif.id) || notif.read
+      }))
+      
+      const unread = notificationsWithReadStatus.filter(n => !n.read).length
+      
+      setNotifications(notificationsWithReadStatus)
+      setUnreadCount(unread)
+    } catch (error) {
+      console.error('Error loading notifications:', error)
+    }
+  }
+
+  const markAsRead = (id) => {
+    saveReadNotification(id)
+    
+    // Hapus notifikasi dari list
+    setNotifications(prev => prev.filter(n => n.id !== id))
+    setUnreadCount(prev => Math.max(0, prev - 1))
+    
+    // Animasi subtle
+    toast.success('Notifikasi dihapus', {
+      icon: '✓',
+      duration: 1500,
+      style: {
+        borderRadius: '10px',
+        background: isDark ? '#1e293b' : '#ffffff',
+        color: isDark ? '#ffffff' : '#0f172a',
+      }
+    })
+  }
+
+  const markAllAsRead = () => {
+    notifications.forEach(notif => {
+      if (!notif.read) {
+        saveReadNotification(notif.id)
+      }
+    })
+    
+    // Hapus semua notifikasi
+    setNotifications([])
+    setUnreadCount(0)
+    toast.success('Semua notifikasi dihapus', {
+      icon: '✓',
+      duration: 2000,
+      style: {
+        borderRadius: '12px',
+        background: isDark ? '#1e293b' : '#ffffff',
+        color: isDark ? '#ffffff' : '#0f172a',
+      }
+    })
+  }
+
+  const toggleGroup = (groupTitle) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle]
+    }))
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    loadNotifications()
+    
+    const interval = setInterval(() => {
+      loadNotifications()
+    }, 30000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  // Animation variants yang lebih halus
+  const pageVariants = {
+    initial: { 
+      opacity: 0,
+      y: 20,
+      scale: 0.98
+    },
+    animate: { 
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0,
+      y: -20,
+      scale: 0.98,
+      transition: { duration: 0.3 }
+    }
+  }
+
+  const itemVariants = {
+    initial: { opacity: 0, x: -15 },
+    animate: { 
+      opacity: 1,
+      x: 0,
+      transition: { 
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  }
+
+  const logoVariants = {
+    hover: { 
+      scale: 1.05,
+      rotate: 2,
+      transition: { type: "spring", stiffness: 400, damping: 25 }
+    },
+    tap: { 
+      scale: 0.95,
+      rotate: -2
+    }
+  }
+
+  const sidebarItemVariants = {
+    initial: { opacity: 0, x: -10 },
+    animate: { opacity: 1, x: 0 },
+    hover: {
+      x: 4,
+      transition: { type: "spring", stiffness: 400 }
+    },
+    tap: { scale: 0.98 }
+  }
+
+  const notificationVariants = {
+    initial: { opacity: 0, y: -10, scale: 0.9 },
+    animate: { 
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: "spring", stiffness: 400, damping: 30 }
+    },
+    exit: { opacity: 0, y: 5, scale: 0.95 }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex overflow-x-hidden selection:bg-emerald-200/30 selection:text-emerald-950 dark:selection:bg-emerald-800/30 dark:selection:text-emerald-50">
+      
+      {/* Decorative Background yang lebih elegan */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Animated orbs */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.2, scale: 1 }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+          className="absolute top-0 -left-1/4 w-[1000px] h-[1000px] bg-emerald-300/20 dark:bg-emerald-800/15 rounded-full blur-[120px]"
+        />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.2, scale: 1 }}
+          transition={{ duration: 2, delay: 1, repeat: Infinity, repeatType: "reverse" }}
+          className="absolute bottom-0 -right-1/4 w-[1000px] h-[1000px] bg-blue-300/20 dark:bg-blue-800/15 rounded-full blur-[120px]"
+        />
+        
+        {/* Grid pattern yang lebih halus */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:32px_32px] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)]" />
+        
+        {/* Vignette effect */}
+        <div className="absolute inset-0 bg-radial-gradient from-transparent to-white/20 dark:to-slate-950/30" />
+        
+        {/* Floating particles */}
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-64 h-64 rounded-full bg-emerald-500/5 dark:bg-emerald-400/5 blur-3xl"
+            initial={{ 
+              x: Math.random() * 100,
+              y: Math.random() * 100,
+              scale: 0.5
+            }}
+            animate={{ 
+              x: Math.random() * 200,
+              y: Math.random() * 200,
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{ 
+              duration: 20 + i * 5,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Sidebar Desktop - Enhanced dengan desain lebih modern */}
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: sidebarCollapsed ? 88 : 300,
+          x: 0
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="hidden lg:flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/60 dark:border-slate-800/60 fixed h-full z-40 shadow-2xl shadow-slate-200/20 dark:shadow-slate-900/40"
+      >
+        {/* Logo Section dengan efek glassmorphism */}
+        <motion.div 
+          initial={false}
+          animate={{ height: sidebarCollapsed ? 80 : 88 }}
+          className={`flex items-center ${sidebarCollapsed ? 'justify-center px-3' : 'justify-between px-5'} border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-white/50 via-white/30 to-white/50 dark:from-slate-900/50 dark:via-slate-900/30 dark:to-slate-900/50 backdrop-blur-sm relative overflow-hidden group`}
+        >
+          {/* Animated background gradient */}
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ duration: 3, repeat: Infinity, repeatDelay: 5 }}
+          />
+          
+          {!sidebarCollapsed ? (
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex items-center gap-3 min-w-0"
+            >
+              <motion.div 
+                variants={logoVariants}
+                whileHover="hover"
+                whileTap="tap"
+                className="relative flex-shrink-0"
+              >
+                {pengaturan.logo_sekolah ? (
+                  <div className="relative">
+                    <img 
+                      key={`admin-logo-${pengaturan.logo_sekolah}-${Date.now()}`}
+                      src={pengaturan.logo_sekolah} 
+                      alt="Logo" 
+                      className="w-11 h-11 rounded-xl object-contain bg-white dark:bg-slate-800 p-1.5 ring-2 ring-emerald-500/20 dark:ring-emerald-400/20 shadow-lg shadow-emerald-600/10"
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        const parent = e.target.parentElement
+                        const fallback = document.createElement('div')
+                        fallback.className = 'w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white shadow-lg'
+                        fallback.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>'
+                        parent.appendChild(fallback)
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-emerald-700 flex items-center justify-center text-white shadow-lg shadow-emerald-600/20 ring-2 ring-white/50 dark:ring-slate-700/50">
+                    <School size={22} />
+                  </div>
+                )}
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-lg shadow-emerald-500/50"
+                />
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="flex flex-col min-w-0"
+              >
+                <span className="font-semibold text-sm text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                  {pengaturan.nama_sekolah?.substring(0, 25) || 'SMK Negeri 8 Jember'}
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate flex items-center gap-1">
+                  <Shield size={10} className="text-emerald-500" />
+                  Panel Administrator
+                </span>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              variants={logoVariants}
+              whileHover="hover"
+              whileTap="tap"
+              className="relative cursor-pointer" 
+              onClick={toggleSidebar}
+            >
+              {pengaturan.logo_sekolah ? (
+                <img 
+                  key={`admin-logo-collapsed-${pengaturan.logo_sekolah}-${Date.now()}`}
+                  src={pengaturan.logo_sekolah} 
+                  alt="Logo" 
+                  className="w-11 h-11 rounded-xl object-contain bg-white dark:bg-slate-800 p-1.5 ring-2 ring-emerald-500/20 dark:ring-emerald-400/20 shadow-lg"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white shadow-lg ring-2 ring-white/50 dark:ring-slate-700/50">
+                  <School size={22} />
+                </div>
+              )}
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-lg shadow-emerald-500/50"
+              />
+            </motion.div>
+          )}
+          
+          {!sidebarCollapsed && (
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: -180 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all duration-200 flex-shrink-0 relative group"
+            >
+              <ChevronLeft size={18} />
+              <span className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none">
+                Collapse sidebar (Ctrl+B)
+              </span>
+            </motion.button>
+          )}
+        </motion.div>
+
+        {/* Toggle Button when collapsed */}
+        {sidebarCollapsed && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.2, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={toggleSidebar}
+            className="absolute -right-3 top-24 w-7 h-7 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-emerald-500/20 z-40 ring-2 ring-slate-200/70 dark:ring-slate-700/70"
+          >
+            <ChevronRight size={14} />
+          </motion.button>
+        )}
+
+        {/* Search in sidebar when expanded */}
+        {!sidebarCollapsed && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="px-4 py-3"
+          >
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={16} />
+              <input
+                type="text"
+                placeholder="Cepat cari menu... (Ctrl+K)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchOpen(true)}
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 focus:border-emerald-500/50 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/10 transition-all"
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Navigation dengan efek yang lebih halus */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4 scrollbar-thin scrollbar-thumb-slate-200/70 dark:scrollbar-thumb-slate-700/70 scrollbar-track-transparent hover:scrollbar-thumb-slate-300/70 dark:hover:scrollbar-thumb-slate-600/70">
+          {menuGroups.map((group, groupIndex) => (
+            <motion.div 
+              key={groupIndex} 
+              initial="initial"
+              animate="animate"
+              variants={itemVariants}
+              transition={{ delay: groupIndex * 0.05 }}
+              className="space-y-1"
+            >
+              {!sidebarCollapsed && (
+                <motion.button
+                  whileHover={{ x: 2 }}
+                  onClick={() => toggleGroup(group.title)}
+                  className="w-full flex items-center justify-between px-3 mb-1 group"
+                >
+                  <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    {group.title}
+                  </span>
+                  <motion.div
+                    animate={{ rotate: expandedGroups[group.title] ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
+                    <ChevronDown size={12} className="text-slate-400" />
+                  </motion.div>
+                </motion.button>
+              )}
+              
+              <AnimatePresence initial={false}>
+                {(sidebarCollapsed || expandedGroups[group.title] !== false) && (
+                  <motion.div
+                    initial={!sidebarCollapsed ? { height: 0, opacity: 0 } : false}
+                    animate={!sidebarCollapsed ? { height: 'auto', opacity: 1 } : false}
+                    exit={!sidebarCollapsed ? { height: 0, opacity: 0 } : false}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    {group.items.map((item, itemIndex) => (
+                      <motion.div
+                        key={item.path}
+                        variants={sidebarItemVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover="hover"
+                        whileTap="tap"
+                        custom={itemIndex}
+                        onHoverStart={() => setHoveredMenuItem(item.path)}
+                        onHoverEnd={() => setHoveredMenuItem(null)}
+                      >
+                        <NavLink
+                          to={item.path}
+                          className={({ isActive }) =>
+                            `group relative flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2.5 rounded-xl transition-all duration-300 mb-0.5 overflow-hidden ${
+                              isActive 
+                                ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200/50 dark:border-emerald-800/30 shadow-sm' 
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200'
+                            }`
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {/* Animated background on hover */}
+                              <motion.div 
+                                className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0"
+                                initial={{ x: '-100%' }}
+                                whileHover={{ x: '100%' }}
+                                transition={{ duration: 0.5 }}
+                              />
+                              
+                              {/* Ripple effect on hover */}
+                              <motion.div
+                                className="absolute inset-0 bg-emerald-500/5"
+                                initial={{ scale: 0, opacity: 0 }}
+                                whileHover={{ scale: 2, opacity: 1 }}
+                                transition={{ duration: 0.4 }}
+                              />
+                              
+                              <div className={`relative flex-shrink-0 transition-all duration-300 ${
+                                isActive 
+                                  ? 'text-emerald-600 dark:text-emerald-400 scale-110' 
+                                  : 'text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
+                              }`}>
+                                <motion.div 
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                                    isActive 
+                                      ? 'bg-white dark:bg-slate-800 shadow-md' 
+                                      : 'bg-transparent group-hover:bg-white/50 dark:group-hover:bg-slate-800/30'
+                                  }`}
+                                >
+                                  <item.icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
+                                </motion.div>
+                                
+                                {isActive && (
+                                  <motion.div
+                                    layoutId="activeIndicator"
+                                    className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-1 h-5 bg-gradient-to-b from-emerald-500 to-emerald-600 dark:from-emerald-400 dark:to-emerald-500 rounded-full"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                  />
+                                )}
+                              </div>
+                              
+                              {!sidebarCollapsed && (
+                                <motion.span 
+                                  initial={{ opacity: 0, x: -5 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.1 }}
+                                  className={`ml-3 text-sm whitespace-nowrap truncate flex-1 transition-all duration-300 ${
+                                    isActive ? 'font-medium' : ''
+                                  }`}
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                              
+                              {/* Enhanced tooltip untuk collapsed state */}
+                              {sidebarCollapsed && (
+                                <motion.div 
+                                  initial={{ opacity: 0, x: -5 }}
+                                  whileHover={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="absolute left-full ml-2 px-2.5 py-1.5 bg-slate-800 dark:bg-slate-700 text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible whitespace-nowrap z-50 shadow-xl translate-x-1 group-hover:translate-x-0"
+                                >
+                                  {item.label}
+                                  <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45" />
+                                </motion.div>
+                              )}
+                              
+                              {/* Keyboard shortcut hint */}
+                              {!sidebarCollapsed && hoveredMenuItem === item.path && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: 5 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  className="text-[8px] text-slate-400 dark:text-slate-500 ml-auto"
+                                >
+                                  Alt+{itemIndex + 1}
+                                </motion.span>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </nav>
+
+        {/* Bottom Section dengan efek glassmorphism */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="p-4 border-t border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-b from-white/50 via-white/30 to-white/50 dark:from-slate-900/50 dark:via-slate-900/30 dark:to-slate-900/50 backdrop-blur-sm space-y-2"
+        >
+          {/* Help & Shortcuts */}
+          {!sidebarCollapsed && (
+            <motion.button
+              whileHover={{ scale: 1.02, x: 5 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowHelp(true)}
+              className="relative overflow-hidden group flex items-center px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white transition-all duration-300 w-full text-sm mb-2"
+            >
+              <HelpCircle size={18} className="flex-shrink-0" />
+              <span className="ml-3 truncate font-medium">Bantuan & Pintasan</span>
+              <span className="ml-auto text-[8px] text-slate-400">?</span>
+            </motion.button>
+          )}
+          
+          {!sidebarCollapsed && (
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="px-3 py-3 bg-gradient-to-br from-slate-50 to-slate-100/80 dark:from-slate-800/50 dark:to-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <motion.div 
+                  whileHover={{ scale: 1.1 }}
+                  className="relative"
+                >
+                  {fotoProfile ? (
+                    <img 
+                      src={fotoProfile} 
+                      alt={user?.name || 'User'}
+                      className="w-10 h-10 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-slate-700"
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.style.display = 'none'
+                        const parent = e.target.parentElement
+                        const fallback = document.createElement('div')
+                        fallback.className = 'w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-sm shadow-md ring-2 ring-white dark:ring-slate-700'
+                        fallback.textContent = user?.name?.charAt(0).toUpperCase() || 'U'
+                        parent.appendChild(fallback)
+                      }}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-sm shadow-md ring-2 ring-white dark:ring-slate-700">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"
+                  />
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-white truncate">{user?.name}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 capitalize truncate flex items-center gap-1">
+                    <Shield size={8} className="text-emerald-500" />
+                    {user?.role}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          <motion.button
+            whileHover={{ scale: 1.02, x: sidebarCollapsed ? 0 : 5 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleLogout}
+            className={`relative overflow-hidden group flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2.5 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-900/10 hover:text-rose-700 dark:hover:text-rose-300 transition-all duration-300 w-full text-sm border border-transparent hover:border-rose-200/50 dark:hover:border-rose-800/30`}
+          >
+            {/* Animated background on hover */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-rose-500/0 via-rose-500/10 to-rose-500/0"
+              initial={{ x: '-100%' }}
+              whileHover={{ x: '100%' }}
+              transition={{ duration: 0.5 }}
+            />
+            
+            <LogOut size={18} className={`${sidebarCollapsed ? '' : 'group-hover:translate-x-1 transition-transform duration-300'} flex-shrink-0 relative z-10`} />
+            {!sidebarCollapsed && (
+              <span className="ml-2.5 truncate font-medium relative z-10">Keluar</span>
+            )}
+          </motion.button>
+        </motion.div>
+      </motion.aside>
+
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence mode="wait">
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white dark:bg-slate-900 z-50 lg:hidden shadow-2xl"
+            >
+              <div className="h-20 flex items-center justify-between px-4 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-white/50 to-white/30 dark:from-slate-900/50 dark:to-slate-900/30 backdrop-blur-sm">
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-2.5 min-w-0"
+                >
+                  <div className="relative">
+                    {pengaturan.logo_sekolah ? (
+                      <img 
+                        key={`admin-logo-mobile-${pengaturan.logo_sekolah}-${Date.now()}`}
+                        src={pengaturan.logo_sekolah} 
+                        alt="Logo" 
+                        className="w-9 h-9 rounded-lg object-contain bg-white dark:bg-slate-800 p-1.5 ring-2 ring-emerald-500/20 dark:ring-emerald-400/20 shadow-md"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white shadow-md ring-2 ring-white/50 dark:ring-slate-700/50">
+                        <School size={18} />
+                      </div>
+                    )}
+                    <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                      {pengaturan.nama_sekolah?.substring(0, 15) || 'EduAbsen'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                      <Shield size={8} className="text-emerald-500" />
+                      Admin Panel
+                    </span>
+                  </div>
+                </motion.div>
+                <motion.button 
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 text-slate-500 hover:text-slate-700 dark:hover:text-white"
+                >
+                  <X size={20} />
+                </motion.button>
+              </div>
+              
+              <nav className="p-3 space-y-4 overflow-y-auto h-[calc(100vh-5rem)] scrollbar-thin scrollbar-thumb-slate-200/70 dark:scrollbar-thumb-slate-700/70">
+                {menuGroups.map((group, groupIndex) => (
+                  <motion.div 
+                    key={groupIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: groupIndex * 0.05 }}
+                    className="space-y-1"
+                  >
+                    <button
+                      onClick={() => toggleGroup(group.title)}
+                      className="w-full flex items-center justify-between px-3 mb-1"
+                    >
+                      <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {group.title}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: expandedGroups[group.title] ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown size={12} className="text-slate-400" />
+                      </motion.div>
+                    </button>
+                    
+                    <AnimatePresence initial={false}>
+                      {expandedGroups[group.title] !== false && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          {group.items.map((item, itemIndex) => (
+                            <motion.div
+                              key={item.path}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: itemIndex * 0.02 }}
+                              whileHover={{ x: 5 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <NavLink
+                                to={item.path}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={({ isActive }) =>
+                                  `flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 mb-0.5 ${
+                                    isActive 
+                                      ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200/50 dark:border-emerald-800/30' 
+                                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200'
+                                  }`
+                                }
+                              >
+                                <motion.div 
+                                  whileHover={{ scale: 1.1 }}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                >
+                                  <item.icon size={18} strokeWidth={2} />
+                                </motion.div>
+                                <span className="ml-3 text-sm truncate flex-1">{item.label}</span>
+                              </NavLink>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
+                
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="pt-4 mt-4 border-t border-slate-200/60 dark:border-slate-800/60"
+                >
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="px-3 py-3 mb-2 bg-gradient-to-br from-slate-50 to-slate-100/80 dark:from-slate-800/50 dark:to-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <motion.div 
+                        whileHover={{ scale: 1.1 }}
+                        className="relative"
+                      >
+                        {fotoProfile ? (
+                          <img 
+                            src={fotoProfile} 
+                            alt={user?.name || 'User'}
+                            className="w-8 h-8 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-slate-700"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium shadow-md ring-2 ring-white dark:ring-slate-700">
+                            {user?.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+                      </motion.div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-white truncate">{user?.name}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 capitalize truncate flex items-center gap-1">
+                          <Shield size={8} className="text-emerald-500" />
+                          {user?.role}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02, x: 5 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-3 py-2.5 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-900/10 hover:text-rose-700 dark:hover:text-rose-300 transition-all duration-200 text-sm border border-transparent hover:border-rose-200/50 dark:hover:border-rose-800/30"
+                  >
+                    <LogOut size={18} className="flex-shrink-0" />
+                    <span className="ml-3 truncate font-medium">Keluar</span>
+                  </motion.button>
+                </motion.div>
+              </nav>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div 
+        className={`flex-1 flex flex-col min-h-screen w-full transition-all duration-500 ease-out pt-16 ${
+          sidebarCollapsed ? 'lg:ml-[88px]' : 'lg:ml-[300px]'
+        }`}
+      >
+        {/* Header dengan efek glassmorphism dan scroll effect */}
+        <motion.header
+          ref={headerRef}
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", damping: 20 }}
+          className={`h-16 fixed top-0 z-30 transition-all duration-300 ${
+            scrolled 
+              ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-lg' 
+              : 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/40 dark:border-slate-800/40'
+          } flex items-center justify-between px-4 lg:px-6 ${
+            sidebarCollapsed ? 'lg:left-[88px] lg:w-[calc(100%-88px)]' : 'lg:left-[300px] lg:w-[calc(100%-300px)]'
+          } left-0 w-full`}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-all duration-200 text-slate-500 hover:text-slate-700 dark:hover:text-white"
+            >
+              <Menu size={20} />
+            </motion.button>
+            
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="hidden sm:flex items-center gap-3 min-w-0"
+            >
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="p-2 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-lg"
+              >
+                {getCurrentPageIcon()}
+              </motion.div>
+              <div className="min-w-0">
+                <motion.h1 
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white truncate tracking-tight"
+                >
+                  {getCurrentPageTitle()}
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-medium mt-0.5 flex items-center gap-1"
+                >
+                  <Clock size={10} className="text-emerald-500" />
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </motion.p>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+            {/* Search Desktop */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="hidden md:block relative" 
+              ref={searchRef}
+            >
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300" size={16} />
+                <motion.input 
+                  whileFocus={{ scale: 1.02 }}
+                  type="text" 
+                  placeholder="Cari menu... (⌘K)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchOpen(true)}
+                  className="pl-9 pr-10 py-2 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 focus:border-emerald-500/50 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 w-48 lg:w-64 transition-all duration-300 text-slate-700 dark:text-white placeholder:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-slate-800/80"
+                />
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
+                >
+                  <kbd className="hidden xl:inline-flex h-5 items-center gap-0.5 rounded border border-slate-300/60 dark:border-slate-600 bg-white dark:bg-slate-700 px-1.5 font-mono text-[9px] font-medium text-slate-500 dark:text-slate-300 shadow-sm">
+                    ⌘K
+                  </kbd>
+                </motion.div>
+              </div>
+              
+              {/* Search Dropdown */}
+              <AnimatePresence>
+                {searchOpen && searchQuery && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                    transition={{ duration: 0.2, type: "spring", damping: 25 }}
+                    className="absolute top-full mt-2 w-full min-w-[240px] bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200/60 dark:border-slate-700/60 overflow-hidden z-60"
+                  >
+                    {filteredMenuItems.length > 0 ? (
+                      <div className="py-1 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200/70 dark:scrollbar-thumb-slate-700/70">
+                        <div className="px-3 py-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/50">
+                          Hasil Pencarian ({filteredMenuItems.length})
+                        </div>
+                        {filteredMenuItems.map((item, idx) => (
+                          <motion.button
+                            key={item.path}
+                            initial={{ opacity: 0, x: -5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.02 }}
+                            whileHover={{ x: 2, backgroundColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.8)' }}
+                            onClick={() => handleSearchSelect(item.path)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left group"
+                          >
+                            <motion.div 
+                              whileHover={{ scale: 1.1 }}
+                              className={`w-8 h-8 rounded-lg bg-gradient-to-br ${item.color || 'from-slate-500 to-slate-600'} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}
+                            >
+                              <item.icon size={14} className="text-white" />
+                            </motion.div>
+                            <div className="flex-1">
+                              <span className="text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white font-medium">
+                                {item.label}
+                              </span>
+                              <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                {item.path.replace('/admin/', '')}
+                              </p>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
+                    ) : (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="px-4 py-8 text-center"
+                      >
+                        <motion.div 
+                          animate={{ scale: [1, 1.1, 1] }}
+                          transition={{ duration: 0.3 }}
+                          className="w-12 h-12 rounded-full bg-slate-100/80 dark:bg-slate-700/80 flex items-center justify-center mx-auto mb-3"
+                        >
+                          <Search size={18} className="text-slate-400" />
+                        </motion.div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-white">Tidak ada hasil</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-500 mt-1">Coba kata kunci lain</p>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Mobile Search Button */}
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-white transition-all duration-200"
+            >
+              <Search size={18} />
+            </motion.button>
+
+            {/* Fullscreen Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleFullscreen}
+              className="hidden lg:flex p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-white transition-all duration-200"
+              title={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            >
+              {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </motion.button>
+
+            {/* Theme Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: isDark ? -15 : 15 }}
+              whileTap={{ scale: 0.9 }}
+              animate={{ rotate: isDark ? 0 : 0 }}
+              onClick={toggleTheme}
+              className="relative p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-white transition-all duration-200 overflow-hidden group"
+            >
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: '100%' }}
+                transition={{ duration: 0.5 }}
+              />
+              {isDark ? <Sun size={18} className="relative z-10" /> : <Moon size={18} className="relative z-10" />}
+            </motion.button>
+
+            {/* Notifications */}
+            <div className="relative">
+              <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                animate={{ 
+                  rotate: notificationOpen ? 15 : 0,
+                  scale: notificationOpen ? 1.1 : 1
+                }}
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="relative p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-white transition-all duration-200 overflow-hidden group"
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/10 to-amber-500/0"
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.5 }}
+                />
+                <Bell size={18} className="relative z-10" />
+                {unreadCount > 0 && (
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                    className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-gradient-to-br from-rose-500 to-rose-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center shadow-sm ring-1 ring-white dark:ring-slate-900"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </motion.span>
+                )}
+              </motion.button>
+
+              {/* Notification Dropdown */}
+              <AnimatePresence>
+                {notificationOpen && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setNotificationOpen(false)}
+                      className="fixed inset-0 z-30"
+                    />
+                    <motion.div
+                      variants={notificationVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200/60 dark:border-slate-700/60 overflow-hidden z-60"
+                    >
+                      {/* Header */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800"
+                      >
+                        <div>
+                          <h3 className="font-semibold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+                            <Bell size={14} className="text-emerald-500" />
+                            Notifikasi
+                          </h3>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            {unreadCount} belum dibaca
+                          </p>
+                        </div>
+                        {unreadCount > 0 && (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={markAllAsRead}
+                            className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-100/80 dark:hover:bg-emerald-900/20"
+                          >
+                            Tandai dibaca
+                          </motion.button>
+                        )}
+                      </motion.div>
+
+                      {/* Notification List */}
+                      <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200/70 dark:scrollbar-thumb-slate-700/70">
+                        {notifications.length > 0 ? (
+                          notifications.map((notif, idx) => {
+                            const IconComponent = getIcon(notif.icon)
+                            return (
+                              <motion.div
+                                key={notif.id}
+                                initial={{ opacity: 0, x: -5 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.03 }}
+                                whileHover={{ x: 2, backgroundColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.8)' }}
+                                onClick={() => markAsRead(notif.id)}
+                                className={`px-4 py-3 border-b border-slate-200/50 dark:border-slate-700/50 cursor-pointer transition-all duration-200 ${
+                                  !notif.read ? 'bg-emerald-50/30 dark:bg-emerald-900/5' : ''
+                                }`}
+                              >
+                                <div className="flex gap-3">
+                                  <motion.div 
+                                    whileHover={{ scale: 1.1, rotate: 5 }}
+                                    className={`w-9 h-9 rounded-lg bg-gradient-to-br ${notif.color} flex items-center justify-center flex-shrink-0 shadow-sm`}
+                                  >
+                                    <IconComponent size={18} className="text-white" />
+                                  </motion.div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-1.5">
+                                      <p className="text-sm font-medium text-slate-800 dark:text-white truncate leading-tight">
+                                        {notif.title}
+                                      </p>
+                                      {!notif.read && (
+                                        <motion.span 
+                                          animate={{ scale: [1, 1.2, 1] }}
+                                          transition={{ duration: 1, repeat: Infinity }}
+                                          className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0 mt-1.5"
+                                        />
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2 leading-relaxed">
+                                      {notif.message}
+                                    </p>
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-500 mt-2 font-medium">
+                                      {notif.time}
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )
+                          })
+                        ) : (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="px-4 py-12 text-center"
+                          >
+                            <motion.div 
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 0.3 }}
+                              className="w-16 h-16 rounded-full bg-slate-100/80 dark:bg-slate-700/80 flex items-center justify-center mx-auto mb-4"
+                            >
+                              <Bell size={24} className="text-slate-400 dark:text-slate-500" />
+                            </motion.div>
+                            <p className="text-sm font-medium text-slate-800 dark:text-white">Tidak ada notifikasi</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Notifikasi baru akan muncul di sini</p>
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      {notifications.length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="px-4 py-2.5 border-t border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800 text-center"
+                        >
+                          <motion.button 
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors uppercase tracking-wider"
+                          >
+                            Lihat Semua Notifikasi
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            {/* Divider */}
+            <motion.div 
+              initial={{ scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              className="hidden sm:block w-px h-6 bg-slate-200/60 dark:bg-slate-700/60 mx-1" 
+            />
+            
+            {/* User Profile - Desktop */}
+            <motion.div 
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="hidden sm:flex items-center gap-3 pl-0.5 min-w-0"
+            >
+              <div className="text-right hidden md:block min-w-0">
+                <p className="text-xs font-semibold text-slate-800 dark:text-white truncate leading-tight">{user?.name}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 capitalize truncate flex items-center justify-end gap-1">
+                  <Shield size={8} className="text-emerald-500" />
+                  {user?.role}
+                </p>
+              </div>
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative group cursor-pointer"
+              >
+                {fotoProfile ? (
+                  <img 
+                    src={fotoProfile} 
+                    alt={user?.name || 'User'}
+                    className="w-9 h-9 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-slate-700 group-hover:ring-emerald-500/50 transition-all duration-300"
+                    onError={(e) => {
+                      e.target.onerror = null
+                      e.target.style.display = 'none'
+                      const parent = e.target.parentElement
+                      const fallback = document.createElement('div')
+                      fallback.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-sm shadow-md ring-2 ring-white dark:ring-slate-700'
+                      fallback.textContent = user?.name?.charAt(0).toUpperCase() || 'U'
+                      parent.appendChild(fallback)
+                    }}
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-sm shadow-md ring-2 ring-white dark:ring-slate-700 group-hover:ring-emerald-500/50 transition-all duration-300">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* Mobile Profile Icon */}
+            <motion.div 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="sm:hidden relative"
+            >
+              {fotoProfile ? (
+                <img 
+                  src={fotoProfile} 
+                  alt={user?.name || 'User'}
+                  className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-md"
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.style.display = 'none'
+                    const parent = e.target.parentElement
+                    const fallback = document.createElement('div')
+                    fallback.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-xs shadow-md ring-2 ring-white dark:ring-slate-700'
+                    fallback.textContent = user?.name?.charAt(0).toUpperCase() || 'U'
+                    parent.appendChild(fallback)
+                  }}
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-medium text-xs shadow-md ring-2 ring-white dark:ring-slate-700">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"
+              />
+            </motion.div>
+          </div>
+        </motion.header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 w-full max-w-full overflow-x-auto">
+          <motion.div
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="w-full min-w-0"
+          >
+            <Outlet />
+          </motion.div>
+        </main>
+      </div>
+
+      {/* Mobile Search Modal */}
+      <AnimatePresence mode="wait">
+        {mobileSearchOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileSearchOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 md:hidden"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-4 left-4 right-4 bg-white dark:bg-slate-800 rounded-xl shadow-2xl z-50 md:hidden overflow-hidden border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <div className="p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-white/50 to-white/30 dark:from-slate-800/50 dark:to-slate-800/30">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <motion.input 
+                    initial={{ scale: 0.95 }}
+                    animate={{ scale: 1 }}
+                    type="text" 
+                    placeholder="Cari menu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                    className="w-full pl-10 pr-3 py-3 bg-slate-100/80 dark:bg-slate-700/70 border border-slate-200/60 dark:border-slate-600 focus:border-emerald-500/50 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 transition-all text-slate-700 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+              
+              <div className="max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200/70 dark:scrollbar-thumb-slate-700/70">
+                {searchQuery ? (
+                  filteredMenuItems.length > 0 ? (
+                    <div className="py-1">
+                      <div className="px-4 py-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/50">
+                        Hasil Pencarian ({filteredMenuItems.length})
+                      </div>
+                      {filteredMenuItems.map((item, idx) => (
+                        <motion.button
+                          key={item.path}
+                          initial={{ opacity: 0, x: -5 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.02 }}
+                          whileHover={{ x: 2, backgroundColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.8)' }}
+                          onClick={() => handleSearchSelect(item.path)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition-colors text-left active:bg-slate-200/80 dark:active:bg-slate-700/80"
+                        >
+                          <motion.div 
+                            whileHover={{ scale: 1.1 }}
+                            className={`w-9 h-9 rounded-lg bg-gradient-to-br ${item.color || 'from-slate-500 to-slate-600'} flex items-center justify-center shadow-sm`}
+                          >
+                            <item.icon size={16} className="text-white" />
+                          </motion.div>
+                          <div>
+                            <span className="text-sm font-medium text-slate-800 dark:text-white">{item.label}</span>
+                            <p className="text-[9px] text-slate-500 dark:text-slate-500 mt-0.5">
+                              {item.path.replace('/admin/', '')}
+                            </p>
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  ) : (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="px-4 py-12 text-center"
+                    >
+                      <motion.div 
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 0.3 }}
+                        className="w-14 h-14 rounded-full bg-slate-100/80 dark:bg-slate-700/80 flex items-center justify-center mx-auto mb-3"
+                      >
+                        <Search size={22} className="text-slate-400" />
+                      </motion.div>
+                      <p className="text-sm font-medium text-slate-800 dark:text-white">Tidak ada hasil</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Coba kata kunci lain</p>
+                    </motion.div>
+                  )
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-4 py-12 text-center"
+                  >
+                    <motion.div 
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 0.3 }}
+                      className="w-14 h-14 rounded-full bg-slate-100/80 dark:bg-slate-700/80 flex items-center justify-center mx-auto mb-3"
+                    >
+                      <Sparkles size={22} className="text-slate-400" />
+                    </motion.div>
+                    <p className="text-sm font-medium text-slate-800 dark:text-white">Cari Menu</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ketik untuk mencari menu yang diinginkan</p>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Help Modal */}
+      <AnimatePresence mode="wait">
+        {showHelp && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setShowHelp(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <div className="p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
+                    <Keyboard size={18} className="text-white" />
+                  </div>
+                  <h3 className="font-semibold text-slate-800 dark:text-white">Pintasan Keyboard</h3>
+                </div>
+                <motion.button
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowHelp(false)}
+                  className="p-1 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <X size={18} className="text-slate-500" />
+                </motion.button>
+              </div>
+              
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-slate-200/40 dark:border-slate-700/40">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Cari menu</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">⌘</kbd>
+                    <span className="text-slate-400">+</span>
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">K</kbd>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-slate-200/40 dark:border-slate-700/40">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Toggle sidebar</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">⌘</kbd>
+                    <span className="text-slate-400">+</span>
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">B</kbd>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-slate-200/40 dark:border-slate-700/40">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Toggle dark mode</span>
+                  <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">⌘ D</kbd>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-slate-200/40 dark:border-slate-700/40">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Bantuan ini</span>
+                  <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">?</kbd>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Tutup modal</span>
+                  <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">ESC</kbd>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-t border-slate-200/60 dark:border-slate-700/60">
+                <p className="text-[10px] text-center text-slate-500 dark:text-slate-400">
+                  Tekan tombol di atas untuk mengakses fitur dengan cepat
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Add custom CSS */}
+      <style jsx>{`
+        .bg-radial-gradient {
+          background: radial-gradient(circle at center, transparent 0%, rgba(255,255,255,0.3) 100%);
+        }
+        
+        .dark .bg-radial-gradient {
+          background: radial-gradient(circle at center, transparent 0%, rgba(2,6,23,0.4) 100%);
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 4px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          border-radius: 20px;
+        }
+      `}</style>
+    </div>
+  )
+}
