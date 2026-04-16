@@ -16,7 +16,7 @@ export default function RankingNotification({ show, ranking, onClose }) {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="fixed top-20 right-4 z-50 max-w-md"
+          className="fixed top-20 right-4 z-40 max-w-sm w-[calc(100vw-2rem)] sm:max-w-md sm:w-auto"
         >
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-xl shadow-2xl border border-amber-400">
             <div className="flex items-start gap-3">

@@ -71,12 +71,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 )
 
 // CustomCursor di luar StrictMode agar RAF loop tidak double-mount
-const cursorRoot = document.createElement('div')
-document.body.appendChild(cursorRoot)
-ReactDOM.createRoot(cursorRoot).render(
-  <QueryClientProvider client={queryClient}>
-    <PengaturanProvider>
-      <CustomCursor />
-    </PengaturanProvider>
-  </QueryClientProvider>
-)
+// Hanya render di non-touch device
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || !window.matchMedia('(pointer: fine)').matches
+if (!isTouch) {
+  const cursorRoot = document.createElement('div')
+  document.body.appendChild(cursorRoot)
+  ReactDOM.createRoot(cursorRoot).render(
+    <QueryClientProvider client={queryClient}>
+      <PengaturanProvider>
+        <CustomCursor />
+      </PengaturanProvider>
+    </QueryClientProvider>
+  )
+}

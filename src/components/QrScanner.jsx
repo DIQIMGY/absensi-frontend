@@ -257,6 +257,8 @@ export default function QrScanner({ onScan, onError, onClose }) {
       animate="visible"
       exit="exit"
       className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-md"
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+      onTouchEnd={(e) => { if (e.target === e.currentTarget) handleClose() }}
     >
       <motion.div
         variants={modalVariants}

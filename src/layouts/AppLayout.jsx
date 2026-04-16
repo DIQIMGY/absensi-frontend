@@ -114,11 +114,9 @@ function SidebarContent({
                   {({ isActive }) => (
                     <>
                       {isActive && show && (
-                        <motion.span
-                          layoutId={`sidebar-indicator-${mobile ? 'mobile' : 'desktop'}`}
+                        <span
                           className="absolute left-0 inset-y-2 w-0.5 rounded-r-full"
                           style={{ background: ac.color }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                         />
                       )}
                       <item.icon size={15} strokeWidth={isActive ? 2.2 : 1.8} className={`flex-shrink-0 transition-all duration-150 ${show ? 'mr-2.5' : ''}`}/>
@@ -254,7 +252,11 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
   useEffect(() => {
     const fn = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false) }
     document.addEventListener('mousedown', fn)
-    return () => document.removeEventListener('mousedown', fn)
+    document.addEventListener('touchstart', fn, { passive: true })
+    return () => {
+      document.removeEventListener('mousedown', fn)
+      document.removeEventListener('touchstart', fn)
+    }
   }, [])
 
   const loadNotifs = useCallback(async () => {
@@ -325,9 +327,8 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex">
 
       {/* Desktop Sidebar */}
-      <motion.aside initial={false} animate={{ width: isCollapsed ? 64 : 240 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="hidden lg:flex flex-col fixed h-full z-40 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 overflow-hidden">
+      <aside
+        className={`hidden lg:flex flex-col fixed h-full z-40 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-60'}`}>
         <SidebarContent
           {...sidebarProps}
           mobile={false}
@@ -340,28 +341,26 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
             <ChevronRight size={11}/>
           </button>
         )}
-      </motion.aside>
+      </aside>
 
       {/* Mobile Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setSidebarOpen(false)}/>
-            <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed left-0 top-0 h-full w-72 z-50 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 lg:hidden overflow-hidden">
-              <SidebarContent
-                {...sidebarProps}
-                mobile={true}
-                show={true}
-                navRef={mobileNavRef}
-              />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+      {sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            onTouchEnd={() => setSidebarOpen(false)}/>
+          <aside
+            className="fixed left-0 top-0 h-full w-72 z-50 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 lg:hidden overflow-hidden">
+            <SidebarContent
+              {...sidebarProps}
+              mobile={true}
+              show={true}
+              navRef={mobileNavRef}
+            />
+          </aside>
+        </>
+      )}
 
       {/* Main */}
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-60'} pb-16 lg:pb-0`}>
@@ -370,11 +369,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
         <header className={`sticky top-0 z-30 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-shadow ${scrolled ? 'shadow-sm' : ''}`}>
           {/* Scroll progress bar */}
           <div className="h-0.5 w-full bg-transparent overflow-hidden">
-            <motion.div
-              className="h-full origin-left"
-              style={{ background: `linear-gradient(90deg, ${ac.color}, #10b981)` }}
-              animate={{ scaleX: scrollPct / 100 }}
-              transition={{ duration: 0.1, ease: 'linear' }}
+            <div
+              className="h-full origin-left transition-transform duration-100"
+              style={{ background: `linear-gradient(90deg, ${ac.color}, #10b981)`, transform: `scaleX(${scrollPct / 100})` }}
             />
           </div>
           <div className="flex items-center gap-3 px-4 h-14">
@@ -446,17 +443,7 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
 
         {/* Content */}
         <main ref={mainRef} className="flex-1 overflow-auto">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <Outlet/>
-            </motion.div>
-          </AnimatePresence>
+          <Outlet/>
         </main>
       </div>
 
@@ -470,11 +457,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
                 <item.icon size={17} strokeWidth={isActive ? 2.2 : 1.8} className="transition-all duration-150"/>
                 <span className="leading-none">{item.label}</span>
                 {isActive && (
-                  <motion.span
-                    layoutId="mobile-nav-indicator"
+                  <span
                     className="absolute bottom-0 w-6 h-0.5 rounded-full"
                     style={{ background: ac.color }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                   />
                 )}
               </>

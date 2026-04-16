@@ -189,6 +189,7 @@ export default function GuruRekapHarian() {
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
         onClick={onClose}
+        onTouchEnd={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}

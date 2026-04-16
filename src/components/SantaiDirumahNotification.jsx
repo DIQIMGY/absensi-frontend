@@ -134,7 +134,7 @@ export default function SantaiDirumahNotification() {
           }
         }}
         exit={{ opacity: 0, y: -80, scale: 0.95 }}
-        className="fixed top-20 right-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-auto"
+        className="fixed top-20 right-4 z-40 max-w-sm w-[calc(100vw-2rem)] sm:w-auto"
       >
         <motion.div
           animate={{

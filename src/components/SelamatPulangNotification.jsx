@@ -50,7 +50,7 @@ export default function SelamatPulangNotification({ statusKehadiran = null, data
           animate={{ opacity:1, x:0, scale:1 }}
           exit={{ opacity:0, x:80, scale:0.9 }}
           transition={{ type:'spring', stiffness:300, damping:28 }}
-          className={`fixed bottom-6 right-4 sm:right-6 z-50 w-72 sm:w-80 rounded-2xl border shadow-xl backdrop-blur-sm ${c.bg} ${c.border}`}
+          className={`fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 w-72 sm:w-80 rounded-2xl border shadow-xl backdrop-blur-sm ${c.bg} ${c.border}`}
         >
           {/* Progress bar auto-dismiss */}
           <motion.div

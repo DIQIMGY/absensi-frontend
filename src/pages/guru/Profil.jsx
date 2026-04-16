@@ -474,7 +474,8 @@ export default function GuruProfil() {
         {showQrModal && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowQrModal(false)}>
+            onClick={() => setShowQrModal(false)}
+            onTouchEnd={() => setShowQrModal(false)}>
             <motion.div initial={{ scale:0.9, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:0.9, opacity:0 }}
               onClick={e => e.stopPropagation()}
               className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700">

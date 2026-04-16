@@ -68,7 +68,7 @@ export default function PulangNotification() {
           }
         }}
         exit={{ opacity: 0, y: -100, scale: 0.8, rotate: 10 }}
-        className="fixed top-20 right-4 z-50 max-w-md"
+        className="fixed top-20 right-4 z-40 max-w-sm w-[calc(100vw-2rem)] sm:max-w-md sm:w-auto"
       >
         {isPulangTime ? (
           // NOTIFIKASI WAKTUNYA PULANG - SUPER HEBOH!

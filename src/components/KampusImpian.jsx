@@ -53,9 +53,9 @@ function FormFields({ form, setForm }) {
 
 function ModalShell({ title, subtitle, onClose, onSubmit, saving, children }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ touchAction: 'none' }}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
+        className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} onTouchEnd={onClose} />
       <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
         transition={{ type: 'spring', stiffness: 320, damping: 32 }}
         className="relative w-full sm:max-w-md bg-white dark:bg-[#0d0d18] rounded-t-[28px] sm:rounded-[24px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
@@ -330,7 +330,9 @@ export default function KampusImpian({ pctHadir = 0, totalAlpha = 0, totalTerlam
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
-            onClick={() => setLightboxSrc(null)}>
+            style={{ touchAction: 'none' }}
+            onClick={() => setLightboxSrc(null)}
+            onTouchEnd={() => setLightboxSrc(null)}>
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 28 }}
@@ -530,9 +532,9 @@ export default function KampusImpian({ pctHadir = 0, totalAlpha = 0, totalTerlam
       {/* Confirm Delete */}
       <AnimatePresence>
         {showConfirmDel && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ touchAction: 'none' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirmDel(false)} />
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirmDel(false)} onTouchEnd={() => setShowConfirmDel(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
               className="relative bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-xs w-full shadow-2xl border border-slate-100 dark:border-slate-800">
