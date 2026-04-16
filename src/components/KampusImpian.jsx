@@ -6,11 +6,11 @@ import toast from 'react-hot-toast'
 
 const getMotivasi = (nama, pct, alpha, terlambat, streak) => {
   const n = nama || 'kampus impianmu'
-  if (streak >= 20 && pct >= 90) return { text: `${streak} hari berturut-turut — ${n} sudah menantimu!`, emoji: '🔥', color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' }
-  if (pct >= 80) return { text: `Tidak pernah absen — ${n} menunggumu!`, emoji: '🎯', color: '#818cf8', bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.25)' }
-  if (pct >= 60) return { text: `Hampir sampai! Tingkatkan kehadiranmu.`, emoji: '⚡', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.25)' }
-  if (alpha >= 5) return { text: `Jangan malas! ${n} hanya untuk yang rajin.`, emoji: '😤', color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.25)' }
+  if (alpha >= 5)    return { text: `Jangan malas! ${n} hanya untuk yang rajin.`, emoji: '😤', color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.25)' }
   if (terlambat >= 5) return { text: `${n} butuh mahasiswa yang disiplin!`, emoji: '⏰', color: '#fb923c', bg: 'rgba(251,146,60,0.12)', border: 'rgba(251,146,60,0.25)' }
+  if (streak >= 20 && pct >= 90) return { text: `${streak} hari berturut-turut — ${n} sudah menantimu!`, emoji: '🔥', color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' }
+  if (pct >= 80) return { text: `Kehadiranmu luar biasa — ${n} menunggumu!`, emoji: '🎯', color: '#818cf8', bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.25)' }
+  if (pct >= 60) return { text: `Hampir sampai! Tingkatkan kehadiranmu.`, emoji: '⚡', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.25)' }
   return { text: `Rajin hadir — ${n} menunggumu!`, emoji: '🌟', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' }
 }
 

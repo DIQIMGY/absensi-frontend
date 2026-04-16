@@ -94,6 +94,7 @@ export default function Pengaturan() {
     nama_sekolah: '', alamat_sekolah: '',
     kepala_sekolah: '', nip_kepala_sekolah: '', logo_sekolah: null,
     video_dashboard: null,
+    hapus_video_dashboard: '0',
     budaya_info: { judul:'', deskripsi:'', pertanyaan:'', jawaban_benar:0, pilihan:['','',''] },
     budaya_fotos: Array(7).fill(null),
     budaya_video: null,
@@ -1584,7 +1585,7 @@ export default function Pengaturan() {
                             <ImageIcon size={20} className="text-slate-300"/>
                           </div>
                       }
-                      {formData.video_dashboard && (
+                      {previewVideoDashboard && (
                         <button type="button" onClick={() => {
                           if (previewVideoDashboard?.startsWith('blob:')) URL.revokeObjectURL(previewVideoDashboard)
                           set('video_dashboard', null)

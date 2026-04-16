@@ -338,9 +338,9 @@ export default function Ranking() {
 
           {/* ── Ranking Cards ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <RankingCard data={rankingData.siswa_rajin?.slice(0, 8) || []}                type="rajin"     delay={0.1} />
-            <RankingCard data={rankingData.siswa_sering_terlambat?.slice(0, 8) || []}    type="terlambat" delay={0.15} />
-            <RankingCard data={rankingData.siswa_sering_alpha?.slice(0, 8) || []}        type="alpha"     delay={0.2} />
+            <RankingCard data={rankingData.siswa_rajin?.slice(0, 8) || []}                                                                                                    type="rajin"     delay={0.1} />
+            <RankingCard data={[...(rankingData.siswa_sering_terlambat || [])].sort((a,b) => b.total_terlambat - a.total_terlambat).slice(0, 8)} type="terlambat" delay={0.15} />
+            <RankingCard data={[...(rankingData.siswa_sering_alpha || [])].sort((a,b) => b.total_alpha - a.total_alpha).slice(0, 8)}             type="alpha"     delay={0.2} />
           </div>
 
           {/* ── Info note ── */}

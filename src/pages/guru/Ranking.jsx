@@ -461,7 +461,7 @@ export default function GuruRanking() {
           {/* Ranking Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             <RankingCard
-              title="Siswapalingrajin"
+              title="Siswa Paling Rajin"
               data={rankingData?.siswa_rajin?.slice(0, 5)}
               icon={Trophy}
               gradient="bg-gradient-to-r from-emerald-500 to-teal-500"
@@ -469,16 +469,16 @@ export default function GuruRanking() {
             />
 
             <RankingCard
-              title="Seringterlambat"
-              data={rankingData?.siswa_sering_terlambat?.slice(0, 5)}
+              title="Sering Terlambat"
+              data={[...(rankingData?.siswa_sering_terlambat || [])].sort((a,b) => b.total_terlambat - a.total_terlambat).slice(0, 5)}
               icon={TrendingDown}
               gradient="bg-gradient-to-r from-amber-500 to-orange-500"
               type="terlambat"
             />
 
             <RankingCard
-              title="Seringalpha"
-              data={rankingData?.siswa_sering_alpha?.slice(0, 5)}
+              title="Sering Alpha"
+              data={[...(rankingData?.siswa_sering_alpha || [])].sort((a,b) => b.total_alpha - a.total_alpha).slice(0, 5)}
               icon={TrendingUp}
               gradient="bg-gradient-to-r from-rose-500 to-red-500"
               type="alpha"

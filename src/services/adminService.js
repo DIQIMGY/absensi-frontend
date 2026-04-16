@@ -19,7 +19,7 @@ export const adminApi = {
   getDashboardStatistik: (period) => api.get('/admin/dashboard/statistik', { params: { period } }),
   
   // Notifications
-  getNotifications: () => api.get('/admin/notifications'),
+  getNotifications: () => api.get('/admin/notifications', { silent: true }),
   
   // Users
   getUserStats: () => api.get('/admin/users-stats'),

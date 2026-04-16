@@ -41,19 +41,19 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ API Response: ${response.config.method.toUpperCase()} ${response.config.url}`)
     return response
   },
   (error) => {
-    console.error('❌ Response Error:', error.response || error)
-    
-    const { response } = error
-    
+    const { response, config } = error
+
+    // Kalau request pakai skipErrorToast: true, jangan tampilkan toast
+    if (config?.skipErrorToast) return Promise.reject(error)
+
     if (!response) {
       toast.error('Koneksi ke server gagal. Pastikan backend berjalan.')
       return Promise.reject(error)
     }
-    
+
     if (response.status === 401) {
       useAuthStore.getState().logout()
       toast.error('Sesi telah berakhir. Silakan login kembali.')
@@ -61,11 +61,14 @@ api.interceptors.response.use(
     } else if (response.status === 403) {
       toast.error('Anda tidak memiliki akses ke fitur ini.')
     } else if (response.status === 404) {
-      toast.error('Endpoint tidak ditemukan.')
+      // Jangan toast 404 — banyak endpoint optional yang memang bisa 404
     } else if (response.status === 422) {
-      // Validation errors - biarkan component handle
+      // Validation errors — biarkan component handle
     } else if (response.status >= 500) {
-      toast.error('Terjadi kesalahan server. Silakan coba lagi.')
+      // Hanya toast kalau bukan request background (notifikasi, polling, dll)
+      if (!config?.silent) {
+        toast.error('Terjadi kesalahan server. Silakan coba lagi.')
+      }
     }
 
     return Promise.reject(error)

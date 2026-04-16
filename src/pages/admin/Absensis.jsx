@@ -59,6 +59,8 @@ export default function Absensis() {
   })
   const [showFilters, setShowFilters] = useState(false)
   const [showStats, setShowStats] = useState(true)
+  const [selectedAbsensi, setSelectedAbsensi] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
 
   // Helper untuk format tanggal ke YYYY-MM-DD
   const formatDateToAPI = (date) => {
@@ -335,6 +337,7 @@ export default function Absensis() {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => { setSelectedAbsensi(row); setShowDetailModal(true) }}
             className="p-1.5 text-[#8B5CF6] hover:bg-[#8B5CF6]/20 dark:text-[#C084FC] dark:hover:bg-[#C084FC]/20 rounded-lg transition-colors"
             title="Detail"
           >
@@ -803,6 +806,83 @@ export default function Absensis() {
           )}
         </div>
       </motion.div>
+
+      {/* Detail Modal */}
+      <AnimatePresence>
+        {showDetailModal && selectedAbsensi && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            onClick={() => setShowDetailModal(false)} onTouchEnd={() => setShowDetailModal(false)}>
+            <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-white dark:bg-slate-900 w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden"
+              onClick={e => e.stopPropagation()}>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                    <Eye size={16} className="text-violet-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">Detail Absensi</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {new Date(selectedAbsensi.tanggal).toLocaleDateString('id-ID', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setShowDetailModal(false)}
+                  className="p-2 hover:bg-white/60 dark:hover:bg-slate-700 rounded-xl transition-colors">
+                  <XCircle size={18} className="text-slate-400" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Siswa Info */}
+                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                  {selectedAbsensi.siswa?.foto_url
+                    ? <img src={selectedAbsensi.siswa.foto_url} alt={selectedAbsensi.siswa?.nama_lengkap} className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm flex-shrink-0" />
+                    : <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        {(selectedAbsensi.siswa?.nama_lengkap || '?').charAt(0)}
+                      </div>
+                  }
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 dark:text-white truncate">{selectedAbsensi.siswa?.nama_lengkap || '-'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">NIS: {selectedAbsensi.siswa?.nis || '-'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{selectedAbsensi.siswa?.kelas?.nama_kelas || '-'}</p>
+                  </div>
+                </div>
+
+                {/* Detail Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Status', val: selectedAbsensi.status, badge: true },
+                    { label: 'Metode', val: selectedAbsensi.metode || '-' },
+                    { label: 'Jam Masuk', val: selectedAbsensi.jam_masuk ? selectedAbsensi.jam_masuk.substring(0,5) : '-' },
+                    { label: 'Keterlambatan', val: selectedAbsensi.menit_terlambat ? `${selectedAbsensi.menit_terlambat} menit` : '-' },
+                    { label: 'Keterangan', val: selectedAbsensi.keterangan || '-', full: true },
+                  ].map(({ label, val, badge, full }) => (
+                    <div key={label} className={`bg-slate-50 dark:bg-slate-800 rounded-xl p-3 ${full ? 'col-span-2' : ''}`}>
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">{label}</p>
+                      {badge ? (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold ${
+                          val === 'hadir'     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                          val === 'terlambat' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                          val === 'izin'      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                          val === 'sakit'     ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                          'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
+                        }`}>{val?.charAt(0).toUpperCase() + val?.slice(1)}</span>
+                      ) : (
+                        <p className="text-sm font-medium text-slate-800 dark:text-white">{val}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,23 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { usePengaturanStore } from '../stores/pengaturanStore'
 
-// Deteksi touch device sekali — kalau touch device, skip semua
-const isTouchDevice = () => {
-  return (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    !window.matchMedia('(pointer: fine)').matches
-  )
-}
+const isTouch = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
 export default function CustomCursor() {
   const { pengaturan } = usePengaturanStore()
   const canvasRef = useRef(null)
-  const dataRef   = useRef({ text: 'Welcome', logo: null, logoLoaded: false })
+  const dataRef   = useRef({ text: 'Welcome', logo: null })
 
   useEffect(() => {
-    const nama = pengaturan?.nama_sekolah || 'Sistem Absensi'
-    dataRef.current.text = `Welcome, ${nama}`
+    dataRef.current.text = `Welcome, ${pengaturan?.nama_sekolah || 'Sistem Absensi'}`
   }, [pengaturan?.nama_sekolah])
 
   useEffect(() => {
@@ -25,11 +17,143 @@ export default function CustomCursor() {
     if (!src) return
     const img = new Image()
     img.src = src
-    img.onload = () => { dataRef.current.logo = img; dataRef.current.logoLoaded = true }
+    img.onload = () => { dataRef.current.logo = img }
   }, [pengaturan?.logo_sekolah])
 
+  // ── TOUCH EFFECT ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isTouchDevice()) return
+    if (!isTouch()) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight }
+    resize()
+    window.addEventListener('resize', resize)
+
+    // Partikel aktif
+    let particles = []
+    let raf = null
+
+    const colorAt = (ratio) => {
+      const r = Math.round(99  + (16  - 99)  * ratio)
+      const g = Math.round(102 + (185 - 102) * ratio)
+      const b = Math.round(241 + (129 - 241) * ratio)
+      return [r, g, b]
+    }
+
+    const spawnRipple = (x, y) => {
+      const text = dataRef.current.text
+      const logo = dataRef.current.logo
+
+      // Ring ripple utama
+      particles.push({ type: 'ring', x, y, r: 0, maxR: 60, life: 1, decay: 0.035 })
+      particles.push({ type: 'ring', x, y, r: 0, maxR: 40, life: 1, decay: 0.055, color: [16,185,129] })
+
+      // Logo/dot di tengah
+      particles.push({ type: 'logo', x, y, r: 0, maxR: 16, life: 1, decay: 0.025, logo })
+
+      // Huruf menyebar
+      const chars = text.split('')
+      chars.forEach((ch, i) => {
+        const angle = (i / chars.length) * Math.PI * 2
+        const speed = 2.5 + Math.random() * 2
+        const ratio = i / chars.length
+        const [r,g,b] = colorAt(ratio)
+        particles.push({
+          type: 'char', ch,
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1, decay: 0.022 + Math.random() * 0.01,
+          fs: 11 + ratio * 7,
+          color: [r,g,b],
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.15,
+        })
+      })
+    }
+
+    const loop = () => {
+      raf = requestAnimationFrame(loop)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      particles = particles.filter(p => p.life > 0)
+      if (particles.length === 0) return
+
+      for (const p of particles) {
+        p.life -= p.decay
+        if (p.life <= 0) continue
+        const alpha = Math.max(0, p.life)
+
+        if (p.type === 'ring') {
+          p.r += (p.maxR - p.r) * 0.12
+          const [r,g,b] = p.color || [99,102,241]
+          ctx.save()
+          ctx.globalAlpha = alpha * 0.6
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+          ctx.strokeStyle = `rgb(${r},${g},${b})`
+          ctx.lineWidth = 2
+          ctx.stroke()
+          ctx.restore()
+        }
+
+        if (p.type === 'logo') {
+          p.r += (p.maxR - p.r) * 0.1
+          ctx.save()
+          ctx.globalAlpha = alpha
+          if (p.logo) {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.clip()
+            ctx.drawImage(p.logo, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2)
+          } else {
+            const g2 = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r)
+            g2.addColorStop(0, 'rgba(16,185,129,0.9)')
+            g2.addColorStop(1, 'rgba(99,102,241,0.1)')
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+            ctx.fillStyle = g2; ctx.fill()
+          }
+          ctx.restore()
+        }
+
+        if (p.type === 'char') {
+          p.x += p.vx; p.y += p.vy
+          p.vx *= 0.93; p.vy *= 0.93
+          p.rot += p.rotSpeed
+          const [r,g,b] = p.color
+          ctx.save()
+          ctx.globalAlpha = alpha
+          ctx.translate(p.x, p.y); ctx.rotate(p.rot)
+          ctx.font = `bold ${p.fs}px ui-sans-serif,system-ui,sans-serif`
+          ctx.fillStyle = `rgb(${r},${g},${b})`
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+          ctx.fillText(p.ch, 0, 0)
+          ctx.restore()
+        }
+      }
+    }
+
+    const onTouch = (e) => {
+      // Jangan block event asli
+      for (const t of e.changedTouches) {
+        spawnRipple(t.clientX, t.clientY)
+      }
+      if (particles.length > 0 && !raf) raf = requestAnimationFrame(loop)
+    }
+
+    document.addEventListener('touchstart', onTouch, { passive: true })
+    raf = requestAnimationFrame(loop)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', resize)
+      document.removeEventListener('touchstart', onTouch)
+    }
+  }, []) // eslint-disable-line
+
+  // ── MOUSE CURSOR (laptop) ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isTouch()) return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -51,8 +175,7 @@ export default function CustomCursor() {
       mx = e.clientX; my = e.clientY
       canvas.style.opacity = '1'
       if (chain.length === 0) initChain(mx, my)
-      isIdle = false
-      clearTimeout(idleTimer)
+      isIdle = false; clearTimeout(idleTimer)
       idleTimer = setTimeout(() => { isIdle = true }, 500)
     }
     const onLeave = () => { canvas.style.opacity = '0'; isIdle = false; clearTimeout(idleTimer) }
@@ -163,8 +286,6 @@ export default function CustomCursor() {
     }
   }, []) // eslint-disable-line
 
-  if (isTouchDevice()) return null
-
   return (
     <canvas
       ref={canvasRef}
@@ -173,7 +294,7 @@ export default function CustomCursor() {
         width: '100vw', height: '100vh',
         pointerEvents: 'none',
         zIndex: 99999,
-        opacity: 0,
+        opacity: isTouch() ? 1 : 0,
         transition: 'opacity 0.4s ease',
       }}
     />
