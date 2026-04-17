@@ -35,4 +35,10 @@ export const siswaApi = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   hapusVideoKampus: () => api.delete('/siswa/kampus-impian/video'),
+
+  // Gacha Harian
+  getGachaStatus: () => api.get('/siswa/gacha/status'),
+  rollGacha: () => api.post('/siswa/gacha/roll'),
+  equipBadge: (badge_id) => api.post('/siswa/gacha/equip', { badge_id }),
+  unequipBadge: () => api.post('/siswa/gacha/unequip'),
 }

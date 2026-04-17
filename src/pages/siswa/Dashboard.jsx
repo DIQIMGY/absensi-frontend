@@ -28,6 +28,7 @@ import AlamIndonesia from '../../components/AlamIndonesia'
 import KampusImpian from '../../components/KampusImpian'
 import TopKampus from '../../components/TopKampus'
 import SiswaBerprestasi from '../../components/SiswaBerprestasi'
+import GachaHarian, { BadgeOverlay } from '../../components/GachaHarian'
 import toast from 'react-hot-toast'
 
 const STATUS_CFG = {
@@ -73,6 +74,8 @@ export default function SiswaDashboard() {
   const [events, setEvents] = useState([])
   const [eventFotos, setEventFotos] = useState([])
   const [topKey, setTopKey] = useState(0)
+  const [activeBadge, setActiveBadge] = useState(null)
+  const [ownedBadges, setOwnedBadges] = useState([])
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
 
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t) }, [])
@@ -106,13 +109,24 @@ export default function SiswaDashboard() {
         const rd = rankRes.value.data.data; setRanking(rd)
         const masuk = rd.kelas?.masuk_ranking?.rajin || rd.kelas?.masuk_ranking?.terlambat || rd.kelas?.masuk_ranking?.alpha
           || rd.sekolah?.masuk_ranking?.rajin || rd.sekolah?.masuk_ranking?.terlambat || rd.sekolah?.masuk_ranking?.alpha
-        if (masuk) { setShowRankingNotif(true); setTimeout(() => setShowRankingNotif(false), 5000) }
+        // Hanya tampilkan sekali per hari
+        const rankKey = `ranking_notif_${new Date().toDateString()}`
+        if (masuk && !sessionStorage.getItem(rankKey)) {
+          sessionStorage.setItem(rankKey, '1')
+          setShowRankingNotif(true)
+        }
       }
       if (izinRes.status === 'fulfilled' && izinRes.value.data.data) setIzinToday(izinRes.value.data.data)
       if (izinListRes.status === 'fulfilled') {
         const d = izinListRes.value.data
         setIzinList(Array.isArray(d) ? d : (d?.data || []))
       }
+      // Gacha status (silent)
+      try {
+        const gRes = await siswaApi.getGachaStatus()
+        setActiveBadge(gRes.data.active_badge)
+        setOwnedBadges(gRes.data.badges || [])
+      } catch { /* ignore */ }
     } catch { toast.error('Gagal memuat data') }
     finally { setLoading(false); setRefreshing(false) }
   }, [])
@@ -222,9 +236,11 @@ export default function SiswaDashboard() {
                         {(data?.siswa?.nama||user?.name||'S').charAt(0).toUpperCase()}
                       </div>}
                 </div>
-                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white/40 shadow-sm ${
+                {/* Badge overlay di foto profil */}
+                {activeBadge && <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="md" />}
+                {!activeBadge && <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white/40 shadow-sm ${
                   statusHariIni==='hadir'?'bg-emerald-400':statusHariIni==='terlambat'?'bg-amber-400':
-                  statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/30'}`}/>
+                  statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/30'}`}/>}
               </div>
 
               {/* Info */}
@@ -960,6 +976,12 @@ export default function SiswaDashboard() {
             )}
           </div>
 
+
+          {/* Gacha Harian */}
+          <GachaHarian onBadgeChange={(newBadgeId, newBadges) => {
+            setActiveBadge(newBadgeId)
+            setOwnedBadges(newBadges || [])
+          }} />
 
           {/* Kampus Impian */}
           <KampusImpian pctHadir={pctHadir} totalAlpha={data?.total_alpha||0} totalTerlambat={data?.total_terlambat||0} streak={streak}

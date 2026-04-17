@@ -11,6 +11,7 @@ import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
 import toast from 'react-hot-toast'
 import Modal from '../../components/Modal'
+import { BadgeOverlay, BADGE_POOL, RARITY_CFG } from '../../components/GachaHarian'
 
 const iv = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 14 } } }
 const cv = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }
@@ -36,9 +37,19 @@ export default function SiswaProfil() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [activeTab, setActiveTab] = useState('profil')
+  const [activeBadge, setActiveBadge] = useState(null)
+  const [ownedBadges, setOwnedBadges] = useState([])
   const { user, updateUser } = useAuthStore()
 
-  useEffect(() => { fetchProfil() }, [])
+  useEffect(() => { fetchProfil(); fetchGacha() }, [])
+
+  const fetchGacha = async () => {
+    try {
+      const res = await siswaApi.getGachaStatus()
+      setActiveBadge(res.data.active_badge)
+      setOwnedBadges(res.data.badges || [])
+    } catch { /* silent */ }
+  }
 
   const fetchProfil = async () => {
     try {
@@ -143,6 +154,8 @@ export default function SiswaProfil() {
                   ? <img src={avatar} alt={profil?.nama_lengkap} className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white">{initial}</div>}
               </div>
+              {/* Badge overlay */}
+              {activeBadge && !editMode && <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="lg" />}
               {editMode && (
                 <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-violet-500 hover:bg-violet-400 rounded-xl flex items-center justify-center cursor-pointer shadow-lg transition-all">
                   <Camera size={13} className="text-white" />
@@ -212,6 +225,48 @@ export default function SiswaProfil() {
               </div>
             ))}
           </div>
+
+          {/* Badge row */}
+          {ownedBadges.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-2">Badge Koleksi</p>
+              <div className="flex flex-wrap gap-2">
+                {ownedBadges.map(badge => {
+                  const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
+                  const isActive = activeBadge === badge.id
+                  return (
+                    <button
+                      key={badge.id}
+                      onClick={async () => {
+                        try {
+                          if (isActive) {
+                            await siswaApi.unequipBadge()
+                            setActiveBadge(null)
+                            toast.success('Badge dilepas')
+                          } else {
+                            await siswaApi.equipBadge(badge.id)
+                            setActiveBadge(badge.id)
+                            toast.success('Badge terpasang!')
+                          }
+                        } catch { toast.error('Gagal') }
+                      }}
+                      title={`${badge.name} · ${cfg.label}${isActive ? ' (aktif)' : ''}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-white/25 border-white/40 text-white'
+                          : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/20'
+                      }`}
+                    >
+                      <span>{badge.emoji}</span>
+                      <span className="hidden sm:inline">{badge.name}</span>
+                      <span className={`text-[9px] font-bold ${cfg.text}`}>{cfg.label}</span>
+                      {isActive && <span className="text-[9px] text-emerald-300">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
