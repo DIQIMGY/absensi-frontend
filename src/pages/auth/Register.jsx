@@ -422,84 +422,64 @@ export default function Register() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`h-screen lg:h-screen flex flex-col lg:flex-row overflow-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-white'}`}
+      className={`h-screen lg:h-screen flex flex-col lg:flex-row overflow-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}
     >
       {/* Dark Mode Toggle */}
       <button
         onClick={toggleTheme}
         className={`fixed top-4 right-4 z-50 p-2.5 rounded-xl border shadow-sm transition-all ${
-          isDark ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+          isDark ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-100'
         }`}
       >
         {isDark ? <Sun size={15}/> : <Moon size={15}/>}
       </button>
 
-      {/* ── MOBILE HEADER ── */}
-      <div className="lg:hidden flex-shrink-0"
-        style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 40%, #0f766e 100%)' }}>
-        <div className="flex items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center">
-              <GraduationCap size={16} className="text-white"/>
+      {/* ── MOBILE: ilustrasi atas ── */}
+      <div className="lg:hidden flex-shrink-0 relative overflow-visible flex flex-col items-center justify-end"
+        style={{ background: 'linear-gradient(135deg,#064e3b,#065f46,#0f766e)', minHeight: 260 }}>
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.06]"
+            style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '16px 16px' }}/>
+          <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle,rgba(52,211,153,0.4) 0%,transparent 70%)' }}/>
+        </div>
+        <div className="relative z-10 text-center px-6 pt-8 pb-2">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center">
+              <GraduationCap size={14} className="text-white"/>
             </div>
             <span className="text-white font-black text-base">EduAbsen</span>
           </div>
-          <span className="text-white/60 text-xs">
+          <h2 className="text-white font-black text-xl leading-tight">
             {roleType === 'siswa' ? 'Daftar Siswa' : roleType === 'guru' ? 'Daftar Guru' : 'Daftar Admin'}
-          </span>
+          </h2>
+        </div>
+        {/* Gambar — overflow ke bawah masuk area form */}
+        <div className="relative z-20 w-full flex justify-center" style={{ marginBottom: '-5rem' }}>
+          <motion.img src="/image/bg3.png" alt="ilustrasi"
+            initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
+            transition={{ delay:0.2, duration:0.6 }}
+            className="w-48 sm:w-56 object-contain select-none pointer-events-none"
+            style={{ filter:'drop-shadow(0 12px 24px rgba(0,0,0,0.3))' }}/>
         </div>
       </div>
 
-      {/* ── LEFT PANEL — branding (hidden on mobile) ── */}
-      <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col flex-shrink-0"
-        style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 30%, #0f766e 65%, #134e4a 100%)' }}>
-        <div className="absolute inset-0 opacity-[0.07]"
-          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }}/>
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.25) 0%, transparent 60%)', transform: 'translate(-30%, -30%)' }}/>
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(20,184,166,0.2) 0%, transparent 60%)', transform: 'translate(30%, 30%)' }}/>
+      {/* ── DESKTOP: form kiri ── */}
+      <div className={`w-full lg:w-[52%] flex-1 h-full lg:h-screen overflow-y-auto
+        rounded-t-[2.5rem] lg:rounded-none -mt-2 lg:mt-0 relative z-10
+        ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+        <div className="flex flex-col justify-start px-6 sm:px-10 lg:px-14 xl:px-16 pt-20 pb-10 lg:py-10">
 
-        <div className="sticky top-0 h-screen flex flex-col p-12 xl:p-16 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center">
-              <GraduationCap size={20} className="text-white"/>
+          {/* Logo desktop */}
+          <div className="hidden lg:flex items-center gap-2.5 mb-8">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
+              <GraduationCap size={18} className="text-white"/>
             </div>
-            <span className="text-white font-black text-xl tracking-tight">EduAbsen</span>
+            <span className={`font-black text-lg ${isDark ? 'text-white' : 'text-slate-800'}`}>EduAbsen</span>
           </div>
-          <div className="flex-1 flex flex-col justify-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-3 py-1.5 mb-6 w-fit">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>
-              <span className="text-white/80 text-xs font-medium">
-                {roleType === 'siswa' ? 'Registrasi Siswa' : roleType === 'guru' ? 'Registrasi Guru' : 'Registrasi Admin'}
-              </span>
-            </div>
-            <h2 className="text-white font-black text-4xl xl:text-5xl leading-tight mb-4">
-              Bergabung<br/>dengan<br/><span className="text-emerald-300">EduAbsen</span>
-            </h2>
-            <p className="text-white/55 text-base leading-relaxed max-w-sm">
-              Daftar sekarang dan nikmati kemudahan absensi digital dengan QR Code real-time.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-8">
-              {['QR Code Absensi', 'Laporan Real-time', 'Multi Role'].map((f, i) => (
-                <span key={i} className="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-full px-3 py-1.5 text-white/75 text-xs font-medium">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400"/>{f}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-6">
-            <p className="text-white/40 text-xs">"Disiplin adalah jembatan antara tujuan dan pencapaian."</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── RIGHT PANEL — form with scroll ── */}
-      <div className={`w-full lg:w-[52%] flex-1 h-full lg:h-screen overflow-y-auto ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
-        <div className="flex flex-col justify-start px-6 sm:px-10 lg:px-14 xl:px-16 py-8 lg:py-10">
 
           {/* Mobile logo */}
-          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+          <div className="flex items-center gap-2.5 mb-6 lg:hidden">
             <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
               <GraduationCap size={16} className="text-white"/>
             </div>
@@ -1285,6 +1265,52 @@ export default function Register() {
             </form>
           </div>
         </div>
+      </div>
+
+      {/* ── DESKTOP: ilustrasi kanan ── */}
+      <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col items-center justify-center flex-shrink-0"
+        style={{ background: 'linear-gradient(145deg,#064e3b 0%,#065f46 40%,#0f766e 100%)' }}>
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '20px 20px' }}/>
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle,rgba(52,211,153,0.35) 0%,transparent 70%)' }}/>
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle,rgba(13,148,136,0.3) 0%,transparent 70%)' }}/>
+        {[
+          { top:'8%', left:'10%', d:0 }, { top:'10%', right:'8%', d:0.6 },
+          { bottom:'30%', left:'6%', d:1.1 }, { bottom:'25%', right:'7%', d:0.4 },
+        ].map((s,i) => (
+          <motion.span key={i} className="absolute text-emerald-300/60 text-base pointer-events-none z-10" style={s}
+            animate={{ opacity:[0.3,0.9,0.3], scale:[0.8,1.3,0.8], y:[0,-8,0] }}
+            transition={{ repeat:Infinity, duration:2.3+i*0.3, delay:s.d }}>✦</motion.span>
+        ))}
+        <div className="relative z-10 text-center px-12 mb-6">
+          <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1 mb-5">
+            <Sparkles size={10} className="text-emerald-300"/>
+            <span className="text-white/75 text-xs font-semibold">
+              {roleType === 'siswa' ? 'Registrasi Siswa' : roleType === 'guru' ? 'Registrasi Guru' : 'Registrasi Admin'}
+            </span>
+          </div>
+          <h2 className="text-white font-black text-4xl xl:text-5xl leading-tight mb-4">
+            Bergabung<br/>dengan<br/>
+            <span className="text-emerald-300">EduAbsen</span>
+          </h2>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Daftar dan nikmati kemudahan<br/>absensi digital dengan QR Code
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 mt-6">
+            {['QR Code','Real-time','Multi Role'].map((f,i) => (
+              <span key={i} className="flex items-center gap-1 bg-white/10 border border-white/15 rounded-full px-3 py-1 text-white/60 text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300"/>{f}
+              </span>
+            ))}
+          </div>
+        </div>
+        <motion.img src="/image/bg3.png" alt="ilustrasi"
+          initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }}
+          transition={{ delay:0.3, duration:0.7, ease:[0.22,1,0.36,1] }}
+          className="relative z-20 w-64 xl:w-72 object-contain select-none pointer-events-none"
+          style={{ filter:'drop-shadow(0 20px 40px rgba(0,0,0,0.4))' }}/>
       </div>
 
       {/* QR Code Modal */}
