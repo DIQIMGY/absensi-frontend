@@ -422,7 +422,7 @@ export default function Register() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`h-screen lg:h-screen flex flex-col lg:flex-row overflow-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}
+      className={`h-screen lg:h-screen flex flex-col lg:flex-row overflow-x-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}
     >
       {/* Dark Mode Toggle */}
       <button
@@ -435,7 +435,7 @@ export default function Register() {
       </button>
 
       {/* ── MOBILE: ilustrasi atas ── */}
-      <div className="lg:hidden flex-shrink-0 relative overflow-visible flex flex-col items-center justify-end"
+      <div className="lg:hidden flex-shrink-0 sticky top-0 z-30 relative overflow-visible flex flex-col items-center justify-end"
         style={{ background: 'linear-gradient(135deg,#064e3b,#065f46,#0f766e)', minHeight: 260 }}>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 opacity-[0.06]"

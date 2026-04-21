@@ -58,7 +58,7 @@ export default function Login() {
           ].map((s,i) => (
             <motion.span key={i} className="absolute text-emerald-300/70 text-sm pointer-events-none z-10" style={s}
               animate={{ opacity:[0.3,1,0.3], scale:[0.8,1.3,0.8], y:[0,-7,0] }}
-              transition={{ repeat:Infinity, duration:2.2+i*0.35, delay:s.d }}>âœ¦</motion.span>
+              transition={{ repeat:Infinity, duration:2.2+i*0.35, delay:s.d }}>&#10022;</motion.span>
           ))}
           <div className="relative z-10 text-center px-8 pt-8 pb-2">
             <h2 className="text-white font-black text-2xl leading-tight">
