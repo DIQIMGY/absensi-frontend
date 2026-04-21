@@ -1,211 +1,237 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Download, Loader } from 'lucide-react'
+import html2canvas from 'html2canvas'
 
 /**
- * QrCard — render kartu QR estetik di canvas lalu download sebagai PNG
+ * QrCard — kartu QR estetik yang bisa didownload sebagai PNG
  *
  * Props:
- *   qrUrl      — URL gambar QR (blob URL atau https)
+ *   qrUrl      — URL gambar QR
  *   nama       — nama lengkap
- *   identifier — NIS / NIP / dll
- *   labelId    — label identifier, misal "NIS" atau "NIP"
+ *   identifier — NIS / NIP
+ *   labelId    — "NIS" | "NIP"
  *   role       — 'siswa' | 'guru'
- *   kelas      — nama kelas (opsional, siswa)
+ *   kelas      — nama kelas (opsional)
  *   sekolah    — nama sekolah (opsional)
- *   onClose    — callback tutup modal
+ *   onClose    — callback tutup
  */
 export default function QrCard({ qrUrl, nama, identifier, labelId = 'NIS', role = 'siswa', kelas, sekolah, onClose }) {
-  const canvasRef = useRef(null)
-  const [rendered, setRendered] = useState(false)
+  const cardRef = useRef(null)
   const [downloading, setDownloading] = useState(false)
 
-  // Warna tema per role
-  const theme = role === 'guru'
-    ? { from: '#064e3b', mid: '#065f46', to: '#0f766e', accent: '#34d399', light: '#d1fae5', text: '#065f46' }
-    : { from: '#2e1065', mid: '#4c1d95', to: '#5b21b6', accent: '#a78bfa', light: '#ede9fe', text: '#4c1d95' }
+  const isGuru = role === 'guru'
 
-  useEffect(() => {
-    if (!qrUrl) return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-
-    const W = 480
-    const H = 680
-    canvas.width = W
-    canvas.height = H
-
-    const qrImg = new Image()
-    qrImg.crossOrigin = 'anonymous'
-    qrImg.onload = () => {
-      // ── Background gradient ──
-      const bg = ctx.createLinearGradient(0, 0, W, H)
-      bg.addColorStop(0, theme.from)
-      bg.addColorStop(0.5, theme.mid)
-      bg.addColorStop(1, theme.to)
-      ctx.fillStyle = bg
-      roundRect(ctx, 0, 0, W, H, 32)
-      ctx.fill()
-
-      // ── Dot pattern overlay ──
-      ctx.fillStyle = 'rgba(255,255,255,0.04)'
-      for (let x = 0; x < W; x += 24) {
-        for (let y = 0; y < H; y += 24) {
-          ctx.beginPath()
-          ctx.arc(x, y, 1.5, 0, Math.PI * 2)
-          ctx.fill()
-        }
-      }
-
-      // ── Glow orbs ──
-      const g1 = ctx.createRadialGradient(W * 0.8, H * 0.1, 0, W * 0.8, H * 0.1, 200)
-      g1.addColorStop(0, 'rgba(255,255,255,0.12)')
-      g1.addColorStop(1, 'transparent')
-      ctx.fillStyle = g1
-      ctx.fillRect(0, 0, W, H)
-
-      const g2 = ctx.createRadialGradient(W * 0.2, H * 0.85, 0, W * 0.2, H * 0.85, 180)
-      g2.addColorStop(0, 'rgba(255,255,255,0.08)')
-      g2.addColorStop(1, 'transparent')
-      ctx.fillStyle = g2
-      ctx.fillRect(0, 0, W, H)
-
-      // ── Header: nama sekolah ──
-      ctx.fillStyle = 'rgba(255,255,255,0.15)'
-      roundRect(ctx, 24, 24, W - 48, 56, 16)
-      ctx.fill()
-
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'
-      ctx.font = 'bold 15px system-ui, sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(sekolah || 'Sistem Absensi Digital', W / 2, 58)
-
-      // ── Role badge ──
-      const roleLabel = role === 'guru' ? 'GURU' : 'SISWA'
-      ctx.fillStyle = 'rgba(255,255,255,0.2)'
-      roundRect(ctx, W / 2 - 36, 96, 72, 26, 13)
-      ctx.fill()
-      ctx.fillStyle = 'rgba(255,255,255,0.85)'
-      ctx.font = 'bold 11px system-ui, sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(roleLabel, W / 2, 114)
-
-      // ── QR Code card (putih) ──
-      const qrSize = 240
-      const qrX = (W - qrSize) / 2
-      const qrY = 140
-
-      // Shadow
-      ctx.shadowColor = 'rgba(0,0,0,0.35)'
-      ctx.shadowBlur = 32
-      ctx.shadowOffsetY = 8
-      ctx.fillStyle = '#ffffff'
-      roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 24)
-      ctx.fill()
-      ctx.shadowColor = 'transparent'
-      ctx.shadowBlur = 0
-      ctx.shadowOffsetY = 0
-
-      // QR image
-      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
-
-      // Corner decorations on QR card
-      const corners = [[qrX - 16, qrY - 16], [qrX + qrSize + 16 - 20, qrY - 16],
-                       [qrX - 16, qrY + qrSize + 16 - 20], [qrX + qrSize + 16 - 20, qrY + qrSize + 16 - 20]]
-      ctx.fillStyle = theme.accent
-      corners.forEach(([cx, cy]) => {
-        ctx.fillRect(cx, cy, 20, 4)
-        ctx.fillRect(cx, cy, 4, 20)
-      })
-
-      // ── Divider ──
-      const divY = qrY + qrSize + 40
-      ctx.fillStyle = 'rgba(255,255,255,0.15)'
-      ctx.fillRect(40, divY, W - 80, 1)
-
-      // ── Nama ──
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 26px system-ui, sans-serif'
-      ctx.textAlign = 'center'
-      // Truncate nama kalau terlalu panjang
-      const maxNamaWidth = W - 80
-      let namaText = nama || '-'
-      while (ctx.measureText(namaText).width > maxNamaWidth && namaText.length > 3) {
-        namaText = namaText.slice(0, -4) + '...'
-      }
-      ctx.fillText(namaText, W / 2, divY + 36)
-
-      // ── Identifier (NIS/NIP) ──
-      ctx.fillStyle = 'rgba(255,255,255,0.6)'
-      ctx.font = '14px system-ui, sans-serif'
-      ctx.fillText(`${labelId}: ${identifier || '-'}`, W / 2, divY + 60)
-
-      // ── Kelas (siswa only) ──
-      if (kelas) {
-        ctx.fillStyle = 'rgba(255,255,255,0.5)'
-        ctx.font = '13px system-ui, sans-serif'
-        ctx.fillText(kelas, W / 2, divY + 80)
-      }
-
-      // ── Footer ──
-      const footerY = H - 48
-      ctx.fillStyle = 'rgba(255,255,255,0.08)'
-      roundRect(ctx, 24, footerY - 16, W - 48, 40, 12)
-      ctx.fill()
-
-      ctx.fillStyle = 'rgba(255,255,255,0.45)'
-      ctx.font = '11px system-ui, sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText('Scan QR Code ini untuk absensi', W / 2, footerY + 8)
-
-      setRendered(true)
-    }
-    qrImg.onerror = () => setRendered(true)
-    qrImg.src = qrUrl
-  }, [qrUrl, nama, identifier, labelId, role, kelas, sekolah])
-
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    if (!cardRef.current) return
     setDownloading(true)
-    const canvas = canvasRef.current
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      })
+      const url = canvas.toDataURL('image/png', 1.0)
       const a = document.createElement('a')
       a.href = url
-      a.download = `QR-${role === 'guru' ? 'Guru' : 'Siswa'}-${identifier || 'absensi'}.png`
+      a.download = `Kartu-QR-${isGuru ? 'Guru' : 'Siswa'}-${identifier || 'absensi'}.png`
       document.body.appendChild(a)
       a.click()
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 100)
+      document.body.removeChild(a)
+    } catch (e) {
+      console.error(e)
+    } finally {
       setDownloading(false)
-    }, 'image/png', 1.0)
+    }
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Preview canvas */}
-      <div className="relative">
-        {!rendered && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-2xl">
-            <Loader size={24} className="animate-spin text-slate-400" />
+
+      {/* ── KARTU QR ── */}
+      <div ref={cardRef}
+        style={{
+          width: 320,
+          borderRadius: 24,
+          overflow: 'hidden',
+          background: isGuru
+            ? 'linear-gradient(145deg,#064e3b 0%,#065f46 45%,#0f766e 100%)'
+            : 'linear-gradient(145deg,#2e1065 0%,#4c1d95 45%,#5b21b6 100%)',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          position: 'relative',
+        }}
+      >
+        {/* Dot pattern */}
+        <div style={{
+          position: 'absolute', inset: 0, opacity: 0.06,
+          backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+          backgroundSize: '18px 18px',
+        }}/>
+
+        {/* Glow top-right */}
+        <div style={{
+          position: 'absolute', top: -60, right: -60,
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}/>
+
+        {/* Glow bottom-left */}
+        <div style={{
+          position: 'absolute', bottom: -40, left: -40,
+          width: 160, height: 160, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}/>
+
+        {/* ── HEADER ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          padding: '20px 24px 16px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        }}>
+          {/* Nama sekolah */}
+          <div style={{
+            background: 'rgba(255,255,255,0.12)',
+            borderRadius: 12, padding: '6px 16px',
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: 12, fontWeight: 700,
+            letterSpacing: '0.02em',
+          }}>
+            {sekolah || 'Sistem Absensi Digital'}
           </div>
-        )}
-        <canvas
-          ref={canvasRef}
-          className="rounded-2xl shadow-2xl"
-          style={{ width: 240, height: 340, display: rendered ? 'block' : 'none' }}
-        />
+
+          {/* Role badge */}
+          <div style={{
+            background: 'rgba(255,255,255,0.18)',
+            borderRadius: 20, padding: '3px 14px',
+            color: 'rgba(255,255,255,0.8)',
+            fontSize: 10, fontWeight: 800,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+          }}>
+            {isGuru ? 'Guru' : 'Siswa'}
+          </div>
+        </div>
+
+        {/* ── QR CODE ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          display: 'flex', justifyContent: 'center',
+          padding: '0 24px',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 20,
+            padding: 16,
+            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+            position: 'relative',
+          }}>
+            {/* Corner accents */}
+            {[
+              { top: 0, left: 0 }, { top: 0, right: 0 },
+              { bottom: 0, left: 0 }, { bottom: 0, right: 0 },
+            ].map((pos, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                width: 16, height: 16,
+                ...pos,
+                borderTop: i < 2 ? `3px solid ${isGuru ? '#10b981' : '#8b5cf6'}` : 'none',
+                borderBottom: i >= 2 ? `3px solid ${isGuru ? '#10b981' : '#8b5cf6'}` : 'none',
+                borderLeft: (i === 0 || i === 2) ? `3px solid ${isGuru ? '#10b981' : '#8b5cf6'}` : 'none',
+                borderRight: (i === 1 || i === 3) ? `3px solid ${isGuru ? '#10b981' : '#8b5cf6'}` : 'none',
+                borderRadius: i === 0 ? '4px 0 0 0' : i === 1 ? '0 4px 0 0' : i === 2 ? '0 0 0 4px' : '0 0 4px 0',
+              }}/>
+            ))}
+            <img
+              src={qrUrl}
+              alt="QR Code"
+              crossOrigin="anonymous"
+              style={{ width: 200, height: 200, display: 'block', objectFit: 'contain' }}
+            />
+          </div>
+        </div>
+
+        {/* ── DIVIDER ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          margin: '20px 24px 0',
+          height: 1,
+          background: 'rgba(255,255,255,0.15)',
+        }}/>
+
+        {/* ── INFO ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          padding: '16px 24px',
+          textAlign: 'center',
+        }}>
+          {/* Nama */}
+          <div style={{
+            color: '#ffffff',
+            fontSize: 18, fontWeight: 800,
+            letterSpacing: '-0.01em',
+            marginBottom: 4,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {nama || '-'}
+          </div>
+
+          {/* Identifier */}
+          <div style={{
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: 12, fontWeight: 500,
+            marginBottom: kelas ? 2 : 0,
+          }}>
+            {labelId}: {identifier || '-'}
+          </div>
+
+          {/* Kelas */}
+          {kelas && (
+            <div style={{
+              color: 'rgba(255,255,255,0.5)',
+              fontSize: 11, fontWeight: 500,
+            }}>
+              {kelas}
+            </div>
+          )}
+        </div>
+
+        {/* ── FOOTER ── */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          margin: '0 24px 20px',
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: 12,
+          padding: '8px 16px',
+          textAlign: 'center',
+          color: 'rgba(255,255,255,0.45)',
+          fontSize: 10, fontWeight: 600,
+          letterSpacing: '0.03em',
+        }}>
+          Scan QR Code ini untuk absensi
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 w-full max-w-xs">
+      {/* ── TOMBOL ── */}
+      <div className="flex gap-3 w-full" style={{ maxWidth: 320 }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleDownload}
-          disabled={!rendered || downloading}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60 shadow-lg
-            ${role === 'guru'
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/25'
-              : 'bg-gradient-to-r from-violet-500 to-indigo-500 shadow-violet-500/25'}`}
+          disabled={downloading}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60 shadow-lg"
+          style={{
+            background: isGuru
+              ? 'linear-gradient(135deg,#059669,#0d9488)'
+              : 'linear-gradient(135deg,#7c3aed,#4f46e5)',
+            boxShadow: isGuru
+              ? '0 8px 24px rgba(5,150,105,0.3)'
+              : '0 8px 24px rgba(124,58,237,0.3)',
+          }}
         >
           {downloading
             ? <><Loader size={14} className="animate-spin" /> Menyiapkan...</>
@@ -220,19 +246,4 @@ export default function QrCard({ qrUrl, nama, identifier, labelId = 'NIS', role 
       </div>
     </div>
   )
-}
-
-// Helper: rounded rect path
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.lineTo(x + w - r, y)
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r)
-  ctx.lineTo(x + w, y + h - r)
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-  ctx.lineTo(x + r, y + h)
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r)
-  ctx.lineTo(x, y + r)
-  ctx.quadraticCurveTo(x, y, x + r, y)
-  ctx.closePath()
 }
