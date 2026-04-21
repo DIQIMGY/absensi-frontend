@@ -416,10 +416,16 @@ export default function SiswaProfil() {
               <p className="text-sm font-bold text-slate-800 dark:text-slate-100">QR Code Absensi</p>
             </div>
             <div className="p-6 flex flex-col items-center gap-5">
-              {/* QR preview box */}
+              {/* QR preview box — tampilkan QR langsung kalau sudah ada */}
               <div className="relative">
                 <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl border-2 border-dashed border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center overflow-hidden">
-                  <QrCode size={80} className="text-violet-300 dark:text-violet-700" />
+                  {qrImage ? (
+                    <img src={qrImage} alt="QR Code" className="w-full h-full object-contain p-3" />
+                  ) : profil?.qr_code_url ? (
+                    <img src={profil.qr_code_url} alt="QR Code" className="w-full h-full object-contain p-3" />
+                  ) : (
+                    <QrCode size={80} className="text-violet-300 dark:text-violet-700" />
+                  )}
                 </div>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center shadow">
                   <Sparkles size={11} className="text-white" />
@@ -432,12 +438,7 @@ export default function SiswaProfil() {
               <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
                 <button onClick={handleViewQr} disabled={qrLoading}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40 text-violet-700 dark:text-violet-300 text-sm font-semibold hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all">
-                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Eye size={14} />} Lihat
-                </button>
-                <button onClick={handleViewQr} disabled={qrLoading}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-semibold hover:from-violet-600 hover:to-indigo-600 shadow-lg shadow-violet-500/25 transition-all disabled:opacity-60">
-                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
-                  {qrLoading ? 'Memuat...' : 'Download Kartu'}
+                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Eye size={14} />} Lihat &amp; Download
                 </button>
               </div>
               <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 w-full max-w-xs">

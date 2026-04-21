@@ -497,7 +497,7 @@ export default function GuruProfil() {
                     identifier={profile?.nip}
                     labelId="NIP"
                     role="guru"
-                    foto={profile?.foto_url}
+                  foto={profile?.foto || fotoPreview}
                     onClose={() => setShowQrModal(false)}
                   />
                 ) : (
