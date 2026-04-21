@@ -9,6 +9,7 @@ import {
 import { guruApi } from '../../services/guruService'
 import { useAuthStore } from '../../stores/authStore'
 import toast from 'react-hot-toast'
+import QrCard from '../../components/QrCard'
 
 const iv = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 14 } } }
 const cv = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }
@@ -474,36 +475,36 @@ export default function GuruProfil() {
         {showQrModal && (
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowQrModal(false)}
-            onTouchEnd={() => setShowQrModal(false)}>
+            onClick={() => setShowQrModal(false)}>
             <motion.div initial={{ scale:0.9, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:0.9, opacity:0 }}
               onClick={e => e.stopPropagation()}
               className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <QrCode size={16} className="text-emerald-600" />
-                  <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">QR Code Anda</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">Kartu QR Absensi</p>
                 </div>
                 <button onClick={() => setShowQrModal(false)}
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   <X size={16} className="text-slate-400" />
                 </button>
               </div>
-              <div className="p-6 text-center space-y-4">
-                <div className="bg-white p-4 rounded-2xl shadow-lg inline-block border border-slate-100">
-                  {qrImage
-                    ? <img src={qrImage} alt="QR Code" className="w-52 h-52 object-contain" />
-                    : <div className="w-52 h-52 flex items-center justify-center"><Loader size={32} className="text-emerald-500 animate-spin" /></div>}
-                </div>
-                <div>
-                  <p className="font-bold text-slate-800 dark:text-slate-100">{profile.nama_lengkap}</p>
-                  <p className="text-xs text-slate-400">NIP: {profile.nip}</p>
-                </div>
-                <button onClick={handleDownloadQr} disabled={downloading}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-60">
-                  {downloading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
-                  {downloading ? 'Mengunduh...' : 'Download QR Code'}
-                </button>
+              <div className="p-4">
+                {qrImage ? (
+                  <QrCard
+                    qrUrl={qrImage}
+                    nama={profile?.nama_lengkap}
+                    identifier={profile?.nip}
+                    labelId="NIP"
+                    role="guru"
+                    onClose={() => setShowQrModal(false)}
+                  />
+                ) : (
+                  <div className="py-10 text-center">
+                    <Loader size={32} className="text-emerald-500 animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-slate-400">Memuat QR Code...</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

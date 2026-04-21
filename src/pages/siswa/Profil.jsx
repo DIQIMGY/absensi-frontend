@@ -11,6 +11,7 @@ import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
 import toast from 'react-hot-toast'
 import Modal from '../../components/Modal'
+import QrCard from '../../components/QrCard'
 import { BadgeOverlay, BADGE_POOL, RARITY_CFG } from '../../components/GachaHarian'
 
 const iv = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 14 } } }
@@ -33,7 +34,6 @@ export default function SiswaProfil() {
   const [showQrModal, setShowQrModal] = useState(false)
   const [qrImage, setQrImage] = useState(null)
   const [qrLoading, setQrLoading] = useState(false)
-  const [downloading, setDownloading] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [activeTab, setActiveTab] = useState('profil')
@@ -98,26 +98,6 @@ export default function SiswaProfil() {
       toast.dismiss(t)
     } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code') }
     finally { setQrLoading(false) }
-  }
-
-  const handleDownloadQr = async () => {
-    setDownloading(true)
-    const t = toast.loading('Menyiapkan QR Code...')
-    try {
-      const res = await siswaApi.downloadQrCode()
-      const ct = res.headers['content-type'] || 'image/png'
-      const ext = ct.includes('svg') ? 'svg' : 'png'
-      const blob = new Blob([res.data], { type: ct })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a'); a.href = url; a.download = `QR-${profil?.nis || 'siswa'}.${ext}`
-      document.body.appendChild(a); a.click()
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 100)
-      toast.dismiss(t); toast.success('QR Code berhasil diunduh')
-    } catch (e) {
-      toast.dismiss(t)
-      const s = e.response?.status
-      toast.error(s === 404 ? 'QR Code belum tersedia' : s === 401 ? 'Sesi berakhir' : 'Gagal mengunduh QR Code')
-    } finally { setDownloading(false) }
   }
 
   if (loading) return (
@@ -454,10 +434,10 @@ export default function SiswaProfil() {
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40 text-violet-700 dark:text-violet-300 text-sm font-semibold hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all">
                   {qrLoading ? <Loader size={14} className="animate-spin" /> : <Eye size={14} />} Lihat
                 </button>
-                <button onClick={handleDownloadQr} disabled={downloading}
+                <button onClick={handleViewQr} disabled={qrLoading}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-semibold hover:from-violet-600 hover:to-indigo-600 shadow-lg shadow-violet-500/25 transition-all disabled:opacity-60">
-                  {downloading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
-                  {downloading ? 'Unduh...' : 'Download'}
+                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
+                  {qrLoading ? 'Memuat...' : 'Download Kartu'}
                 </button>
               </div>
               <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 w-full max-w-xs">
@@ -471,25 +451,20 @@ export default function SiswaProfil() {
 
       {/* QR Modal */}
       <Modal isOpen={showQrModal} onClose={() => { setShowQrModal(false); if (qrImage?.startsWith('blob:')) URL.revokeObjectURL(qrImage); setQrImage(null) }}
-        title="QR Code Siswa" size="sm">
-        <div className="text-center space-y-4 p-4">
+        title="Kartu QR Absensi" size="sm">
+        <div className="p-4">
           {qrImage ? (
-            <>
-              <div className="bg-white p-4 rounded-2xl shadow-lg inline-block border border-slate-100">
-                <img src={qrImage} alt="QR Code" className="w-52 h-52 object-contain" />
-              </div>
-              <div>
-                <p className="font-bold text-slate-800 dark:text-slate-100">{profil?.nama_lengkap}</p>
-                <p className="text-xs text-slate-400">NIS: {profil?.nis}</p>
-              </div>
-              <button onClick={handleDownloadQr} disabled={downloading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25 transition-all disabled:opacity-60">
-                {downloading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
-                {downloading ? 'Mengunduh...' : 'Download QR Code'}
-              </button>
-            </>
+            <QrCard
+              qrUrl={qrImage}
+              nama={profil?.nama_lengkap}
+              identifier={profil?.nis}
+              labelId="NIS"
+              role="siswa"
+              kelas={profil?.kelas?.nama_kelas}
+              onClose={() => { setShowQrModal(false); if (qrImage?.startsWith('blob:')) URL.revokeObjectURL(qrImage); setQrImage(null) }}
+            />
           ) : (
-            <div className="py-10">
+            <div className="py-10 text-center">
               <div className="w-10 h-10 border-4 border-slate-200 border-t-violet-500 rounded-full animate-spin mx-auto mb-3" />
               <p className="text-sm text-slate-400">Memuat QR Code...</p>
             </div>
