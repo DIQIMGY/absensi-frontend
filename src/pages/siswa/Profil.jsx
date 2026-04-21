@@ -461,6 +461,7 @@ export default function SiswaProfil() {
               labelId="NIS"
               role="siswa"
               kelas={profil?.kelas?.nama_kelas}
+              foto={profil?.foto_url}
               onClose={() => { setShowQrModal(false); if (qrImage?.startsWith('blob:')) URL.revokeObjectURL(qrImage); setQrImage(null) }}
             />
           ) : (
