@@ -90,12 +90,20 @@ export default function GuruProfil() {
     setQrLoading(true)
     const t = toast.loading('Memuat QR Code...')
     try {
-      const res = await guruApi.getQrCode()
-      const url = res.data?.data?.qr_code_url
-      if (url) { setQrImage(url); setShowQrModal(true); setProfile(p => ({...p, qr_code_url: url})) }
-      toast.dismiss(t)
-    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code') }
-    finally { setQrLoading(false) }
+      // Pakai downloadQrCode agar dapat blob, lalu convert ke base64
+      const res = await guruApi.downloadQrCode()
+      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'image/png' })
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const b64 = reader.result
+        setQrImage(b64)
+        setProfile(p => ({...p, qr_code_url: b64}))
+        setShowQrModal(true)
+        toast.dismiss(t)
+        setQrLoading(false)
+      }
+      reader.readAsDataURL(blob)
+    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false) }
   }
 
   const handleDownloadQr = async () => {

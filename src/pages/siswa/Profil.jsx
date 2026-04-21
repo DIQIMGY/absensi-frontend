@@ -93,11 +93,17 @@ export default function SiswaProfil() {
     const t = toast.loading('Memuat QR Code...')
     try {
       const res = await siswaApi.downloadQrCode()
-      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'image/svg+xml' })
-      setQrImage(URL.createObjectURL(blob)); setShowQrModal(true)
-      toast.dismiss(t)
-    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code') }
-    finally { setQrLoading(false) }
+      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'image/png' })
+      // Convert ke base64 langsung agar QrCard bisa pakai
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setQrImage(reader.result)
+        setShowQrModal(true)
+        toast.dismiss(t)
+        setQrLoading(false)
+      }
+      reader.readAsDataURL(blob)
+    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false) }
   }
 
   if (loading) return (

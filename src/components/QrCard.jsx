@@ -2,12 +2,13 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Download, Loader } from 'lucide-react'
 
-// Convert any URL (blob/http) ke base64 data URI
+// Convert any URL ke base64 — skip kalau sudah base64
 async function toBase64(url) {
   if (!url) return null
-  if (url.startsWith('data:')) return url
+  if (url.startsWith('data:')) return url  // sudah base64, langsung pakai
+  // URL https — fetch dan convert
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, { mode: 'cors' })
     const blob = await res.blob()
     return new Promise((resolve) => {
       const reader = new FileReader()
