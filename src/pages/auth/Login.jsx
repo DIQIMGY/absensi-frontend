@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Moon, Sun, GraduationCap, Key, AlertCircle, Sparkles } from 'lucide-react'
@@ -30,21 +30,14 @@ export default function Login() {
     <div className={`min-h-screen flex items-center justify-center p-0 lg:p-6 transition-colors duration-300
       ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-100'}`}>
 
-      {/* Theme toggle */}
       <button onClick={toggleTheme}
         className={`fixed top-4 right-4 z-50 p-2.5 rounded-xl border shadow-sm transition-all
           ${isDark ? 'bg-slate-800 border-slate-700 text-amber-400' : 'bg-white border-slate-200 text-slate-500'}`}>
         {isDark ? <Sun size={15}/> : <Moon size={15}/>}
       </button>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          MOBILE: flex-col â€” ilustrasi atas, form bawah
-          DESKTOP: card besar 2 kolom sejajar
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-
-      {/* â”€â”€ MOBILE LAYOUT â”€â”€ */}
+      {/* MOBILE */}
       <div className="lg:hidden w-full min-h-screen flex flex-col">
-        {/* Ilustrasi atas */}
         <div className="relative flex flex-col items-center justify-end overflow-visible flex-shrink-0"
           style={{ background: 'linear-gradient(145deg,#064e3b,#065f46,#0f766e)', minHeight: 260 }}>
           <div className="absolute inset-0 overflow-hidden">
@@ -58,14 +51,13 @@ export default function Login() {
           ].map((s,i) => (
             <motion.span key={i} className="absolute text-emerald-300/70 text-sm pointer-events-none z-10" style={s}
               animate={{ opacity:[0.3,1,0.3], scale:[0.8,1.3,0.8], y:[0,-7,0] }}
-              transition={{ repeat:Infinity, duration:2.2+i*0.35, delay:s.d }}>&#10022;</motion.span>
+              transition={{ repeat:Infinity, duration:2.2+i*0.35, delay:s.d }}>*</motion.span>
           ))}
           <div className="relative z-10 text-center px-8 pt-8 pb-2">
             <h2 className="text-white font-black text-2xl leading-tight">
-              Selamat Datang<br/><span className="text-violet-300">Kembali!</span>
+              Selamat Datang<br/><span className="text-emerald-300">Kembali!</span>
             </h2>
           </div>
-          {/* Gambar overflow ke bawah */}
           <div className="relative z-20 w-full flex justify-center" style={{ marginBottom: '-4.5rem' }}>
             <motion.img src="/image/bg2.png" alt="ilustrasi"
               initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
@@ -74,8 +66,6 @@ export default function Login() {
               style={{ filter:'drop-shadow(0 16px 32px rgba(0,0,0,0.3))' }}/>
           </div>
         </div>
-
-        {/* Form bawah */}
         <div className={`flex-1 rounded-t-[2.5rem] px-6 sm:px-10 pt-20 pb-10 -mt-2 relative z-10
           ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
           <FormContent form={form} setForm={setForm} showPw={showPw} setShowPw={setShowPw}
@@ -84,12 +74,11 @@ export default function Login() {
         </div>
       </div>
 
-      {/* â”€â”€ DESKTOP LAYOUT â”€â”€ */}
+      {/* DESKTOP */}
       <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
         transition={{ duration:0.4 }}
         className="hidden lg:flex w-full h-screen">
 
-        {/* Kiri: Form */}
         <div className={`w-[52%] flex flex-col justify-center px-16 xl:px-24 py-12 relative overflow-y-auto
           ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
           <FormContent form={form} setForm={setForm} showPw={showPw} setShowPw={setShowPw}
@@ -97,27 +86,22 @@ export default function Login() {
             handleSubmit={handleSubmit} isDark={isDark}/>
         </div>
 
-        {/* Kanan: Ilustrasi */}
         <div className="w-[48%] relative flex flex-col items-center justify-center overflow-hidden"
           style={{ background: 'linear-gradient(145deg,#064e3b,#065f46,#0f766e)' }}>
-          {/* Decorations */}
           <div className="absolute inset-0 opacity-[0.06]"
             style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '20px 20px' }}/>
           <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle,rgba(52,211,153,0.35) 0%,transparent 70%)' }}/>
           <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle,rgba(13,148,136,0.3) 0%,transparent 70%)' }}/>
-
           {[
             { top:'8%', left:'10%', d:0 }, { top:'10%', right:'8%', d:0.6 },
             { bottom:'30%', left:'6%', d:1.1 }, { bottom:'25%', right:'7%', d:0.4 },
           ].map((s,i) => (
             <motion.span key={i} className="absolute text-emerald-300/60 text-base pointer-events-none z-10" style={s}
               animate={{ opacity:[0.3,0.9,0.3], scale:[0.8,1.3,0.8], y:[0,-8,0] }}
-              transition={{ repeat:Infinity, duration:2.3+i*0.3, delay:s.d }}>âœ¦</motion.span>
+              transition={{ repeat:Infinity, duration:2.3+i*0.3, delay:s.d }}>*</motion.span>
           ))}
-
-          {/* Teks */}
           <div className="relative z-10 text-center px-12 mb-6">
             <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3 py-1 mb-5">
               <Sparkles size={10} className="text-emerald-300"/>
@@ -138,8 +122,6 @@ export default function Login() {
               ))}
             </div>
           </div>
-
-          {/* Gambar di bawah */}
           <motion.img src="/image/bg2.png" alt="ilustrasi"
             initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }}
             transition={{ delay:0.3, duration:0.7, ease:[0.22,1,0.36,1] }}
@@ -151,11 +133,9 @@ export default function Login() {
   )
 }
 
-/* â”€â”€â”€ Form content â€” dipakai di mobile & desktop â”€â”€â”€ */
 function FormContent({ form, setForm, showPw, setShowPw, loading, showDemo, setShowDemo, handleSubmit, isDark }) {
   return (
     <>
-      {/* Logo */}
       <div className="flex items-center gap-2.5 mb-7">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: 'linear-gradient(135deg,#059669,#0d9488)' }}>
@@ -165,7 +145,9 @@ function FormContent({ form, setForm, showPw, setShowPw, loading, showDemo, setS
       </div>
 
       <div className="mb-6">
-        <p className={`text-sm font-medium mb-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}>Halo, selamat datang ðŸ‘‹</p>
+        <p className={`text-sm font-medium mb-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}>
+          Halo, selamat datang
+        </p>
         <h1 className={`text-2xl sm:text-3xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>Masuk</h1>
         <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Belum punya akun?{' '}
@@ -194,7 +176,7 @@ function FormContent({ form, setForm, showPw, setShowPw, loading, showDemo, setS
           <div className="relative">
             <Lock size={14} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}/>
             <input type={showPw ? 'text' : 'password'} required value={form.password} onChange={e => setForm({...form,password:e.target.value})}
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+              placeholder="••••••••"
               className={`w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all
                 ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15'
                   : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 focus:bg-white'}`}/>

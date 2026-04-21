@@ -422,7 +422,7 @@ export default function Register() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`h-screen lg:h-screen flex flex-col lg:flex-row overflow-x-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}
+      className={`min-h-screen flex flex-col lg:flex-row overflow-x-hidden transition-colors duration-300 ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}
     >
       {/* Dark Mode Toggle */}
       <button
@@ -465,7 +465,7 @@ export default function Register() {
       </div>
 
       {/* ── DESKTOP: form kiri ── */}
-      <div className={`w-full lg:w-[52%] flex-1 h-full lg:h-screen overflow-y-auto
+      <div className={`w-full lg:w-[52%] flex-1 lg:h-screen lg:overflow-y-auto
         rounded-t-[2.5rem] lg:rounded-none -mt-2 lg:mt-0 relative z-10
         ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
         <div className="flex flex-col justify-start px-6 sm:px-10 lg:px-14 xl:px-16 pt-20 pb-10 lg:py-10">
