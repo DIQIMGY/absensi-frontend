@@ -31,6 +31,21 @@ const naikKelasService = {
     return response.data;
   },
 
+  // Pindah semua siswa dari kelas asal ke kelas tujuan
+  pindahKelas: async (kelasAsalId, kelasTujuanId) => {
+    const response = await api.post('/admin/naik-kelas/pindah-kelas', {
+      kelas_asal_id: kelasAsalId,
+      kelas_tujuan_id: kelasTujuanId,
+    });
+    return response.data;
+  },
+
+  // Ambil semua kelas aktif (untuk dropdown tujuan)
+  getKelasList: async () => {
+    const response = await api.get('/admin/kelas', { params: { per_page: 999, is_active: 1 } });
+    return response.data;
+  },
+
   // History naik kelas
   getHistory: async (params = {}) => {
     const response = await api.get('/admin/naik-kelas/history', { params });

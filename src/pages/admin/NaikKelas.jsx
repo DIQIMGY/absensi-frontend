@@ -7,7 +7,7 @@ import {
   Award, Shield, BookOpen, School, UserCheck,
   ArrowUpCircle, ChevronRight, ChevronDown,
   Filter, Search, Check, X, HelpCircle,
-  BarChart3, Layers, ListChecks
+  BarChart3, Layers, ListChecks, MoveRight
 } from 'lucide-react'
 import naikKelasService from '../../services/naikKelasService'
 import { confirmAction } from '../../components/ConfirmDialog'
@@ -182,6 +182,12 @@ export default function NaikKelas() {
   const [expandedKelas, setExpandedKelas] = useState(new Set())
   const [filterTingkat, setFilterTingkat] = useState('')
 
+  // State untuk pindah kelas
+  const [kelasList, setKelasList] = useState([])
+  const [loadingKelasList, setLoadingKelasList] = useState(false)
+  const [pindahTarget, setPindahTarget] = useState({}) // { kelas_id: tujuan_kelas_id }
+  const [loadingPindah, setLoadingPindah] = useState({}) // { kelas_id: bool }
+
   useEffect(() => {
     fetchPreview()
     fetchHistory()
@@ -191,6 +197,50 @@ export default function NaikKelas() {
   useEffect(() => {
     if (activeTab === 'selektif') fetchKelasData()
   }, [activeTab, filterTingkat])
+
+  useEffect(() => {
+    if (activeTab === 'pindah') {
+      fetchKelasData()
+      fetchKelasList()
+    }
+  }, [activeTab])
+
+  const fetchKelasList = async () => {
+    try {
+      setLoadingKelasList(true)
+      const res = await naikKelasService.getKelasList()
+      const list = res.data?.data || res.data || []
+      setKelasList(list)
+    } catch { toast.error('Gagal memuat daftar kelas') }
+    finally { setLoadingKelasList(false) }
+  }
+
+  const handlePindahKelas = async (kelasAsalId, kelasAsalNama) => {
+    const tujuanId = pindahTarget[kelasAsalId]
+    if (!tujuanId) { toast.error('Pilih kelas tujuan dulu'); return }
+    const tujuanNama = kelasList.find(k => k.id == tujuanId)?.nama_kelas || tujuanId
+    const confirmed = await confirmAction(
+      'Pindah Kelas?',
+      `Semua siswa aktif dari "${kelasAsalNama}" akan dipindah ke "${tujuanNama}". Tindakan ini tidak dapat dibatalkan!`
+    )
+    if (!confirmed) return
+    try {
+      setLoadingPindah(prev => ({ ...prev, [kelasAsalId]: true }))
+      const res = await naikKelasService.pindahKelas(kelasAsalId, tujuanId)
+      if (res.success) {
+        toast.success(res.message)
+        setPindahTarget(prev => { const n = {...prev}; delete n[kelasAsalId]; return n })
+        fetchKelasData()
+        fetchStatistik()
+      } else {
+        toast.error(res.message || 'Gagal pindah kelas')
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal pindah kelas')
+    } finally {
+      setLoadingPindah(prev => ({ ...prev, [kelasAsalId]: false }))
+    }
+  }
 
   const fetchPreview = async () => {
     try {
@@ -428,9 +478,10 @@ export default function NaikKelas() {
       </div>
 
       {/* Tabs - EMERALD */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg w-fit flex-wrap">
         {[
           { id: 'preview', label: 'Preview', icon: Eye },
+          { id: 'pindah', label: 'Pindah Kelas', icon: MoveRight },
           { id: 'selektif', label: 'Naik Kelas Selektif', icon: ListChecks },
           { id: 'history', label: 'Riwayat', icon: History },
         ].map(tab => (
@@ -554,6 +605,116 @@ export default function NaikKelas() {
             </div>
           )}
         </>
+      )}
+
+      {/* Tab Pindah Kelas */}
+      {activeTab === 'pindah' && (
+        <div className="space-y-4">
+          {/* Info */}
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40">
+            <Info size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-0.5">Cara Kerja Pindah Kelas</p>
+              <p className="text-[11px] text-blue-600 dark:text-blue-400">
+                Pilih kelas asal, lalu pilih kelas tujuan dari dropdown. Semua siswa aktif di kelas asal akan dipindah ke kelas tujuan. Cocok untuk naik kelas manual sesuai kebijakan sekolah.
+              </p>
+            </div>
+          </div>
+
+          {/* Tabel kelas */}
+          {loadingKelas ? (
+            <div className="flex items-center justify-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+              <RefreshCw size={20} className="text-emerald-500 animate-spin mr-2" />
+              <span className="text-xs text-slate-500">Memuat data kelas...</span>
+            </div>
+          ) : kelasData.length === 0 ? (
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+              <School size={32} className="mx-auto mb-2 text-slate-300" />
+              <p className="text-xs text-slate-400">Tidak ada data kelas</p>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  Daftar Kelas — Pilih Tujuan Pindah
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Kelas Asal</th>
+                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Jurusan</th>
+                      <th className="text-center px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Siswa</th>
+                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider w-56">Pindah ke Kelas</th>
+                      <th className="text-center px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {kelasData.map(kelas => {
+                      const isLoading = loadingPindah[kelas.kelas_id]
+                      const tujuanId  = pindahTarget[kelas.kelas_id] || ''
+                      // Filter kelas tujuan: exclude kelas asal sendiri
+                      const opsiTujuan = (loadingKelasList ? [] : kelasList).filter(k => k.id !== kelas.kelas_id)
+                      return (
+                        <tr key={kelas.kelas_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                          {/* Kelas asal */}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                <GraduationCap size={13} className="text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-slate-800 dark:text-slate-100">{kelas.nama_kelas}</p>
+                                <p className="text-[10px] text-slate-400">Tingkat {kelas.tingkat}</p>
+                              </div>
+                            </div>
+                          </td>
+                          {/* Jurusan */}
+                          <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{kelas.jurusan || '-'}</td>
+                          {/* Jumlah siswa */}
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-semibold">
+                              <Users size={9} /> {kelas.total_siswa}
+                            </span>
+                          </td>
+                          {/* Dropdown tujuan */}
+                          <td className="px-4 py-3">
+                            <select
+                              value={tujuanId}
+                              onChange={e => setPindahTarget(prev => ({ ...prev, [kelas.kelas_id]: e.target.value }))}
+                              disabled={isLoading || loadingKelasList || kelas.total_siswa === 0}
+                              className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <option value="">-- Pilih kelas tujuan --</option>
+                              {opsiTujuan.map(k => (
+                                <option key={k.id} value={k.id}>
+                                  {k.nama_kelas} {k.tahun_ajaran ? `(${k.tahun_ajaran})` : ''}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          {/* Tombol pindah */}
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => handlePindahKelas(kelas.kelas_id, kelas.nama_kelas)}
+                              disabled={!tujuanId || isLoading || kelas.total_siswa === 0}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                            >
+                              {isLoading
+                                ? <><RefreshCw size={11} className="animate-spin" /> Proses...</>
+                                : <><MoveRight size={11} /> Pindah</>}
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Tab Selektif */}
