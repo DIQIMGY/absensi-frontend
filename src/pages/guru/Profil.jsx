@@ -37,6 +37,7 @@ export default function GuruProfil() {
   const [qrLoading, setQrLoading] = useState(false)
   const [showQrModal, setShowQrModal] = useState(false)
   const [logoForQr, setLogoForQr] = useState(null)
+  const [fotoForQr, setFotoForQr] = useState(null)
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -93,9 +94,10 @@ export default function GuruProfil() {
     setQrLoading(true)
     const t = toast.loading('Memuat QR Code...')
     try {
-      const [qrRes, logoRes] = await Promise.allSettled([
+      const [qrRes, logoRes, fotoRes] = await Promise.allSettled([
         guruApi.downloadQrCode(),
         publicApi.downloadLogo(),
+        profile?.foto ? guruApi.downloadFoto() : Promise.reject('no foto'),
       ])
 
       let qrData = null
@@ -110,10 +112,17 @@ export default function GuruProfil() {
         logoData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
       }
 
+      let fotoData = null
+      if (fotoRes.status === 'fulfilled') {
+        const blob = new Blob([fotoRes.value.data], { type: fotoRes.value.headers['content-type'] || 'image/jpeg' })
+        fotoData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
+      }
+
       if (!qrData) { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false); return }
 
       setQrImage(qrData)
       setLogoForQr(logoData)
+      setFotoForQr(fotoData)
       setShowQrModal(true)
       toast.dismiss(t)
     } catch { toast.error('Gagal memuat QR Code') }
@@ -519,10 +528,10 @@ export default function GuruProfil() {
                     identifier={profile?.nip}
                     labelId="NIP"
                     role="guru"
-                    foto={fotoPreview || profile?.foto}
+                    foto={fotoForQr}
                     logo={logoForQr}
                     sekolah={pengaturan?.nama_sekolah}
-                    onClose={() => { setShowQrModal(false); setLogoForQr(null) }}
+                    onClose={() => { setShowQrModal(false); setLogoForQr(null); setFotoForQr(null) }}
                   />
                 ) : (
                   <div className="py-10 text-center">
