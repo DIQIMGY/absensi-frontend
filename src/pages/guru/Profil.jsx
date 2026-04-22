@@ -465,12 +465,13 @@ export default function GuruProfil() {
               {/* QR preview */}
               <div className="relative">
                 <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center overflow-hidden">
-                  {qrImage || profile?.qr_code ? (
-                    <img src={qrImage || `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${profile.qr_code}`}
-                      alt="QR Code" className="w-full h-full object-contain p-3"
-                      onError={e => { e.target.style.display='none' }} />
+                  {qrImage && qrImage.startsWith('data:') ? (
+                    <img src={qrImage} alt="QR Code" className="w-full h-full object-contain p-3" />
                   ) : (
-                    <QrCode size={80} className="text-emerald-300 dark:text-emerald-700" />
+                    <div className="flex flex-col items-center gap-2">
+                      <QrCode size={60} className="text-emerald-300 dark:text-emerald-700" />
+                      <p className="text-xs text-slate-400">Klik Lihat untuk memuat QR</p>
+                    </div>
                   )}
                 </div>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow">
@@ -484,12 +485,8 @@ export default function GuruProfil() {
               <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
                 <button onClick={handleViewQr} disabled={qrLoading}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all">
-                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Eye size={14} />} Lihat
-                </button>
-                <button onClick={handleDownloadQr} disabled={downloading}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-60">
-                  {downloading ? <Loader size={14} className="animate-spin" /> : <Download size={14} />}
-                  {downloading ? 'Unduh...' : 'Download'}
+                  {qrLoading ? <Loader size={14} className="animate-spin" /> : <Eye size={14} />}
+                  {qrLoading ? 'Memuat...' : 'Lihat & Download ID Card'}
                 </button>
               </div>
               <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 w-full max-w-xs">
