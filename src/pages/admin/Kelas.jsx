@@ -6,7 +6,6 @@ import {
   Trash2, 
   School, 
   BookOpen, 
-  Calendar,
   Layers,
   Hash,
   CheckCircle,
@@ -329,7 +328,6 @@ const ActionButtons = ({ row, onView, onEdit, onDelete }) => (
 export default function Kelas() {
   const [kelas, setKelas] = useState([])
   const [jurusans, setJurusans] = useState([])
-  const [tahunAjarans, setTahunAjarans] = useState([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -342,26 +340,22 @@ export default function Kelas() {
     total: 0,
     aktif: 0,
     total_jurusan: 0,
-    total_tahun_ajaran: 0,
+    total_siswa: 0,
   })
   const [formData, setFormData] = useState({
     kode_kelas: '',
     nama_kelas: '',
     jurusan_id: '',
-    tahun_ajaran_id: '',
     tingkat: 10,
     is_active: true,
   })
 
-  // Data untuk chart (simulasi - masing-masing berbeda polanya)
-  const [totalKelasData] = useState([12, 15, 18, 22, 25, 28, 32]) // wave - tren naik
-  const [jurusanData] = useState([4, 5, 6, 6, 7, 7, 8]) // bar - meningkat bertahap
-  const [tahunAjaranData] = useState([1, 1, 2, 2, 3, 3, 4]) // sparkline - step
+  const [totalKelasData] = useState([12, 15, 18, 22, 25, 28, 32])
+  const [jurusanData] = useState([4, 5, 6, 6, 7, 7, 8])
 
   useEffect(() => {
     fetchKelas()
     fetchJurusans()
-    fetchTahunAjarans()
     fetchStats()
   }, [currentPage, search])
 
@@ -402,19 +396,6 @@ export default function Kelas() {
       })))
     } catch (error) {
       console.error('Error fetching jurusans:', error)
-    }
-  }
-
-  const fetchTahunAjarans = async () => {
-    try {
-      const response = await adminApi.getAllTahunAjarans()
-      const tahunData = Array.isArray(response.data?.data) ? response.data.data : (Array.isArray(response.data) ? response.data : [])
-      setTahunAjarans(tahunData.map(t => ({
-        value: t.id,
-        label: `${t.tahun_ajaran} - Semester ${t.semester}`
-      })))
-    } catch (error) {
-      console.error('Error fetching tahun ajarans:', error)
     }
   }
 
@@ -464,7 +445,6 @@ export default function Kelas() {
         kode_kelas: item.kode_kelas || '',
         nama_kelas: item.nama_kelas || '',
         jurusan_id: item.jurusan?.id || '',
-        tahun_ajaran_id: item.tahun_ajaran?.id || '',
         tingkat: item.tingkat || 10,
         is_active: item.is_active,
       })
@@ -480,8 +460,7 @@ export default function Kelas() {
       kode_kelas: '',
       nama_kelas: '',
       jurusan_id: '',
-      tahun_ajaran_id: '',
-      tingkat: 10,
+        tingkat: 10,
       is_active: true,
     })
   }
@@ -536,23 +515,7 @@ export default function Kelas() {
       accessor: 'tingkat',
       cell: (row) => <TingkatBadge tingkat={row.tingkat} />,
     },
-    {
-      header: 'Tahun Ajaran',
-      accessor: 'tahun_ajaran',
-      cell: (row) => (
-        <div className="hidden lg:flex items-center gap-1">
-          <Calendar size={12} className="text-purple-500 flex-shrink-0" />
-          <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[100px]">
-            {row.tahun_ajaran?.tahun_ajaran || '-'}
-          </span>
-          {row.tahun_ajaran?.semester && (
-            <span className="text-[8px] font-medium text-slate-400 dark:text-slate-500 bg-slate-100/80 dark:bg-slate-800/60 px-1 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60">
-              SMT {row.tahun_ajaran.semester}
-            </span>
-          )}
-        </div>
-      ),
-    },
+
     {
       header: 'Status',
       accessor: 'is_active',
@@ -576,7 +539,7 @@ export default function Kelas() {
     { label:'Total Kelas',    value:stats.total,             icon:School,       color:'#10b981', border:'border-emerald-100 dark:border-emerald-800/40', tc:'text-emerald-600 dark:text-emerald-400', iconBg:'bg-emerald-50 dark:bg-emerald-900/30', delay:0,    sparkType:'area' },
     { label:'Kelas Aktif',    value:stats.aktif,             icon:CheckCircle,  color:'#3b82f6', border:'border-blue-100 dark:border-blue-800/40',       tc:'text-blue-600 dark:text-blue-400',       iconBg:'bg-blue-50 dark:bg-blue-900/30',       delay:0.05, sparkType:'bar' },
     { label:'Total Jurusan',  value:stats.total_jurusan,     icon:BookOpen,     color:'#8b5cf6', border:'border-violet-100 dark:border-violet-800/40',   tc:'text-violet-600 dark:text-violet-400',   iconBg:'bg-violet-50 dark:bg-violet-900/30',   delay:0.1,  sparkType:'bar' },
-    { label:'Tahun Ajaran',   value:stats.total_tahun_ajaran,icon:Calendar,     color:'#f59e0b', border:'border-amber-100 dark:border-amber-800/40',     tc:'text-amber-600 dark:text-amber-400',     iconBg:'bg-amber-50 dark:bg-amber-900/30',     delay:0.15, sparkType:'area' },
+    { label:'Total Siswa',     value:stats.total_siswa ?? '-', icon:Users,        color:'#f59e0b', border:'border-amber-100 dark:border-amber-800/40',     tc:'text-amber-600 dark:text-amber-400',     iconBg:'bg-amber-50 dark:bg-amber-900/30',     delay:0.15, sparkType:'area' },
   ]
 
   return (
@@ -590,7 +553,7 @@ export default function Kelas() {
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-800 dark:text-slate-100">Manajemen Kelas</h1>
-            <p className="text-[11px] text-slate-400 mt-0.5">{stats.total} kelas Â· {stats.aktif} aktif Â· {stats.total_jurusan} jurusan</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{stats.total} kelas &middot; {stats.aktif} aktif &middot; {stats.total_jurusan} jurusan</p>
           </div>
         </div>
         <button onClick={() => openModal()}
@@ -681,21 +644,12 @@ export default function Kelas() {
                       {getTingkatLabel(viewingKelas.tingkat)}
                     </p>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium mb-0.5 flex items-center gap-0.5">
                       <CheckCircle size={10} className="text-emerald-500" />
                       Status
                     </p>
                     <StatusBadge isActive={viewingKelas.is_active} />
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium mb-0.5 flex items-center gap-0.5">
-                      <Calendar size={10} className="text-emerald-500" />
-                      Tahun Ajaran
-                    </p>
-                    <p className="font-medium text-xs text-slate-900 dark:text-white bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                      {viewingKelas.tahun_ajaran?.tahun_ajaran || '-'} - Semester {viewingKelas.tahun_ajaran?.semester || '-'}
-                    </p>
                   </div>
                 </div>
 
@@ -813,37 +767,6 @@ export default function Kelas() {
                       backgroundColor: state.isSelected ? '#10B981' : state.isFocused ? '#D1FAE5' : 'white',
                       color: state.isSelected ? 'white' : '#1e293b',
                       fontSize: '12px',
-                    })
-                  }}
-                />
-              </div>
-
-              {/* Tahun Ajaran */}
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Tahun Ajaran <span className="text-emerald-500">*</span>
-                </label>
-                <Select
-                  options={tahunAjarans}
-                  value={tahunAjarans.find(t => t.value === formData.tahun_ajaran_id)}
-                  onChange={(option) => setFormData({ ...formData, tahun_ajaran_id: option?.value })}
-                  placeholder="Pilih tahun ajaran"
-                  className="react-select-container text-xs"
-                  classNamePrefix="react-select"
-                  required
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      borderRadius: '0.5rem',
-                      borderWidth: '1px',
-                      borderColor: '#e2e8f0',
-                      padding: '0.125rem 0',
-                      boxShadow: 'none',
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      minHeight: '36px',
-                      '&:hover': {
-                        borderColor: '#10B981'
-                      }
                     })
                   }}
                 />
@@ -972,3 +895,4 @@ export default function Kelas() {
     </div>
   )
 }
+

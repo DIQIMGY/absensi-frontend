@@ -24,9 +24,10 @@ const naikKelasService = {
   },
 
   // Proses naik kelas manual
-  proses: async () => {
+  proses: async (force = false) => {
     const response = await api.post('/admin/naik-kelas/proses', {
-      confirm: true
+      confirm: true,
+      force,
     });
     return response.data;
   },

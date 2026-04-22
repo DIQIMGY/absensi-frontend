@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   TrendingUp, Eye, Play, History, AlertTriangle,
   CheckCircle, Users, GraduationCap, ArrowRight,
   Sparkles, RefreshCw, Calendar, Info, Clock,
   Award, Shield, BookOpen, School, UserCheck,
-  ArrowUpCircle, ChevronRight, ChevronDown,
-  Filter, Search, Check, X, HelpCircle,
+  ArrowUpCircle, ArrowDownCircle, ChevronRight, ChevronDown,
+  Filter, Search, Check, X, HelpCircle, FileText,
   BarChart3, Layers, ListChecks, MoveRight
 } from 'lucide-react'
 import naikKelasService from '../../services/naikKelasService'
@@ -230,8 +230,8 @@ export default function NaikKelas() {
       if (res.success) {
         toast.success(res.message)
         setPindahTarget(prev => { const n = {...prev}; delete n[kelasAsalId]; return n })
-        fetchKelasData()
-        fetchStatistik()
+        // Refresh semua data sekarang juga — tidak perlu reload halaman
+        await Promise.all([fetchKelasData(), fetchPreview(), fetchHistory(), fetchStatistik()])
       } else {
         toast.error(res.message || 'Gagal pindah kelas')
       }
@@ -340,8 +340,8 @@ export default function NaikKelas() {
       if (res.success) {
         toast.success(res.message)
         setSelectedSiswa(new Set())
-        fetchKelasData()
-        fetchStatistik()
+        // Refresh semua data sekarang juga — tidak perlu reload halaman
+        await Promise.all([fetchKelasData(), fetchPreview(), fetchHistory(), fetchStatistik()])
       } else {
         toast.error(res.message || 'Gagal proses naik kelas')
       }
@@ -364,15 +364,38 @@ export default function NaikKelas() {
       const res = await naikKelasService.proses()
       if (res.success) {
         toast.success('Naik kelas berhasil diproses!')
-        fetchPreview()
-        fetchHistory()
-        fetchStatistik()
+        // Refresh semua data sekarang juga — tidak perlu reload halaman
+        await Promise.all([fetchPreview(), fetchHistory(), fetchStatistik()])
+        if (activeTab === 'selektif' || activeTab === 'pindah') {
+          await fetchKelasData()
+        }
       } else {
-        toast.error(res.message || 'Gagal proses naik kelas')
+        // Jika sudah pernah diproses, tawarkan force
+        if (res.message?.includes('sudah pernah diproses')) {
+          const forceConfirmed = await confirmAction(
+            'Proses Ulang Naik Kelas?',
+            'Naik kelas sudah pernah diproses untuk tahun ajaran ini. Apakah Anda yakin ingin memproses ulang? Siswa yang sudah naik kelas akan diproses lagi.'
+          )
+          if (forceConfirmed) {
+            const resForce = await naikKelasService.proses(true)
+            if (resForce.success) {
+              toast.success('Naik kelas berhasil diproses ulang!')
+              await Promise.all([fetchPreview(), fetchHistory(), fetchStatistik()])
+              if (activeTab === 'selektif' || activeTab === 'pindah') {
+                await fetchKelasData()
+              }
+            } else {
+              toast.error(resForce.message || 'Gagal proses ulang naik kelas')
+            }
+          }
+        } else {
+          toast.error(res.message || 'Gagal proses naik kelas')
+        }
       }
     } catch (error) {
       console.error('Error proses naik kelas:', error)
-      toast.error(error.response?.data?.message || 'Gagal proses naik kelas')
+      const msg = error.response?.data?.message || 'Gagal proses naik kelas'
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -691,7 +714,7 @@ export default function NaikKelas() {
                               <option value="">-- Pilih kelas tujuan --</option>
                               {opsiTujuan.map(k => (
                                 <option key={k.id} value={k.id}>
-                                  {k.nama_kelas} {k.tahun_ajaran ? `(${k.tahun_ajaran})` : ''}
+                                  {k.nama_kelas}
                                 </option>
                               ))}
                             </select>
