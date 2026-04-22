@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, 
@@ -286,9 +286,9 @@ const StatusBadge = ({ isActive }) => {
 
 const TingkatBadge = ({ tingkat }) => {
   const labels = {
-    1: 'Kelas 10',
-    2: 'Kelas 11', 
-    3: 'Kelas 12'
+    10: 'Kelas 10',
+    11: 'Kelas 11', 
+    12: 'Kelas 12'
   }
   
   return (
@@ -349,7 +349,7 @@ export default function Kelas() {
     nama_kelas: '',
     jurusan_id: '',
     tahun_ajaran_id: '',
-    tingkat: 1,
+    tingkat: 10,
     is_active: true,
   })
 
@@ -380,7 +380,7 @@ export default function Kelas() {
       const response = await adminApi.getKelas({
         page: currentPage,
         search: search,
-        per_page: 10,
+        per_page: 48,
       })
       const res = response.data
       setKelas(Array.isArray(res?.data) ? res.data : [])
@@ -465,7 +465,7 @@ export default function Kelas() {
         nama_kelas: item.nama_kelas || '',
         jurusan_id: item.jurusan?.id || '',
         tahun_ajaran_id: item.tahun_ajaran?.id || '',
-        tingkat: item.tingkat || 1,
+        tingkat: item.tingkat || 10,
         is_active: item.is_active,
       })
     } else {
@@ -481,16 +481,16 @@ export default function Kelas() {
       nama_kelas: '',
       jurusan_id: '',
       tahun_ajaran_id: '',
-      tingkat: 1,
+      tingkat: 10,
       is_active: true,
     })
   }
 
   const getTingkatLabel = (tingkat) => {
     const labels = {
-      1: 'Kelas 10',
-      2: 'Kelas 11',
-      3: 'Kelas 12'
+      10: 'Kelas 10',
+      11: 'Kelas 11',
+      12: 'Kelas 12'
     }
     return labels[tingkat] || `Kelas ${tingkat}`
   }
@@ -590,7 +590,7 @@ export default function Kelas() {
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-800 dark:text-slate-100">Manajemen Kelas</h1>
-            <p className="text-[11px] text-slate-400 mt-0.5">{stats.total} kelas · {stats.aktif} aktif · {stats.total_jurusan} jurusan</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{stats.total} kelas Â· {stats.aktif} aktif Â· {stats.total_jurusan} jurusan</p>
           </div>
         </div>
         <button onClick={() => openModal()}
@@ -862,9 +862,9 @@ export default function Kelas() {
                     className="w-full pl-8 pr-8 py-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-xs text-slate-900 dark:text-white appearance-none hover:border-slate-300 dark:hover:border-slate-600"
                     required
                   >
-                    <option value={1}>Kelas 10</option>
-                    <option value={2}>Kelas 11</option>
-                    <option value={3}>Kelas 12</option>
+                    <option value={10}>Kelas 10</option>
+                    <option value={11}>Kelas 11</option>
+                    <option value={12}>Kelas 12</option>
                   </select>
                   <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                 </div>

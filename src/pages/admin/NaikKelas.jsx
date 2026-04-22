@@ -666,7 +666,9 @@ export default function NaikKelas() {
                               </div>
                               <div>
                                 <p className="font-semibold text-slate-800 dark:text-slate-100">{kelas.nama_kelas}</p>
-                                <p className="text-[10px] text-slate-400">Tingkat {kelas.tingkat}</p>
+                                <p className="text-[10px] text-slate-400">
+                                  Kelas {kelas.tingkat == 10 ? 'X' : kelas.tingkat == 11 ? 'XI' : kelas.tingkat == 12 ? 'XII' : kelas.tingkat}
+                                </p>
                               </div>
                             </div>
                           </td>
