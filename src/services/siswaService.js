@@ -7,6 +7,7 @@ export const siswaApi = {
   getRiwayat: (params) => api.get('/siswa/riwayat', { params }),
   getStatistik: () => api.get('/siswa/statistik'),
   downloadQrCode: () => api.get('/siswa/download-qr', { responseType: 'blob' }),
+  downloadFoto: () => api.get('/siswa/profil/download-foto', { responseType: 'blob' }),
   
   // Notifikasi
   getNotifications: () => api.get('/siswa/notifications'),

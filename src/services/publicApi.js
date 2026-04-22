@@ -25,6 +25,9 @@ export const publicApi = {
   // Ambil pengaturan (jam masuk, dll)
   getPengaturan: () => api.get('/public/pengaturan'),
   
+  // Download logo sekolah (dengan CORS header)
+  downloadLogo: () => api.get('/public/pengaturan/logo', { responseType: 'blob' }),
+  
   // Submit izin
   submitIzin: (data) => api.post('/public/izin', data, {
     headers: {

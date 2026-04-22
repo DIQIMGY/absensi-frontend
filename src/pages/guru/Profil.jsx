@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import { useAuthStore } from '../../stores/authStore'
+import { usePengaturanStore } from '../../stores/pengaturanStore'
+import { publicApi } from '../../services/publicApi'
 import toast from 'react-hot-toast'
 import QrCard from '../../components/QrCard'
 
@@ -34,7 +36,9 @@ export default function GuruProfil() {
   const [qrImage, setQrImage] = useState(null)
   const [qrLoading, setQrLoading] = useState(false)
   const [showQrModal, setShowQrModal] = useState(false)
+  const [logoForQr, setLogoForQr] = useState(null)
   const { user, updateUser } = useAuthStore()
+  const { pengaturan } = usePengaturanStore()
 
   useEffect(() => {
     fetchProfile()
@@ -86,24 +90,34 @@ export default function GuruProfil() {
   }
 
   const handleViewQr = async () => {
-    if (profile?.qr_code_url) { setQrImage(profile.qr_code_url); setShowQrModal(true); return }
     setQrLoading(true)
     const t = toast.loading('Memuat QR Code...')
     try {
-      // Pakai downloadQrCode agar dapat blob, lalu convert ke base64
-      const res = await guruApi.downloadQrCode()
-      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'image/png' })
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const b64 = reader.result
-        setQrImage(b64)
-        setProfile(p => ({...p, qr_code_url: b64}))
-        setShowQrModal(true)
-        toast.dismiss(t)
-        setQrLoading(false)
+      const [qrRes, logoRes] = await Promise.allSettled([
+        guruApi.downloadQrCode(),
+        publicApi.downloadLogo(),
+      ])
+
+      let qrData = null
+      if (qrRes.status === 'fulfilled') {
+        const blob = new Blob([qrRes.value.data], { type: qrRes.value.headers['content-type'] || 'image/png' })
+        qrData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
       }
-      reader.readAsDataURL(blob)
-    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false) }
+
+      let logoData = null
+      if (logoRes.status === 'fulfilled') {
+        const blob = new Blob([logoRes.value.data], { type: logoRes.value.headers['content-type'] || 'image/png' })
+        logoData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
+      }
+
+      if (!qrData) { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false); return }
+
+      setQrImage(qrData)
+      setLogoForQr(logoData)
+      setShowQrModal(true)
+      toast.dismiss(t)
+    } catch { toast.error('Gagal memuat QR Code') }
+    finally { setQrLoading(false) }
   }
 
   const handleDownloadQr = async () => {
@@ -506,7 +520,9 @@ export default function GuruProfil() {
                     labelId="NIP"
                     role="guru"
                     foto={fotoPreview || profile?.foto}
-                    onClose={() => setShowQrModal(false)}
+                    logo={logoForQr}
+                    sekolah={pengaturan?.nama_sekolah}
+                    onClose={() => { setShowQrModal(false); setLogoForQr(null) }}
                   />
                 ) : (
                   <div className="py-10 text-center">

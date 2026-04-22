@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
+import { usePengaturanStore } from '../../stores/pengaturanStore'
+import { publicApi } from '../../services/publicApi'
 import toast from 'react-hot-toast'
 import Modal from '../../components/Modal'
 import QrCard from '../../components/QrCard'
@@ -34,12 +36,15 @@ export default function SiswaProfil() {
   const [showQrModal, setShowQrModal] = useState(false)
   const [qrImage, setQrImage] = useState(null)
   const [qrLoading, setQrLoading] = useState(false)
+  const [fotoForQr, setFotoForQr] = useState(null)
+  const [logoForQr, setLogoForQr] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [activeTab, setActiveTab] = useState('profil')
   const [activeBadge, setActiveBadge] = useState(null)
   const [ownedBadges, setOwnedBadges] = useState([])
   const { user, updateUser } = useAuthStore()
+  const { pengaturan } = usePengaturanStore()
 
   useEffect(() => { fetchProfil(); fetchGacha() }, [])
 
@@ -88,22 +93,46 @@ export default function SiswaProfil() {
   }
 
   const handleViewQr = async () => {
-    if (profil?.qr_code_url) { setQrImage(profil.qr_code_url); setShowQrModal(true); return }
     setQrLoading(true)
     const t = toast.loading('Memuat QR Code...')
     try {
-      const res = await siswaApi.downloadQrCode()
-      const blob = new Blob([res.data], { type: res.headers['content-type'] || 'image/png' })
-      // Convert ke base64 langsung agar QrCard bisa pakai
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setQrImage(reader.result)
-        setShowQrModal(true)
-        toast.dismiss(t)
-        setQrLoading(false)
+      // Fetch QR, foto, dan logo paralel
+      const [qrRes, fotoRes, logoRes] = await Promise.allSettled([
+        siswaApi.downloadQrCode(),
+        profil?.foto ? siswaApi.downloadFoto() : Promise.reject('no foto'),
+        publicApi.downloadLogo(),
+      ])
+
+      // QR
+      let qrData = null
+      if (qrRes.status === 'fulfilled') {
+        const blob = new Blob([qrRes.value.data], { type: qrRes.value.headers['content-type'] || 'image/png' })
+        qrData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
       }
-      reader.readAsDataURL(blob)
-    } catch { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false) }
+
+      // Foto
+      let fotoData = null
+      if (fotoRes.status === 'fulfilled') {
+        const blob = new Blob([fotoRes.value.data], { type: fotoRes.value.headers['content-type'] || 'image/jpeg' })
+        fotoData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
+      }
+
+      // Logo
+      let logoData = null
+      if (logoRes.status === 'fulfilled') {
+        const blob = new Blob([logoRes.value.data], { type: logoRes.value.headers['content-type'] || 'image/png' })
+        logoData = await new Promise(r => { const fr = new FileReader(); fr.onloadend = () => r(fr.result); fr.readAsDataURL(blob) })
+      }
+
+      if (!qrData) { toast.dismiss(t); toast.error('Gagal memuat QR Code'); setQrLoading(false); return }
+
+      setQrImage(qrData)
+      if (fotoData) setFotoForQr(fotoData)
+      if (logoData) setLogoForQr(logoData)
+      setShowQrModal(true)
+      toast.dismiss(t)
+    } catch { toast.error('Gagal memuat QR Code') }
+    finally { setQrLoading(false) }
   }
 
   if (loading) return (
@@ -468,8 +497,10 @@ export default function SiswaProfil() {
               labelId="NIS"
               role="siswa"
               kelas={profil?.kelas?.nama_kelas}
-              foto={profil?.foto_url}
-              onClose={() => { setShowQrModal(false); if (qrImage?.startsWith('blob:')) URL.revokeObjectURL(qrImage); setQrImage(null) }}
+              foto={fotoForQr}
+              logo={logoForQr}
+              sekolah={pengaturan?.nama_sekolah}
+              onClose={() => { setShowQrModal(false); setQrImage(null); setFotoForQr(null); setLogoForQr(null) }}
             />
           ) : (
             <div className="py-10 text-center">
