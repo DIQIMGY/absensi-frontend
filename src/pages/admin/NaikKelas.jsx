@@ -700,8 +700,6 @@ export default function NaikKelas() {
                   )}
                 </div>
               </div>
-                </p>
-              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
