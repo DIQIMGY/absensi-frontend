@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FileText, CheckCircle, XCircle, Clock, Eye, Filter, Search, Calendar, User, Image as ImageIcon } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
@@ -20,6 +20,8 @@ export default function Izins() {
     start_date: '',
     end_date: ''
   })
+  const [searchInput, setSearchInput] = useState('')
+  const debounceRef = useRef(null)
   const [selectedIzin, setSelectedIzin] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
@@ -29,6 +31,16 @@ export default function Izins() {
     fetchIzins()
     fetchStats()
   }, [currentPage, filters])
+
+  // Debounce search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setFilters(f => ({ ...f, search: searchInput }))
+      setCurrentPage(1)
+    }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchInput])
 
   const fetchIzins = async () => {
     try {
@@ -293,8 +305,8 @@ export default function Izins() {
           <input
             type="text"
             placeholder="Carinama/Nis..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm"
           />
           

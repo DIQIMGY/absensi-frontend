@@ -181,12 +181,14 @@ export default function NaikKelas() {
   const [loadingSelektif, setLoadingSelektif] = useState(false)
   const [expandedKelas, setExpandedKelas] = useState(new Set())
   const [filterTingkat, setFilterTingkat] = useState('')
+  const [searchSelektif, setSearchSelektif] = useState('')
 
   // State untuk pindah kelas
   const [kelasList, setKelasList] = useState([])
   const [loadingKelasList, setLoadingKelasList] = useState(false)
   const [pindahTarget, setPindahTarget] = useState({}) // { kelas_id: tujuan_kelas_id }
   const [loadingPindah, setLoadingPindah] = useState({}) // { kelas_id: bool }
+  const [searchPindah, setSearchPindah] = useState('')
 
   useEffect(() => {
     fetchPreview()
@@ -204,6 +206,24 @@ export default function NaikKelas() {
       fetchKelasList()
     }
   }, [activeTab])
+
+  // Filter data selektif berdasarkan search
+  const filteredKelasSelektif = kelasData.map(kelas => {
+    if (!searchSelektif) return kelas
+    const q = searchSelektif.toLowerCase()
+    const kelasMatch = kelas.nama_kelas.toLowerCase().includes(q) || (kelas.jurusan || '').toLowerCase().includes(q)
+    const filteredSiswa = kelas.siswa.filter(s => s.nama.toLowerCase().includes(q) || (s.nis || '').toLowerCase().includes(q))
+    if (kelasMatch) return kelas
+    if (filteredSiswa.length > 0) return { ...kelas, siswa: filteredSiswa, total_siswa: filteredSiswa.length }
+    return null
+  }).filter(Boolean)
+
+  // Filter data pindah berdasarkan search
+  const filteredKelasPindah = kelasData.filter(kelas => {
+    if (!searchPindah) return true
+    const q = searchPindah.toLowerCase()
+    return kelas.nama_kelas.toLowerCase().includes(q) || (kelas.jurusan || '').toLowerCase().includes(q)
+  })
 
   const fetchKelasList = async () => {
     try {
@@ -662,6 +682,26 @@ export default function NaikKelas() {
                   Daftar Kelas — Pilih Tujuan Pindah
                 </p>
               </div>
+              {/* Search pindah */}
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="relative">
+                  <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchPindah}
+                    onChange={e => setSearchPindah(e.target.value)}
+                    placeholder="Cari nama kelas atau jurusan..."
+                    className="w-full pl-8 pr-8 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-700 dark:text-slate-200 placeholder-slate-400"
+                  />
+                  {searchPindah && (
+                    <button onClick={() => setSearchPindah('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+                </p>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
@@ -674,7 +714,7 @@ export default function NaikKelas() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {kelasData.map(kelas => {
+                    {filteredKelasPindah.map(kelas => {
                       const isLoading = loadingPindah[kelas.kelas_id]
                       const tujuanId  = pindahTarget[kelas.kelas_id] || ''
                       // Filter kelas tujuan: exclude kelas asal sendiri
@@ -774,7 +814,25 @@ export default function NaikKelas() {
             </div>
           </div>
 
+          {/* Search selektif */}
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchSelektif}
+              onChange={e => setSearchSelektif(e.target.value)}
+              placeholder="Cari nama siswa, NIS, atau nama kelas..."
+              className="w-full pl-9 pr-8 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-700 dark:text-slate-200 placeholder-slate-400 shadow-sm"
+            />
+            {searchSelektif && (
+              <button onClick={() => setSearchSelektif('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
           {/* Shortcut angkatan */}
+          {!searchSelektif && (
           <div className="flex flex-wrap gap-2">
             {['10','11','12'].map(t => {
               const kelasTingkat = kelasData.filter(k => String(k.tingkat) === t)
@@ -796,20 +854,21 @@ export default function NaikKelas() {
               )
             })}
           </div>
+          )}
 
           {/* List kelas */}
           {loadingKelas ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw size={24} className="text-emerald-500 animate-spin"/>
             </div>
-          ) : kelasData.length === 0 ? (
+          ) : filteredKelasSelektif.length === 0 ? (
             <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
               <Users size={32} className="mx-auto mb-2 text-slate-300"/>
-              <p className="text-sm text-slate-400">Tidak ada data kelas aktif</p>
+              <p className="text-sm text-slate-400">{searchSelektif ? 'Tidak ada hasil pencarian' : 'Tidak ada data kelas aktif'}</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {kelasData.map(kelas => {
+              {filteredKelasSelektif.map(kelas => {
                 const ids = kelas.siswa.map(s => s.id)
                 const allSel = ids.length > 0 && ids.every(id => selectedSiswa.has(id))
                 const someSel = ids.some(id => selectedSiswa.has(id))

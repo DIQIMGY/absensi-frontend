@@ -1,47 +1,64 @@
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from 'lucide-react'
 
 export default function DataTable({
-  columns = [], // Default empty array
-  data = [], // Default empty array
+  columns = [],
+  data = [],
   pagination,
   onPageChange,
   onSearch,
   searchPlaceholder = 'Cari...',
   loading = false,
   emptyMessage = 'Tidak ada data',
+  debounceMs = 400,
 }) {
   const [searchValue, setSearchValue] = useState('')
+  const debounceRef = useRef(null)
 
-  // Pastikan data adalah array
+  // Debounce: tunggu 400ms setelah berhenti ketik, baru panggil onSearch
+  useEffect(() => {
+    if (!onSearch) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      onSearch(searchValue)
+    }, debounceMs)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchValue])
+
+  const handleClear = () => {
+    setSearchValue('')
+    if (onSearch) onSearch('')
+  }
+
   const safeData = Array.isArray(data) ? data : []
   const safeColumns = Array.isArray(columns) ? columns : []
-  
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (onSearch) {
-      onSearch(searchValue)
-    }
-  }
 
   return (
     <div className="space-y-4">
       {onSearch && (
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="pl-10 pr-4 py-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <button type="submit" className="btn-primary">
-            Cari
-          </button>
-        </form>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="pl-9 pr-8 py-2 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder-slate-400 shadow-sm"
+          />
+          {searchValue && (
+            <button
+              onClick={handleClear}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={13} />
+            </button>
+          )}
+          {loading && searchValue && (
+            <div className="absolute right-8 top-1/2 -translate-y-1/2">
+              <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
       )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
@@ -63,7 +80,7 @@ export default function DataTable({
               <tr>
                 <td colSpan={safeColumns.length || 1} className="px-4 py-12 text-center">
                   <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
                   </div>
                   <p className="mt-2 text-sm text-slate-500">Memuat data...</p>
                 </td>
@@ -93,41 +110,41 @@ export default function DataTable({
       </div>
 
       {pagination && pagination.total > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            Menampilkan {pagination.from || 0} - {pagination.to || 0} dari {pagination.total || 0} data
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Menampilkan {pagination.from || 0}–{pagination.to || 0} dari {pagination.total || 0} data
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => onPageChange?.(1)}
               disabled={pagination.current_page === 1}
-              className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ChevronsLeft size={16} />
+              <ChevronsLeft size={14} />
             </button>
             <button
               onClick={() => onPageChange?.(pagination.current_page - 1)}
               disabled={pagination.current_page === 1}
-              className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} />
             </button>
-            <span className="px-4 py-2 text-sm text-slate-700 dark:text-slate-300">
-              Halaman {pagination.current_page} dari {pagination.last_page}
+            <span className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              {pagination.current_page} / {pagination.last_page}
             </span>
             <button
               onClick={() => onPageChange?.(pagination.current_page + 1)}
               disabled={pagination.current_page === pagination.last_page}
-              className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
             <button
               onClick={() => onPageChange?.(pagination.last_page)}
               disabled={pagination.current_page === pagination.last_page}
-              className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ChevronsRight size={16} />
+              <ChevronsRight size={14} />
             </button>
           </div>
         </div>

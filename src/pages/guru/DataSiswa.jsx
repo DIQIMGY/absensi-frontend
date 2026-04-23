@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Users,
@@ -27,6 +27,8 @@ export default function DataSiswa() {
   const [pagination, setPagination] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const debounceRef = useRef(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [viewingSiswa, setViewingSiswa] = useState(null)
   const [kelasInfo, setKelasInfo] = useState(null)
@@ -40,6 +42,16 @@ export default function DataSiswa() {
     fetchSiswas()
     fetchStats()
   }, [currentPage, search])
+
+  // Debounce search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setSearch(searchInput)
+      setCurrentPage(1)
+    }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchInput])
 
   const fetchStats = async () => {
     try {
@@ -302,11 +314,8 @@ export default function DataSiswa() {
           <input
             type="text"
             placeholder="Cari siswa (Nama, NIS, NISN)..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setCurrentPage(1)
-            }}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 dark:text-white"
           />
         </div>
