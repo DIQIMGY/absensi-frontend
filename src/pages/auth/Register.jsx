@@ -459,7 +459,7 @@ export default function Register() {
           <motion.img src="/image/bg3.png" alt="ilustrasi"
             initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
             transition={{ delay:0.2, duration:0.6 }}
-            className="w-48 sm:w-56 object-contain select-none pointer-events-none"
+            className="w-72 sm:w-80 object-contain select-none pointer-events-none"
             style={{ filter:'drop-shadow(0 12px 24px rgba(0,0,0,0.3))' }}/>
         </div>
       </div>
@@ -1309,7 +1309,7 @@ export default function Register() {
         <motion.img src="/image/bg3.png" alt="ilustrasi"
           initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }}
           transition={{ delay:0.3, duration:0.7, ease:[0.22,1,0.36,1] }}
-          className="relative z-20 w-64 xl:w-72 object-contain select-none pointer-events-none"
+          className="relative z-20 w-72 xl:w-80 object-contain select-none pointer-events-none"
           style={{ filter:'drop-shadow(0 20px 40px rgba(0,0,0,0.4))' }}/>
       </div>
 
