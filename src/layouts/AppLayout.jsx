@@ -439,7 +439,7 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
 
         {/* Content */}
         <main ref={mainRef} className="flex-1 overflow-auto">
-          <div className="px-3 sm:px-4 lg:px-6 py-4">
+          <div className={location.pathname.endsWith('/dashboard') ? '' : 'px-3 sm:px-4 lg:px-6 py-4'}>
             <Outlet/>
           </div>
         </main>
