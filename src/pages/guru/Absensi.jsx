@@ -420,8 +420,8 @@ export default function GuruAbsensi() {
   const alpha = absensis.filter(a => a.status === 'alpha').length
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="w-full">
+      <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}

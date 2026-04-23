@@ -275,7 +275,7 @@ export default function Ranking() {
   const bulanLabel = BULAN[bulan - 1]
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 px-3 sm:px-4 lg:px-6 py-4">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
 
       {/* ── Page Header ── */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}

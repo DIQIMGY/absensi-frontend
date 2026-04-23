@@ -221,7 +221,7 @@ export default function DataSiswa() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

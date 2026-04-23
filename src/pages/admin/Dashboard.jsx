@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -72,7 +72,7 @@ import {
 import { adminApi } from '../../services/adminService'
 import DashboardVideo from '../../components/DashboardVideo'
 
-// ── Avatar component — handles broken images gracefully ──────────────────────
+// -- Avatar component � handles broken images gracefully ----------------------
 const Avatar = ({ src, name, size = 36, className = '', style = {} }) => {
   const [imgError, setImgError] = useState(false)
   const initial = (name || '?').charAt(0).toUpperCase()
@@ -298,7 +298,7 @@ const ModernFunnelChart = ({ data, color = '#10B981' }) => {
   )
 }
 
-// Enhanced StatCard — tiap card punya chart type berbeda
+// Enhanced StatCard � tiap card punya chart type berbeda
 const EnhancedStatCard = ({
   title, value, icon: Icon, gradient,
   subtitle, trend, trendUp, delay,
@@ -355,7 +355,7 @@ const EnhancedStatCard = ({
         </BarChart>
       </ResponsiveContainer>
     )
-    // 'dot' — scatter-like dots
+    // 'dot' � scatter-like dots
     return (
       <div className="flex items-end justify-between h-full w-full gap-[3px]">
         {d.slice(-8).map((item, i) => {
@@ -664,7 +664,7 @@ export default function AdminDashboard() {
       animate={{ opacity: 1 }}
       className="w-full max-w-full overflow-x-hidden space-y-3 sm:space-y-4 px-2 sm:px-3 lg:px-4"
     >
-      {/* ══ WELCOME BANNER ══════════════════════════════════════════════════ */}
+      {/* -- WELCOME BANNER -------------------------------------------------- */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -711,9 +711,9 @@ export default function AdminDashboard() {
                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
               <h2 className="text-xl sm:text-2xl font-black text-white leading-tight mb-1">
-                Selamat datang, <span className="text-emerald-300">{user?.name?.split(' ')[0] || 'Admin'}</span> 👋
+                Selamat datang, <span className="text-emerald-300">{user?.name?.split(' ')[0] || 'Admin'}</span> ??
               </h2>
-              <p className="text-white/50 text-xs">Administrator · Sistem Absensi Digital</p>
+              <p className="text-white/50 text-xs">Administrator � Sistem Absensi Digital</p>
             </motion.div>
           </div>
 
@@ -745,7 +745,7 @@ export default function AdminDashboard() {
                   {i === 0 && <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center"><Crown size={8} className="text-yellow-900"/></div>}
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[9px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                    {s.nama_lengkap?.split(' ')[0]} · {s.absensis_count}x hadir
+                    {s.nama_lengkap?.split(' ')[0]} � {s.absensis_count}x hadir
                   </div>
                 </motion.div>
               ))}
@@ -792,7 +792,7 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* ── CONTROL BAR ─────────────────────────────────────────────────── */}
+      {/* -- CONTROL BAR --------------------------------------------------- */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -892,9 +892,9 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* ── ATTENDANCE RATE + QUICK ACTIONS + NAV SHORTCUTS dalam satu section ── */}
+      {/* -- ATTENDANCE RATE + QUICK ACTIONS + NAV SHORTCUTS dalam satu section -- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Attendance Rate — spans 1 col */}
+        {/* Attendance Rate � spans 1 col */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -926,7 +926,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Quick Actions: Izin Pending + Alpha — spans 1 col */}
+        {/* Quick Actions: Izin Pending + Alpha � spans 1 col */}
         <div className="grid grid-cols-2 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -981,7 +981,7 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
 
-        {/* Quick Nav Shortcuts — spans 1 col, 2x4 grid */}
+        {/* Quick Nav Shortcuts � spans 1 col, 2x4 grid */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1037,7 +1037,7 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            {/* Outer container — aurora mesh background */}
+            {/* Outer container � aurora mesh background */}
             <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-2xl"
               style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #1e40af 60%, #0f766e 100%)' }}>
 
@@ -1132,7 +1132,7 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Video ambient — di kanan sebagai aksen */}
+      {/* Video ambient � di kanan sebagai aksen */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 flex items-stretch">
         {/* Teks kiri */}
         <div className="flex-1 p-5 flex flex-col justify-center gap-2 z-10">
@@ -1154,7 +1154,7 @@ export default function AdminDashboard() {
       {/* Charts Section - Overview View */}
       {selectedView === 'overview' && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* ── GRAFIK KEHADIRAN: Line + Area Chart ── */}
+        {/* -- GRAFIK KEHADIRAN: Line + Area Chart -- */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1277,7 +1277,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* ── DISTRIBUSI: Stacked horizontal bar ── */}
+        {/* -- DISTRIBUSI: Stacked horizontal bar -- */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1532,7 +1532,7 @@ export default function AdminDashboard() {
                         <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate leading-tight">{nama}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-[10px] text-slate-400 truncate">{kelas}</span>
-                          {nis && <span className="text-[9px] text-slate-300 dark:text-slate-600 hidden sm:inline">· {nis}</span>}
+                          {nis && <span className="text-[9px] text-slate-300 dark:text-slate-600 hidden sm:inline">� {nis}</span>}
                         </div>
                       </div>
 
@@ -1542,7 +1542,7 @@ export default function AdminDashboard() {
                           {sc.label}
                         </span>
                         <span className="text-[9px] font-mono text-slate-400 tabular-nums">
-                          {jam ? jam : tgl ? tgl : '—'}
+                          {jam ? jam : tgl ? tgl : '�'}
                         </span>
                       </div>
                     </motion.div>
@@ -1565,7 +1565,7 @@ export default function AdminDashboard() {
           <motion.div key="analytics" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-16 }}
             className="grid grid-cols-1 lg:grid-cols-5 gap-3">
 
-            {/* ── LEFT col (3/5): stacked charts ── */}
+            {/* -- LEFT col (3/5): stacked charts -- */}
             <div className="lg:col-span-3 flex flex-col gap-3">
 
               {/* Tren area chart */}
@@ -1614,7 +1614,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Kehadiran per kelas — ComposedChart */}
+              {/* Kehadiran per kelas � ComposedChart */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2.5">
@@ -1670,7 +1670,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* ── RIGHT col (2/5): donut + kelas list ── */}
+            {/* -- RIGHT col (2/5): donut + kelas list -- */}
             <div className="lg:col-span-2 flex flex-col gap-3">
 
               {/* Donut distribusi */}
@@ -1763,7 +1763,7 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* ══ RANKINGS SECTION ══════════════════════════════════════════════ */}
+      {/* -- RANKINGS SECTION ---------------------------------------------- */}
       {selectedView === 'overview' && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1771,7 +1771,7 @@ export default function AdminDashboard() {
         transition={{ delay: 0.6 }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       >
-        {/* ── SISWA TERBAIK ── */}
+        {/* -- SISWA TERBAIK -- */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1803,7 +1803,7 @@ export default function AdminDashboard() {
 
             {rankingRajin.length > 0 ? (
               <>
-                {/* ── PODIUM TOP 3 ── */}
+                {/* -- PODIUM TOP 3 -- */}
                 <div className="flex items-end justify-center gap-3 mb-5 px-2">
                   {[
                     { s: rankingRajin[1], rank: 2, podiumH: 48, avatarSize: 52 },
@@ -1866,7 +1866,7 @@ export default function AdminDashboard() {
                         {/* Count badge */}
                         <div className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums"
                           style={{ background: cfg.countBg, color: cfg.countColor, border: `1px solid ${cfg.countBorder}` }}>
-                          {s.absensis_count}×
+                          {s.absensis_count}�
                         </div>
 
                         {/* Podium block */}
@@ -1883,7 +1883,7 @@ export default function AdminDashboard() {
                   })}
                 </div>
 
-                {/* ── RANK 4 & 5 ── */}
+                {/* -- RANK 4 & 5 -- */}
                 <div className="space-y-1.5">
                   {rankingRajin.slice(3, 5).map((s, i) => (
                     <motion.div key={i}
@@ -1895,7 +1895,7 @@ export default function AdminDashboard() {
                       <Avatar src={s.foto_url} name={s.nama_lengkap} size={32}
                         className="bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400" />
                       <p className="flex-1 text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{s.nama_lengkap}</p>
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">{s.absensis_count}×</span>
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">{s.absensis_count}�</span>
                     </motion.div>
                   ))}
                 </div>
@@ -1909,7 +1909,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* ── PERLU PERHATIAN (Alpha + Terlambat) ── */}
+        {/* -- PERLU PERHATIAN (Alpha + Terlambat) -- */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1944,7 +1944,7 @@ export default function AdminDashboard() {
           <div className="p-5 sm:p-6">
             <AnimatePresence mode="wait">
 
-              {/* ── TERLAMBAT ── */}
+              {/* -- TERLAMBAT -- */}
               {activeRankingTab === 'terlambat' && (
                 <motion.div key="terlambat" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
                   {rankingTerlambat.length === 0 ? (
@@ -1980,7 +1980,7 @@ export default function AdminDashboard() {
                               <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{s.kelas?.nama_kelas || '-'}</p>
                             </div>
                             <div className={`relative z-10 flex-shrink-0 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums ${accent.countBg} ${accent.countC}`}>
-                              {s.absensis_count}×
+                              {s.absensis_count}�
                             </div>
                           </motion.div>
                         )
@@ -1990,7 +1990,7 @@ export default function AdminDashboard() {
                 </motion.div>
               )}
 
-              {/* ── ALPHA ── */}
+              {/* -- ALPHA -- */}
               {activeRankingTab === 'alpha' && (
                 <motion.div key="alpha" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }} transition={{ duration: 0.18 }}>
                   {rankingAlpha.length === 0 ? (
@@ -2028,7 +2028,7 @@ export default function AdminDashboard() {
                                 <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{s.kelas?.nama_kelas || '-'}</p>
                               </div>
                               <div className={`relative z-10 flex-shrink-0 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums ${accent.countBg} ${accent.countC}`}>
-                                {s.absensis_count}×
+                                {s.absensis_count}�
                               </div>
                             </motion.div>
                           )
@@ -2050,7 +2050,7 @@ export default function AdminDashboard() {
 
       </motion.div>
       )}
-      {/* ── KELAS TERBAIK + ABSENSI GURU ── */}
+      {/* -- KELAS TERBAIK + ABSENSI GURU -- */}
       {selectedView === 'overview' && grafikPerKelas.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -2065,7 +2065,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm">Kehadiran Per Kelas</h3>
-                <p className="text-[10px] text-slate-400">{periodLabel} · {grafikPerKelas.length} kelas aktif</p>
+                <p className="text-[10px] text-slate-400">{periodLabel} � {grafikPerKelas.length} kelas aktif</p>
               </div>
             </div>
             <Link to="/admin/kelas" className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
@@ -2109,7 +2109,7 @@ export default function AdminDashboard() {
         </motion.div>
       )}
 
-      {/* ── LIVE ACTIVITY + SUMMARY METRICS ── */}
+      {/* -- LIVE ACTIVITY + SUMMARY METRICS -- */}
       {selectedView === 'overview' && absensiTerbaru.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Live Activity Feed */}
@@ -2119,7 +2119,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.3 }}
             className="lg:col-span-2 rounded-2xl overflow-hidden shadow-xl"
           >
-            {/* Header — gradient emerald */}
+            {/* Header � gradient emerald */}
             <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 sm:px-5 py-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="relative">
@@ -2166,7 +2166,7 @@ export default function AdminDashboard() {
                         {a.siswa?.nama_lengkap || a.nama_lengkap || '-'}
                       </p>
                       <p className="text-[10px] text-slate-400 truncate">
-                        {a.siswa?.kelas?.nama_kelas || '-'} · {a.tanggal ? new Date(a.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
+                        {a.siswa?.kelas?.nama_kelas || '-'} � {a.tanggal ? new Date(a.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
                       </p>
                     </div>
                     <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cfg.pill}`}>
@@ -2189,7 +2189,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.35 }}
             className="rounded-2xl overflow-hidden shadow-xl"
           >
-            {/* Header — gradient violet */}
+            {/* Header � gradient violet */}
             <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-4 sm:px-5 py-3.5 flex items-center gap-2.5">
               <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
                 <Target className="text-white" size={15} />
@@ -2242,10 +2242,10 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── TREND AREA CHART + DONUT BREAKDOWN ── */}
+      {/* -- TREND AREA CHART + DONUT BREAKDOWN -- */}
       {selectedView === 'overview' && chartData.length > 1 && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          {/* Area trend chart — 3 cols */}
+          {/* Area trend chart � 3 cols */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2300,7 +2300,7 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
 
-          {/* Donut breakdown — 2 cols */}
+          {/* Donut breakdown � 2 cols */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2359,7 +2359,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── IZIN PENDING ALERT ── */}
+      {/* -- IZIN PENDING ALERT -- */}
       {selectedView === 'overview' && izinPending > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -2378,7 +2378,7 @@ export default function AdminDashboard() {
                   {izinPending} Izin Menunggu Persetujuan
                 </h3>
                 <p className="text-amber-100 text-xs mt-0.5">
-                  Disetujui: {izinApproved} · Ditolak: {izinRejected} · Sakit: {izinSakit} · Biasa: {izinBiasa}
+                  Disetujui: {izinApproved} � Ditolak: {izinRejected} � Sakit: {izinSakit} � Biasa: {izinBiasa}
                 </p>
               </div>
             </div>

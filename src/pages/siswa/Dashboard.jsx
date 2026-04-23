@@ -206,7 +206,7 @@ export default function SiswaDashboard() {
       <SantaiDirumahNotification/>
       {absenHariIni && <SelamatPulangNotification statusKehadiran={absenHariIni.status} dataAbsensi={absenHariIni}/>}
 
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-12">
+      <div className="pb-12">
 
         {/* â•â• HERO BANNER â•â• */}
         <div className="relative overflow-hidden mx-3 sm:mx-4 mt-4 rounded-2xl"

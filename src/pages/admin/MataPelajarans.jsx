@@ -222,7 +222,7 @@ export default function MataPelajarans() {
   ]
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 px-3 sm:px-4 lg:px-6 py-4">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
       {/* Page Header */}
       <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
@@ -242,7 +242,7 @@ export default function MataPelajarans() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           { label:'Total Mapel',    value:mataPelajarans.length,                          icon:BookOpen,  color:'#8b5cf6', border:'border-violet-100 dark:border-violet-800/40', tc:'text-violet-600 dark:text-violet-400', iconBg:'bg-violet-50 dark:bg-violet-900/30', delay:0,    sparkType:'area' },
           { label:'Mapel Aktif',    value:mataPelajarans.filter(m=>m.is_active).length,   icon:CheckCircle,color:'#10b981', border:'border-emerald-100 dark:border-emerald-800/40',tc:'text-emerald-600 dark:text-emerald-400',iconBg:'bg-emerald-50 dark:bg-emerald-900/30',delay:0.05, sparkType:'bar' },

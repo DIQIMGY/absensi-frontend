@@ -120,7 +120,7 @@ export default function GuruStatistikKelas() {
   )
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 sm:space-y-6 px-2 sm:px-0">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4 sm:space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}

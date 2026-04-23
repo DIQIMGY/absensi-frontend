@@ -302,7 +302,7 @@ export default function Alumni() {
   ]
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 px-3 sm:px-4 lg:px-6 py-4">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
 
       {/* PAGE HEADER */}
       <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
@@ -337,7 +337,7 @@ export default function Alumni() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {statsCards.map(s => <AdminStatCard key={s.label} {...s}/>)}
       </div>
 
@@ -363,7 +363,7 @@ export default function Alumni() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label className="block text-[9px] font-medium text-slate-500 dark:text-slate-400 mb-1">
                   Tahun Lulus

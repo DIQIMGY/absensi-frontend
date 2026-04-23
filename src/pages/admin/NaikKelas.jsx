@@ -430,7 +430,7 @@ export default function NaikKelas() {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 px-3 sm:px-4 lg:px-6">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
       {/* Header - EMERALD */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -469,7 +469,7 @@ export default function NaikKelas() {
 
       {/* Stats - EMERALD */}
       {statistik && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <StatCard
             label="Total Diproses"
             value={statistik.statistik?.total || 0}

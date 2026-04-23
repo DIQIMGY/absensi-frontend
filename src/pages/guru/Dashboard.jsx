@@ -203,7 +203,7 @@ export default function GuruDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-8">
+    <div className="pb-8">
 
       {/* ══════════════════════════════════════════════════════════════════
           WELCOME BANNER — inspirasi referensi: banner besar dengan gradient

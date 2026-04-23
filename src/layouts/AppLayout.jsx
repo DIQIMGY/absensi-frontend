@@ -231,13 +231,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
     return () => el.removeEventListener('scroll', fn)
   }, [])
 
-  // Scroll konten ke atas saat pindah halaman — sidebar TIDAK ikut reset
+  // Tutup sidebar mobile saat pindah halaman
   useEffect(() => {
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: 'instant' })
-    }
     setSidebarOpen(false)
-    // Sidebar nav scroll position TIDAK diubah di sini — biarkan tetap diam
   }, [location.pathname])
 
   useEffect(() => {
@@ -443,7 +439,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
 
         {/* Content */}
         <main ref={mainRef} className="flex-1 overflow-auto">
-          <Outlet/>
+          <div className="px-3 sm:px-4 lg:px-6 py-4">
+            <Outlet/>
+          </div>
         </main>
       </div>
 

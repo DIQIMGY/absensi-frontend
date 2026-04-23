@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, 
@@ -543,7 +543,7 @@ export default function Kelas() {
   ]
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 px-3 sm:px-4 lg:px-6 py-4">
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
       {/* Page Header */}
       <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
