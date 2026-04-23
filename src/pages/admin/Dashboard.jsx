@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -79,10 +79,10 @@ const Avatar = ({ src, name, size = 36, className = '', style = {} }) => {
   return (
     <div
       className={`rounded-full overflow-hidden flex items-center justify-center font-semibold flex-shrink-0 ${className}`}
-      style={{ width: size, height: size, fontSize: size > 48  &middot; Math.round(size * 0.35) : Math.round(size * 0.4), ...style }}
+      style={{ width: size, height: size, fontSize: size > 48 ? Math.round(size * 0.35) : Math.round(size * 0.4), ...style }}
     >
       {src && !imgError
-         &middot; <img src={src} alt={name} className="w-full h-full object-cover" onError={() => setImgError(true)} />
+        ? <img src={src} alt={name} className="w-full h-full object-cover" onError={() => setImgError(true)} />
         : <span>{initial}</span>
       }
     </div>
@@ -306,7 +306,7 @@ const EnhancedStatCard = ({
   glowColor = '#10B981',
 }) => {
   const fallback = [{value:2},{value:5},{value:3},{value:7},{value:4},{value:6},{value:5},{value:8}]
-  const d = chartData.length  &middot; chartData : fallback
+  const d = chartData.length ? chartData : fallback
   const uid = glowColor.replace('#','')
   const color = glowColor
 
@@ -400,8 +400,8 @@ const EnhancedStatCard = ({
             <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">{title}</p>
             {subtitle && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
             {trend && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold mt-0.5 ${trendUp  &middot; 'text-emerald-500' : 'text-rose-500'}`}>
-                {trendUp  &middot; <ArrowUpRight size={9}/> : <ArrowDownRight size={9}/>}{trend}
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold mt-0.5 ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {trendUp ? <ArrowUpRight size={9}/> : <ArrowDownRight size={9}/>}{trend}
               </span>
             )}
           </div>
@@ -521,7 +521,7 @@ export default function AdminDashboard() {
             onClick={fetchDashboard}
             className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all text-sm sm:text-base"
           >
-            <RefreshCw size={16} className={loading  &middot; 'animate-spin' : ''} />
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             Coba Lagi
           </motion.button>
         </div>
@@ -547,7 +547,7 @@ export default function AdminDashboard() {
 
   const grafikSource = periodData?.grafik || data?.grafik_mingguan || []
   const chartData = Array.isArray(grafikSource)
-     &middot; grafikSource.map(item => ({
+    ? grafikSource.map(item => ({
         hari: item.hari || item.day || item.tanggal,
         hadir: item.hadir || 0,
         terlambat: item.terlambat || 0,
@@ -585,7 +585,7 @@ export default function AdminDashboard() {
   const rankingTerlambat = data?.ranking_terlambat || []
   
   const kehadiranRate = totalSiswa > 0
-     &middot; Math.round(((siswaHadir + siswaTerlambat) / totalSiswa) * 100)
+    ? Math.round(((siswaHadir + siswaTerlambat) / totalSiswa) * 100)
     : 0
 
   const totalSiswaChartData = chartData.map(item => ({ value: item.total }))
@@ -602,7 +602,7 @@ export default function AdminDashboard() {
     if (previousValue === 0) return null
     const change = ((lastValue - previousValue) / previousValue) * 100
     return {
-      value: `${change > 0  &middot; '+' : ''}${change.toFixed(1)}%`,
+      value: `${change > 0 ? '+' : ''}${change.toFixed(1)}%`,
       isUp: change > 0
     }
   }
@@ -611,7 +611,7 @@ export default function AdminDashboard() {
   const terlambatTrend = calculateTrend(terlambatChartData)
   const alphaTrend = calculateTrend(alphaChartData)
 
-  const periodLabel = timeRange === 'today'  &middot; 'hari ini' : timeRange === 'week'  &middot; '7 hari' : timeRange === 'month'  &middot; 'bulan ini' : 'tahun ini'
+  const periodLabel = timeRange === 'today' ? 'hari ini' : timeRange === 'week' ? '7 hari' : timeRange === 'month' ? 'bulan ini' : 'tahun ini'
 
   const stats = [
     {
@@ -693,7 +693,7 @@ export default function AdminDashboard() {
             className="relative flex-shrink-0"
           >
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ring-4 ring-white/25 overflow-hidden shadow-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-              {(user?.foto_url || user?.foto)  &middot; (
+              {(user?.foto_url || user?.foto) ? (
                 <Avatar src={user.foto_url || user.foto} name={user?.name} size={80} className="w-full h-full" />
               ) : (
                 <span className="text-2xl sm:text-3xl font-black text-white">{(user?.name || 'A').charAt(0).toUpperCase()}</span>
@@ -738,7 +738,7 @@ export default function AdminDashboard() {
                 <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.35 + i * 0.06, type: 'spring', stiffness: 300 }}
                   className="relative group cursor-default"
                   style={{ zIndex: 5 - i }}>
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full ring-2 ring-white/30 overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shadow-lg ${i === 0  &middot; 'ring-yellow-400 ring-2' : ''}`}>
+                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full ring-2 ring-white/30 overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shadow-lg ${i === 0 ? 'ring-yellow-400 ring-2' : ''}`}>
                     <Avatar src={s.foto_url} name={s.nama_lengkap} size={36}
                       className="bg-transparent text-white" />
                   </div>
@@ -812,7 +812,7 @@ export default function AdminDashboard() {
                 onClick={() => setSelectedView(key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   selectedView === key
-                     &middot; 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-600'
                 }`}
               >
@@ -845,7 +845,7 @@ export default function AdminDashboard() {
                 onClick={() => setTimeRange(key)}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   timeRange === key
-                     &middot; 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10'
                 }`}
               >
@@ -873,9 +873,9 @@ export default function AdminDashboard() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setShowStats(!showStats)}
             className="p-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border border-emerald-500/20 text-slate-500 hover:text-emerald-500 transition-all shadow-sm"
-            title={showStats  &middot; 'Sembunyikan statistik' : 'Tampilkan statistik'}
+            title={showStats ? 'Sembunyikan statistik' : 'Tampilkan statistik'}
           >
-            {showStats  &middot; <Eye size={16} /> : <EyeOff size={16} />}
+            {showStats ? <Eye size={16} /> : <EyeOff size={16} />}
           </motion.button>
 
           {/* Refresh */}
@@ -886,7 +886,7 @@ export default function AdminDashboard() {
             disabled={loading}
             className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 text-xs"
           >
-            <RefreshCw size={13} className={loading  &middot; 'animate-spin' : ''} />
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             <span className="hidden sm:inline">Refresh</span>
           </motion.button>
         </div>
@@ -906,9 +906,9 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tingkat Kehadiran {periodLabel}</p>
               <span className={`flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full
-                ${kehadiranRate >= 80  &middot; 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'}`}>
-                {kehadiranRate >= 80  &middot; <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                {kehadiranRate >= 80  &middot; 'Baik' : 'Perlu Perhatian'}
+                ${kehadiranRate >= 80 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'}`}>
+                {kehadiranRate >= 80 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                {kehadiranRate >= 80 ? 'Baik' : 'Perlu Perhatian'}
               </span>
             </div>
             <div className="flex items-end gap-2 mb-3">
@@ -1165,7 +1165,7 @@ export default function AdminDashboard() {
             <div>
               <h3 className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Grafik Kehadiran</h3>
               <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                {timeRange === 'today'  &middot; 'Hari ini' : timeRange === 'week'  &middot; '7 hari terakhir' : timeRange === 'month'  &middot; 'Bulan ini' : 'Tahun ini'}
+                {timeRange === 'today' ? 'Hari ini' : timeRange === 'week' ? '7 hari terakhir' : timeRange === 'month' ? 'Bulan ini' : 'Tahun ini'}
                 {periodLoading && <RefreshCw size={10} className="animate-spin text-emerald-500" />}
               </p>
             </div>
@@ -1183,9 +1183,9 @@ export default function AdminDashboard() {
               ))}
             </div>
           </div>
-          {chartData.length > 0  &middot; (
+          {chartData.length > 0 ? (
             <div className="w-full h-[250px] sm:h-[280px] lg:h-[300px]">
-              {chartData.length === 1  &middot; (
+              {chartData.length === 1 ? (
                 <div className="h-full flex flex-col justify-center gap-4 px-2">
                   {[
                     { key: 'hadir', label: 'Hadir', color: COLORS.chart.hadir },
@@ -1196,14 +1196,14 @@ export default function AdminDashboard() {
                   ].map((item) => {
                     const val = chartData[0]?.[item.key] || 0
                     const total = chartData[0]?.total || 1
-                    const pct = total > 0  &middot; Math.round((val / total) * 100) : 0
+                    const pct = total > 0 ? Math.round((val / total) * 100) : 0
                     return (
                       <div key={item.key} className="flex items-center gap-3">
                         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-16 flex-shrink-0">{item.label}</span>
                         <div className="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                           <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
                             transition={{ duration: 0.9, ease: 'easeOut' }}
-                            className="h-full rounded-full" style={{ backgroundColor: item.color, minWidth: val > 0  &middot; '20px' : '0' }} />
+                            className="h-full rounded-full" style={{ backgroundColor: item.color, minWidth: val > 0 ? '20px' : '0' }} />
                         </div>
                         <div className="flex items-center gap-1.5 w-16 flex-shrink-0">
                           <span className="text-xs font-black tabular-nums" style={{ color: item.color }}>{val}</span>
@@ -1288,7 +1288,7 @@ export default function AdminDashboard() {
             <div>
               <h3 className="font-bold text-slate-800 dark:text-white text-sm">Distribusi Kehadiran</h3>
               <p className="text-[10px] text-slate-400 mt-0.5">
-                {timeRange === 'today'  &middot; 'Hari ini' : timeRange === 'week'  &middot; '7 hari terakhir' : timeRange === 'month'  &middot; 'Bulan ini' : 'Tahun ini'}
+                {timeRange === 'today' ? 'Hari ini' : timeRange === 'week' ? '7 hari terakhir' : timeRange === 'month' ? 'Bulan ini' : 'Tahun ini'}
                 {periodLoading && <RefreshCw size={9} className="animate-spin inline ml-1 text-emerald-500" />}
               </p>
             </div>
@@ -1297,7 +1297,7 @@ export default function AdminDashboard() {
             </span>
           </div>
 
-          {pieData.length > 0  &middot; (() => {
+          {pieData.length > 0 ? (() => {
             const items = [
               { name: 'Hadir',     value: siswaHadir,     color: COLORS.chart.hadir,     icon: UserCheck },
               { name: 'Terlambat', value: siswaTerlambat, color: COLORS.chart.terlambat, icon: Clock },
@@ -1317,7 +1317,7 @@ export default function AdminDashboard() {
                         initial={{ width: 0 }} animate={{ width: `${w}%` }}
                         transition={{ duration: 0.9, delay: 0.4 + idx * 0.08, ease: 'easeOut' }}
                         className="h-full relative group cursor-default flex items-center justify-center"
-                        style={{ backgroundColor: item.color, minWidth: w > 5  &middot; undefined : '4px' }}>
+                        style={{ backgroundColor: item.color, minWidth: w > 5 ? undefined : '4px' }}>
                         {w >= 8 && (
                           <span className="text-[10px] font-black text-white drop-shadow-sm select-none">{w}%</span>
                         )}
@@ -1360,7 +1360,7 @@ export default function AdminDashboard() {
                 {/* Kehadiran rate badge */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                   <span className="text-[11px] text-slate-400">Tingkat kehadiran</span>
-                  <span className={`text-sm font-black tabular-nums ${kehadiranRate >= 80  &middot; 'text-emerald-500' : kehadiranRate >= 60  &middot; 'text-amber-500' : 'text-rose-500'}`}>
+                  <span className={`text-sm font-black tabular-nums ${kehadiranRate >= 80 ? 'text-emerald-500' : kehadiranRate >= 60 ? 'text-amber-500' : 'text-rose-500'}`}>
                     {kehadiranRate}%
                   </span>
                 </div>
@@ -1424,7 +1424,7 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 + i * 0.07 }}
                     whileHover={{ y: -3, scale: 1.02 }}
-                    className={`relative overflow-hidden rounded-xl border ${item.border} ${item.bg} p-3 sm:p-4 ${i === 4  &middot; 'col-span-2 sm:col-span-1' : ''}`}>
+                    className={`relative overflow-hidden rounded-xl border ${item.border} ${item.bg} p-3 sm:p-4 ${i === 4 ? 'col-span-2 sm:col-span-1' : ''}`}>
                     {/* Mini gradient bar top */}
                     <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${item.from} ${item.to}`} />
                     <div className="flex items-center justify-between mb-2">
@@ -1439,7 +1439,7 @@ export default function AdminDashboard() {
                     <div className="mt-2 h-1 bg-white/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${totalIzinHariIni > 0  &middot; Math.round(item.value / totalIzinHariIni * 100) : 0}%` }}
+                        animate={{ width: `${totalIzinHariIni > 0 ? Math.round(item.value / totalIzinHariIni * 100) : 0}%` }}
                         transition={{ duration: 0.8, delay: 0.8 + i * 0.1 }}
                         className={`h-full bg-gradient-to-r ${item.from} ${item.to} rounded-full`}
                       />
@@ -1479,7 +1479,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
 
-            {absensiTerbaru.length > 0  &middot; (
+            {absensiTerbaru.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2">
                 {absensiTerbaru.map((absensi, idx) => {
                   const nama = absensi.siswa?.nama_lengkap || absensi.nama_lengkap || '-'
@@ -1488,7 +1488,7 @@ export default function AdminDashboard() {
                   const foto = absensi.siswa?.foto_url || absensi.siswa?.foto || null
                   const jam = absensi.jam_masuk?.substring(0,5) || null
                   const tgl = absensi.tanggal
-                     &middot; new Date(absensi.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short'})
+                    ? new Date(absensi.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short'})
                     : null
                   const SC = {
                     hadir:     { hex:'#10b981', label:'Hadir',     textCls:'text-emerald-600 dark:text-emerald-400', bgCls:'bg-emerald-50 dark:bg-emerald-900/20' },
@@ -1498,7 +1498,7 @@ export default function AdminDashboard() {
                     alpha:     { hex:'#ef4444', label:'Alpha',     textCls:'text-rose-600 dark:text-rose-400',     bgCls:'bg-rose-50 dark:bg-rose-900/20' },
                   }
                   const sc = SC[absensi.status] || SC.alpha
-                  const isLastRow = idx >= absensiTerbaru.length - (absensiTerbaru.length % 2 === 0  &middot; 2 : 1)
+                  const isLastRow = idx >= absensiTerbaru.length - (absensiTerbaru.length % 2 === 0 ? 2 : 1)
                   const isRightCol = idx % 2 === 1
                   return (
                     <motion.div key={absensi.id||idx}
@@ -1506,8 +1506,8 @@ export default function AdminDashboard() {
                       transition={{ delay: idx*0.02 }}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                       style={{
-                        borderBottom: isLastRow  &middot; 'none' : '1px solid rgba(148,163,184,0.1)',
-                        borderRight: isRightCol  &middot; 'none' : '1px solid rgba(148,163,184,0.1)',
+                        borderBottom: isLastRow ? 'none' : '1px solid rgba(148,163,184,0.1)',
+                        borderRight: isRightCol ? 'none' : '1px solid rgba(148,163,184,0.1)',
                       }}
                     >
                       {/* rank */}
@@ -1516,7 +1516,7 @@ export default function AdminDashboard() {
                       {/* avatar */}
                       <div className="flex-shrink-0">
                         {foto
-                           &middot; <img src={foto} alt={nama}
+                          ? <img src={foto} alt={nama}
                               className="w-9 h-9 rounded-full object-cover"
                               style={{ boxShadow: `0 0 0 2px ${sc.hex}50` }}
                               onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
@@ -1542,7 +1542,7 @@ export default function AdminDashboard() {
                           {sc.label}
                         </span>
                         <span className="text-[9px] font-mono text-slate-400 tabular-nums">
-                          {jam  &middot; jam : tgl  &middot; tgl : '·'}
+                          {jam ? jam : tgl ? tgl : '·'}
                         </span>
                       </div>
                     </motion.div>
@@ -1633,7 +1633,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="px-2 pt-3 pb-2">
-                  {grafikPerKelas.length > 0  &middot; (
+                  {grafikPerKelas.length > 0 ? (
                     <div className="h-[180px] sm:h-[200px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={grafikPerKelas} margin={{top:4,right:32,left:-28,bottom:28}}>
@@ -1801,7 +1801,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
 
-            {rankingRajin.length > 0  &middot; (
+            {rankingRajin.length > 0 ? (
               <>
                 {/* -- PODIUM TOP 3 -- */}
                 <div className="flex items-end justify-center gap-3 mb-5 px-2">
@@ -1845,7 +1845,7 @@ export default function AdminDashboard() {
                         transition={{ delay: 0.7 + rank * 0.07, type: 'spring', stiffness: 160, damping: 18 }}
                         className="flex flex-col items-center gap-1.5 flex-1"
                       >
-                        {rank === 1  &middot; (
+                        {rank === 1 ? (
                           <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}>
                             <Crown size={18} className="text-amber-400" fill="#fbbf24" />
                           </motion.div>
@@ -1919,7 +1919,7 @@ export default function AdminDashboard() {
         >
           <div className="absolute inset-x-0 top-0 h-[2px] transition-all duration-500"
             style={{ background: activeRankingTab === 'terlambat'
-               &middot; 'linear-gradient(90deg, transparent, #f59e0b, transparent)'
+              ? 'linear-gradient(90deg, transparent, #f59e0b, transparent)'
               : 'linear-gradient(90deg, transparent, #f43f5e, transparent)' }} />
 
           {/* Tab header */}
@@ -1932,7 +1932,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveRankingTab(tab.key)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-semibold transition-all border-b-2 ${
                   activeRankingTab === tab.key
-                     &middot; `${tab.activeText} ${tab.activeBorder} bg-slate-50/80 dark:bg-slate-800/50`
+                    ? `${tab.activeText} ${tab.activeBorder} bg-slate-50/80 dark:bg-slate-800/50`
                     : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
                 }`}>
                 <tab.icon size={11} />
@@ -1947,7 +1947,7 @@ export default function AdminDashboard() {
               {/* -- TERLAMBAT -- */}
               {activeRankingTab === 'terlambat' && (
                 <motion.div key="terlambat" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-                  {rankingTerlambat.length === 0  &middot; (
+                  {rankingTerlambat.length === 0 ? (
                     <div className="flex flex-col items-center py-10 gap-3">
                       <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center">
                         <CheckCircle size={20} className="text-emerald-500" />
@@ -1960,11 +1960,11 @@ export default function AdminDashboard() {
                         const maxVal = rankingTerlambat[0]?.absensis_count || 1
                         const pct = Math.round((s.absensis_count / maxVal) * 100)
                         const accent = i === 0
-                           &middot; { numC: '#92400e', rowBg: 'bg-amber-50 dark:bg-amber-900/20', rowBorder: 'border-amber-200 dark:border-amber-800/40', barC: '#fde68a', countBg: 'bg-amber-100 dark:bg-amber-900/40', countC: 'text-amber-700 dark:text-amber-300', ring: '#f59e0b' }
+                          ? { numC: '#92400e', rowBg: 'bg-amber-50 dark:bg-amber-900/20', rowBorder: 'border-amber-200 dark:border-amber-800/40', barC: '#fde68a', countBg: 'bg-amber-100 dark:bg-amber-900/40', countC: 'text-amber-700 dark:text-amber-300', ring: '#f59e0b' }
                           : i === 1
-                           &middot; { numC: '#b45309', rowBg: 'bg-orange-50 dark:bg-orange-900/20', rowBorder: 'border-orange-100 dark:border-orange-800/40', barC: '#fed7aa', countBg: 'bg-orange-100 dark:bg-orange-900/40', countC: 'text-orange-700 dark:text-orange-300', ring: '#fb923c' }
+                          ? { numC: '#b45309', rowBg: 'bg-orange-50 dark:bg-orange-900/20', rowBorder: 'border-orange-100 dark:border-orange-800/40', barC: '#fed7aa', countBg: 'bg-orange-100 dark:bg-orange-900/40', countC: 'text-orange-700 dark:text-orange-300', ring: '#fb923c' }
                           : i === 2
-                           &middot; { numC: '#a16207', rowBg: 'bg-yellow-50 dark:bg-yellow-900/20', rowBorder: 'border-yellow-100 dark:border-yellow-800/40', barC: '#fef08a', countBg: 'bg-yellow-100 dark:bg-yellow-900/40', countC: 'text-yellow-700 dark:text-yellow-300', ring: '#eab308' }
+                          ? { numC: '#a16207', rowBg: 'bg-yellow-50 dark:bg-yellow-900/20', rowBorder: 'border-yellow-100 dark:border-yellow-800/40', barC: '#fef08a', countBg: 'bg-yellow-100 dark:bg-yellow-900/40', countC: 'text-yellow-700 dark:text-yellow-300', ring: '#eab308' }
                           : { numC: '#64748b', rowBg: 'bg-slate-50 dark:bg-slate-800/60', rowBorder: 'border-slate-100 dark:border-slate-700/50', barC: '#cbd5e1', countBg: 'bg-slate-100 dark:bg-slate-700', countC: 'text-slate-500 dark:text-slate-400', ring: '#cbd5e1' }
                         return (
                           <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.07 }}
@@ -1993,7 +1993,7 @@ export default function AdminDashboard() {
               {/* -- ALPHA -- */}
               {activeRankingTab === 'alpha' && (
                 <motion.div key="alpha" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }} transition={{ duration: 0.18 }}>
-                  {rankingAlpha.length === 0  &middot; (
+                  {rankingAlpha.length === 0 ? (
                     <div className="flex flex-col items-center py-10 gap-3">
                       <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center">
                         <CheckCircle size={20} className="text-emerald-500" />
@@ -2008,11 +2008,11 @@ export default function AdminDashboard() {
                           const maxAlpha = rankingAlpha[0]?.absensis_count || 1
                           const pct = Math.round((s.absensis_count / maxAlpha) * 100)
                           const accent = i === 0
-                             &middot; { numC: '#be123c', rowBg: 'bg-rose-50 dark:bg-rose-900/20', rowBorder: 'border-rose-100 dark:border-rose-800/40', barC: '#fda4af', countBg: 'bg-rose-100 dark:bg-rose-900/40', countC: 'text-rose-700 dark:text-rose-300', ring: '#fda4af' }
+                            ? { numC: '#be123c', rowBg: 'bg-rose-50 dark:bg-rose-900/20', rowBorder: 'border-rose-100 dark:border-rose-800/40', barC: '#fda4af', countBg: 'bg-rose-100 dark:bg-rose-900/40', countC: 'text-rose-700 dark:text-rose-300', ring: '#fda4af' }
                             : i === 1
-                             &middot; { numC: '#c2410c', rowBg: 'bg-orange-50 dark:bg-orange-900/20', rowBorder: 'border-orange-100 dark:border-orange-800/40', barC: '#fdba74', countBg: 'bg-orange-100 dark:bg-orange-900/40', countC: 'text-orange-700 dark:text-orange-300', ring: '#fdba74' }
+                            ? { numC: '#c2410c', rowBg: 'bg-orange-50 dark:bg-orange-900/20', rowBorder: 'border-orange-100 dark:border-orange-800/40', barC: '#fdba74', countBg: 'bg-orange-100 dark:bg-orange-900/40', countC: 'text-orange-700 dark:text-orange-300', ring: '#fdba74' }
                             : i === 2
-                             &middot; { numC: '#b45309', rowBg: 'bg-amber-50 dark:bg-amber-900/20', rowBorder: 'border-amber-100 dark:border-amber-800/40', barC: '#fcd34d', countBg: 'bg-amber-100 dark:bg-amber-900/40', countC: 'text-amber-700 dark:text-amber-300', ring: '#fcd34d' }
+                            ? { numC: '#b45309', rowBg: 'bg-amber-50 dark:bg-amber-900/20', rowBorder: 'border-amber-100 dark:border-amber-800/40', barC: '#fcd34d', countBg: 'bg-amber-100 dark:bg-amber-900/40', countC: 'text-amber-700 dark:text-amber-300', ring: '#fcd34d' }
                             : { numC: '#64748b', rowBg: 'bg-slate-50 dark:bg-slate-800/60', rowBorder: 'border-slate-100 dark:border-slate-700/50', barC: '#cbd5e1', countBg: 'bg-slate-100 dark:bg-slate-700', countC: 'text-slate-500 dark:text-slate-400', ring: '#cbd5e1' }
                           return (
                             <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.07 }}
@@ -2076,8 +2076,8 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {grafikPerKelas.slice(0, 8).map((kelas, i) => {
                 const pct = kelas.persentase || 0
-                const color = pct >= 80  &middot; { bar: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
-                  : pct >= 60  &middot; { bar: 'bg-amber-500', text: 'text-amber-600', bg: 'bg-amber-500/10', border: 'border-amber-500/20' }
+                const color = pct >= 80 ? { bar: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
+                  : pct >= 60 ? { bar: 'bg-amber-500', text: 'text-amber-600', bg: 'bg-amber-500/10', border: 'border-amber-500/20' }
                   : { bar: 'bg-red-500', text: 'text-red-600', bg: 'bg-red-500/10', border: 'border-red-500/20' }
                 return (
                   <motion.div
@@ -2166,7 +2166,7 @@ export default function AdminDashboard() {
                         {a.siswa?.nama_lengkap || a.nama_lengkap || '-'}
                       </p>
                       <p className="text-[10px] text-slate-400 truncate">
-                        {a.siswa?.kelas?.nama_kelas || '-'} · {a.tanggal  &middot; new Date(a.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
+                        {a.siswa?.kelas?.nama_kelas || '-'} · {a.tanggal ? new Date(a.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
                       </p>
                     </div>
                     <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cfg.pill}`}>
@@ -2319,7 +2319,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="bg-white dark:bg-slate-800 p-4 flex flex-col items-center">
-              {pieData.length > 0  &middot; (
+              {pieData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
