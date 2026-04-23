@@ -459,7 +459,7 @@ export default function Register() {
           <motion.img src="/image/bg3.png" alt="ilustrasi"
             initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
             transition={{ delay:0.2, duration:0.6 }}
-            className="w-72 sm:w-80 object-contain select-none pointer-events-none"
+            className="w-64 sm:w-72 object-contain select-none pointer-events-none"
             style={{ filter:'drop-shadow(0 12px 24px rgba(0,0,0,0.3))' }}/>
         </div>
       </div>
