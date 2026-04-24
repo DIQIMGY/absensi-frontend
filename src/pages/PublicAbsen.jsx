@@ -563,23 +563,21 @@ export default function PublicAbsen() {
           {/* ── Bottom info cards ── */}
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
             {/* Jadwal */}
-            <div className="relative rounded-2xl overflow-hidden border border-white/10">
-            <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'contrast(1.3) brightness(1.1) saturate(1.3)' }}/>
-              <div className="absolute inset-0 bg-black/30"/>
+            <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+              <img src="/image/bg5.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
               <div className="relative z-10 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white drop-shadow-lg">
-                  <Clock size={10} className="text-emerald-400"/>Jadwal
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 ${isDark?'text-slate-400':'text-slate-500'}`}>
+                  <Clock size={10} className="text-emerald-500"/>Jadwal
                 </p>
                 <div className="space-y-2">
                   {[
-                    { l:'Masuk',  v: jamMasuk||'-',                              c:'text-emerald-400' },
-                    { l:'Pulang', v: pengaturan.jam_pulang?.substring(0,5)||'-', c:'text-blue-400' },
-                    { l:'Buka',   v: pengaturan.jam_buka_absen?.substring(0,5)||'-', c:'text-purple-400' },
+                    { l:'Masuk',  v: jamMasuk||'-',                              c:'text-emerald-500' },
+                    { l:'Pulang', v: pengaturan.jam_pulang?.substring(0,5)||'-', c:'text-blue-500' },
+                    { l:'Buka',   v: pengaturan.jam_buka_absen?.substring(0,5)||'-', c:'text-purple-500' },
                   ].map((x,i)=>(
                     <div key={i} className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-white drop-shadow-md">{x.l}</span>
-                      <span className={`text-[13px] font-black font-mono drop-shadow-md ${x.c}`}>{x.v}</span>
+                      <span className={`text-[11px] ${isDark?'text-slate-500':'text-slate-400'}`}>{x.l}</span>
+                      <span className={`text-[11px] font-black font-mono ${x.c}`}>{x.v}</span>
                     </div>
                   ))}
                 </div>
@@ -587,13 +585,11 @@ export default function PublicAbsen() {
             </div>
 
             {/* Cara absen */}
-            <div className="relative rounded-2xl overflow-hidden border border-white/10">
-              <img src="/image/bg5.png" alt="" className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'contrast(1.3) brightness(1.1) saturate(1.3) sharpness(1)' }}/>
-              <div className="absolute inset-0 bg-black/30"/>
+            <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+              <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
               <div className="relative z-10 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white drop-shadow-lg">
-                  <Sparkles size={10} className="text-emerald-400"/>Cara Absen
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 ${isDark?'text-slate-400':'text-slate-500'}`}>
+                  <Sparkles size={10} className="text-emerald-500"/>Cara Absen
                 </p>
                 <div className="space-y-2">
                   {[
@@ -602,8 +598,8 @@ export default function PublicAbsen() {
                     { n:'3', t:'Isi data & submit',       c:'bg-cyan-500' },
                   ].map((s,i)=>(
                     <div key={i} className="flex items-center gap-2">
-                      <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0 shadow-md`}>{s.n}</span>
-                      <span className="text-[11px] font-bold text-white drop-shadow-md">{s.t}</span>
+                      <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0`}>{s.n}</span>
+                      <span className={`text-[11px] font-medium ${isDark?'text-slate-400':'text-slate-500'}`}>{s.t}</span>
                     </div>
                   ))}
                 </div>
