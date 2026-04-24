@@ -278,13 +278,8 @@ export default function PublicAbsen() {
           RIGHT — Form panel, fills remaining space
       ══════════════════════════════════════════════════════════════════ */}
       <div className="flex-1 flex flex-col min-h-screen lg:h-screen overflow-y-auto relative">
-        {/* Background image — ganti file bgp.jpg dengan gambarmu di public/image/ */}
-        {!isDark && (
-          <div className="absolute inset-0 z-0">
-            <img src="/image/bg4.png" alt="" className="w-full h-full object-cover"/>
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]"/>
-          </div>
-        )}
+        {/* Background — putih */}
+        {!isDark && <div className="absolute inset-0 z-0 bg-white"/>}
         {isDark && <div className="absolute inset-0 z-0 bg-[#080e1a]"/>}
         <div className="relative z-10 flex flex-col flex-1">
 
@@ -569,10 +564,11 @@ export default function PublicAbsen() {
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
             {/* Jadwal */}
             <div className="relative rounded-2xl overflow-hidden border border-white/10">
-              <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"/>
+            <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter: 'contrast(1.3) brightness(1.1) saturate(1.3)' }}/>
+              <div className="absolute inset-0 bg-black/30"/>
               <div className="relative z-10 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white/70">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white drop-shadow-lg">
                   <Clock size={10} className="text-emerald-400"/>Jadwal
                 </p>
                 <div className="space-y-2">
@@ -582,8 +578,8 @@ export default function PublicAbsen() {
                     { l:'Buka',   v: pengaturan.jam_buka_absen?.substring(0,5)||'-', c:'text-purple-400' },
                   ].map((x,i)=>(
                     <div key={i} className="flex items-center justify-between">
-                      <span className="text-[11px] text-white/50">{x.l}</span>
-                      <span className={`text-[11px] font-black font-mono ${x.c}`}>{x.v}</span>
+                      <span className="text-[11px] font-bold text-white drop-shadow-md">{x.l}</span>
+                      <span className={`text-[13px] font-black font-mono drop-shadow-md ${x.c}`}>{x.v}</span>
                     </div>
                   ))}
                 </div>
@@ -592,10 +588,11 @@ export default function PublicAbsen() {
 
             {/* Cara absen */}
             <div className="relative rounded-2xl overflow-hidden border border-white/10">
-              <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"/>
+              <img src="/image/bg5.png" alt="" className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter: 'contrast(1.3) brightness(1.1) saturate(1.3) sharpness(1)' }}/>
+              <div className="absolute inset-0 bg-black/30"/>
               <div className="relative z-10 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white/70">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white drop-shadow-lg">
                   <Sparkles size={10} className="text-emerald-400"/>Cara Absen
                 </p>
                 <div className="space-y-2">
@@ -605,8 +602,8 @@ export default function PublicAbsen() {
                     { n:'3', t:'Isi data & submit',       c:'bg-cyan-500' },
                   ].map((s,i)=>(
                     <div key={i} className="flex items-center gap-2">
-                      <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0`}>{s.n}</span>
-                      <span className="text-[11px] font-medium text-white/70">{s.t}</span>
+                      <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0 shadow-md`}>{s.n}</span>
+                      <span className="text-[11px] font-bold text-white drop-shadow-md">{s.t}</span>
                     </div>
                   ))}
                 </div>
