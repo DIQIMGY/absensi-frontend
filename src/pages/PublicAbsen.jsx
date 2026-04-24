@@ -568,40 +568,48 @@ export default function PublicAbsen() {
           {/* ── Bottom info cards ── */}
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
             {/* Jadwal */}
-            <div className={`rounded-2xl border p-4 ${isDark?'bg-white/[0.03] border-white/8':'bg-white border-slate-100 shadow-sm'}`}>
-              <p className={`text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 ${isDark?'text-slate-400':'text-slate-500'}`}>
-                <Clock size={10} className="text-emerald-500"/>Jadwal
-              </p>
-              <div className="space-y-2">
-                {[
-                  { l:'Masuk',  v: jamMasuk||'-',                              c:'text-emerald-500' },
-                  { l:'Pulang', v: pengaturan.jam_pulang?.substring(0,5)||'-', c:'text-blue-500' },
-                  { l:'Buka',   v: pengaturan.jam_buka_absen?.substring(0,5)||'-', c:'text-purple-500' },
-                ].map((x,i)=>(
-                  <div key={i} className="flex items-center justify-between">
-                    <span className={`text-[11px] ${isDark?'text-slate-500':'text-slate-400'}`}>{x.l}</span>
-                    <span className={`text-[11px] font-black font-mono ${x.c}`}>{x.v}</span>
-                  </div>
-                ))}
+            <div className="relative rounded-2xl overflow-hidden border border-white/10">
+              <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"/>
+              <div className="relative z-10 p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white/70">
+                  <Clock size={10} className="text-emerald-400"/>Jadwal
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { l:'Masuk',  v: jamMasuk||'-',                              c:'text-emerald-400' },
+                    { l:'Pulang', v: pengaturan.jam_pulang?.substring(0,5)||'-', c:'text-blue-400' },
+                    { l:'Buka',   v: pengaturan.jam_buka_absen?.substring(0,5)||'-', c:'text-purple-400' },
+                  ].map((x,i)=>(
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-[11px] text-white/50">{x.l}</span>
+                      <span className={`text-[11px] font-black font-mono ${x.c}`}>{x.v}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Cara absen */}
-            <div className={`rounded-2xl border p-4 ${isDark?'bg-white/[0.03] border-white/8':'bg-white border-slate-100 shadow-sm'}`}>
-              <p className={`text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 ${isDark?'text-slate-400':'text-slate-500'}`}>
-                <Sparkles size={10} className="text-emerald-500"/>Cara Absen
-              </p>
-              <div className="space-y-2">
-                {[
-                  { n:'1', t:'Pilih role (Siswa/Guru)', c:'bg-emerald-500' },
-                  { n:'2', t:'Pilih metode absen',      c:'bg-teal-500' },
-                  { n:'3', t:'Isi data & submit',       c:'bg-cyan-500' },
-                ].map((s,i)=>(
-                  <div key={i} className="flex items-center gap-2">
-                    <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0`}>{s.n}</span>
-                    <span className={`text-[11px] font-medium ${isDark?'text-slate-400':'text-slate-500'}`}>{s.t}</span>
-                  </div>
-                ))}
+            <div className="relative rounded-2xl overflow-hidden border border-white/10">
+              <img src="/image/bg4.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"/>
+              <div className="relative z-10 p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5 text-white/70">
+                  <Sparkles size={10} className="text-emerald-400"/>Cara Absen
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { n:'1', t:'Pilih role (Siswa/Guru)', c:'bg-emerald-500' },
+                    { n:'2', t:'Pilih metode absen',      c:'bg-teal-500' },
+                    { n:'3', t:'Isi data & submit',       c:'bg-cyan-500' },
+                  ].map((s,i)=>(
+                    <div key={i} className="flex items-center gap-2">
+                      <span className={`w-4 h-4 rounded-md ${s.c} flex items-center justify-center text-[9px] font-black text-white flex-shrink-0`}>{s.n}</span>
+                      <span className="text-[11px] font-medium text-white/70">{s.t}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
