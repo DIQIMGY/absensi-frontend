@@ -122,7 +122,7 @@ export default function Login() {
               ))}
             </div>
           </div>
-          <motion.img src="/image/bg2.png" alt="ilustrasi"
+          <motion.img src="/image/bg5.png" alt="ilustrasi"
             initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }}
             transition={{ delay:0.3, duration:0.7, ease:[0.22,1,0.36,1] }}
             className="relative z-20 w-72 xl:w-80 object-contain select-none pointer-events-none"

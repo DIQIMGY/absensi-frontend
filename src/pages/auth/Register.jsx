@@ -456,7 +456,7 @@ export default function Register() {
         </div>
         {/* Gambar — overflow ke bawah masuk area form */}
         <div className="relative z-20 w-full flex justify-center" style={{ marginBottom: '-5rem' }}>
-          <motion.img src="/image/bg3.png" alt="ilustrasi"
+          <motion.img src="/image/bg4.png" alt="ilustrasi"
             initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
             transition={{ delay:0.2, duration:0.6 }}
             className="w-64 sm:w-72 object-contain select-none pointer-events-none"
@@ -1306,7 +1306,7 @@ export default function Register() {
             ))}
           </div>
         </div>
-        <motion.img src="/image/bg3.png" alt="ilustrasi"
+        <motion.img src="/image/bg4.png" alt="ilustrasi"
           initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }}
           transition={{ delay:0.3, duration:0.7, ease:[0.22,1,0.36,1] }}
           className="relative z-20 w-64 xl:w-72 object-contain select-none pointer-events-none"

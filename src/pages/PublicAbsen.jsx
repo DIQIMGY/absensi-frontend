@@ -277,7 +277,16 @@ export default function PublicAbsen() {
       {/* ══════════════════════════════════════════════════════════════════
           RIGHT — Form panel, fills remaining space
       ══════════════════════════════════════════════════════════════════ */}
-      <div className={`flex-1 flex flex-col min-h-screen lg:h-screen overflow-y-auto ${isDark ? 'bg-[#080e1a]' : 'bg-gradient-to-br from-slate-50 via-emerald-50/40 to-teal-50/20'}`}>
+      <div className="flex-1 flex flex-col min-h-screen lg:h-screen overflow-y-auto relative">
+        {/* Background image — ganti file bgp.jpg dengan gambarmu di public/image/ */}
+        {!isDark && (
+          <div className="absolute inset-0 z-0">
+            <img src="/image/bg4.png" alt="" className="w-full h-full object-cover"/>
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]"/>
+          </div>
+        )}
+        {isDark && <div className="absolute inset-0 z-0 bg-[#080e1a]"/>}
+        <div className="relative z-10 flex flex-col flex-1">
 
         {/* Mobile top bar */}
         <div className={`lg:hidden sticky top-0 z-30 border-b backdrop-blur-xl ${isDark ? 'bg-[#080e1a]/90 border-white/5' : 'bg-white/90 border-slate-100'}`}>
@@ -613,6 +622,7 @@ export default function PublicAbsen() {
             © {new Date().getFullYear()} {pengaturan.nama_sekolah||'Sistem Absensi Digital'}
           </p>
         </div>
+        </div>{/* end relative z-10 */}
       </div>
 
       {/* Mobile bottom role switcher */}
