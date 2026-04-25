@@ -262,17 +262,17 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
             {/* Foto kotak kado — sebelum dibuka */}
             <div className="relative" style={{width:120,height:130}}>
               {!rolling && canRoll && (
-                <img src="/image/kotak.png" alt="kotak kado"
+                <img src="/image/kotak1.png" alt="kotak kado"
                   className="w-full h-full object-contain select-none pointer-events-none"
                   style={{filter:'drop-shadow(0 12px 24px rgba(124,58,237,0.5))'}}/>
               )}
-              {/* ROLLING */}
+              {/* ROLLING — kotak2 */}
               {rolling&&(
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div animate={{rotate:360,scale:[1,1.4,1]}}
                     transition={{rotate:{repeat:Infinity,duration:0.45,ease:'linear'},scale:{repeat:Infinity,duration:0.9}}}
                     className="w-full h-full">
-                    <img src="/image/kotak.png" alt="kotak kado"
+                    <img src="/image/kotak2.png" alt="kotak terbuka"
                       className="w-full h-full object-contain"
                       style={{filter:'drop-shadow(0 0 20px rgba(124,58,237,0.8)) brightness(1.2)'}}/>
                   </motion.div>
@@ -281,7 +281,7 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
               {/* LOCKED */}
               {!canRoll&&!rolling&&(
                 <div className="relative w-full h-full">
-                  <img src="/image/kotak.png" alt="kotak kado"
+                  <img src="/image/kotak1.png" alt="kotak kado"
                     className="w-full h-full object-contain select-none"
                     style={{filter:'grayscale(1) opacity(0.4)'}}/>
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
@@ -375,7 +375,7 @@ function RevealModal({ badge, onClose }) {
             <motion.div animate={{scale:[0.9,1.1,0.95,1.05,1],rotate:[0,-5,5,-3,0]}}
               transition={{duration:0.75,ease:'easeOut'}}
               className="relative z-10 select-none w-32 h-32">
-              <img src="/image/kotak.png" alt="kotak kado"
+              <img src="/image/kotak2.png" alt="kotak terbuka"
                 className="w-full h-full object-contain"
                 style={{filter:'drop-shadow(0 0 30px rgba(139,92,246,0.7)) drop-shadow(0 0 60px rgba(124,58,237,0.4))'}}/>
             </motion.div>
