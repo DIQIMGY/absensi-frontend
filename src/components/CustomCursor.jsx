@@ -207,73 +207,150 @@ export default function CustomCursor() {
       while (chain.length < len)  { chain.push({ x: mx, y: my }); blends.push(0) }
       while (chain.length > len)  { chain.pop(); blends.pop() }
 
-      blend = lerp(blend, isIdle ? 1 : 0, clamp(0.05 * dt, 0, 0.2))
-      idleAngle += 0.022 * dt
+    // Emoji yang berputar saat idle — 3 orbit berbeda
+    const ORBIT1 = ['❤️','💚','💙','💜','🧡'] // orbit dalam
+    const ORBIT2 = ['⭐','✨','🌟','💫','⚡']  // orbit tengah
+    const ORBIT3 = ['🌸','🦋','🎵','🎀','🍀']  // orbit luar
 
+    blend = lerp(blend, isIdle ? 1 : 0, clamp(0.05 * dt, 0, 0.2))
+    idleAngle += 0.022 * dt
+
+    for (let i = 0; i < len; i++) {
+      const threshold   = (i / len) * 0.55
+      const localTarget = isIdle ? clamp((blend - threshold) / (1 - threshold + 0.001), 0, 1) : 0
+      const speed       = isIdle ? clamp(0.06 * dt, 0, 0.2) : clamp(0.18 * dt, 0, 0.6)
+      blends[i] = lerp(blends[i], localTarget, speed)
+    }
+
+    if (blend < 0.99) {
       for (let i = 0; i < len; i++) {
-        const threshold   = (i / len) * 0.55
-        const localTarget = isIdle ? clamp((blend - threshold) / (1 - threshold + 0.001), 0, 1) : 0
-        const speed       = isIdle ? clamp(0.06 * dt, 0, 0.2) : clamp(0.18 * dt, 0, 0.6)
-        blends[i] = lerp(blends[i], localTarget, speed)
+        const target = i === 0 ? { x: mx, y: my } : chain[i - 1]
+        const speed  = clamp((0.25 - (i / len) * 0.19) * dt, 0.01, 0.9)
+        chain[i].x = lerp(chain[i].x, target.x, speed)
+        chain[i].y = lerp(chain[i].y, target.y, speed)
       }
+    }
+    if (blend > 0.01) {
+      const radius = 52 + Math.sin(idleAngle * 1.5) * 4
+      for (let i = 0; i < len; i++) {
+        if (blends[i] < 0.005) continue
+        const a  = idleAngle + (i / len) * Math.PI * 2
+        const tx = mx + Math.cos(a) * radius
+        const ty = my + Math.sin(a) * radius
+        const pull = clamp(blends[i] * 0.13 * dt, 0, 0.5)
+        chain[i].x = lerp(chain[i].x, tx, pull)
+        chain[i].y = lerp(chain[i].y, ty, pull)
+      }
+    }
 
-      if (blend < 0.99) {
-        for (let i = 0; i < len; i++) {
-          const target = i === 0 ? { x: mx, y: my } : chain[i - 1]
-          const speed  = clamp((0.25 - (i / len) * 0.19) * dt, 0.01, 0.9)
-          chain[i].x = lerp(chain[i].x, target.x, speed)
-          chain[i].y = lerp(chain[i].y, target.y, speed)
-        }
-      }
-      if (blend > 0.01) {
-        const radius = 52 + Math.sin(idleAngle * 1.5) * 4
-        for (let i = 0; i < len; i++) {
-          if (blends[i] < 0.005) continue
-          const a  = idleAngle + (i / len) * Math.PI * 2
-          const tx = mx + Math.cos(a) * radius
-          const ty = my + Math.sin(a) * radius
-          const pull = clamp(blends[i] * 0.13 * dt, 0, 0.5)
-          chain[i].x = lerp(chain[i].x, tx, pull)
-          chain[i].y = lerp(chain[i].y, ty, pull)
-        }
-      }
+    // Glow blur trail
+    ctx.save(); ctx.filter = 'blur(9px)'
+    for (let i = len-1; i >= 0; i--) {
+      const ratio = 1 - i/len; const [r,g,b] = colorAt(ratio)
+      ctx.beginPath(); ctx.arc(chain[i].x, chain[i].y, 3 + ratio*9, 0, Math.PI*2)
+      ctx.fillStyle = `rgba(${r},${g},${b},${0.04 + ratio*0.07})`; ctx.fill()
+    }
+    ctx.restore()
 
-      ctx.save(); ctx.filter = 'blur(9px)'
-      for (let i = len-1; i >= 0; i--) {
-        const ratio = 1 - i/len; const [r,g,b] = colorAt(ratio)
-        ctx.beginPath(); ctx.arc(chain[i].x, chain[i].y, 3 + ratio*9, 0, Math.PI*2)
-        ctx.fillStyle = `rgba(${r},${g},${b},${0.04 + ratio*0.07})`; ctx.fill()
+    if (blend < 0.8) {
+      ctx.save(); ctx.globalAlpha = (1 - blend) * 0.18; ctx.beginPath()
+      ctx.moveTo(chain[0].x, chain[0].y)
+      for (let i = 1; i < len; i++) {
+        const cx = (chain[i].x + chain[i-1].x) / 2; const cy = (chain[i].y + chain[i-1].y) / 2
+        ctx.quadraticCurveTo(chain[i-1].x, chain[i-1].y, cx, cy)
       }
-      ctx.restore()
+      const lg = ctx.createLinearGradient(chain[0].x, chain[0].y, chain[len-1].x, chain[len-1].y)
+      lg.addColorStop(0, 'rgba(16,185,129,0.9)'); lg.addColorStop(1, 'rgba(99,102,241,0.15)')
+      ctx.strokeStyle = lg; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore()
+    }
 
-      if (blend < 0.8) {
-        ctx.save(); ctx.globalAlpha = (1 - blend) * 0.18; ctx.beginPath()
-        ctx.moveTo(chain[0].x, chain[0].y)
-        for (let i = 1; i < len; i++) {
-          const cx = (chain[i].x + chain[i-1].x) / 2; const cy = (chain[i].y + chain[i-1].y) / 2
-          ctx.quadraticCurveTo(chain[i-1].x, chain[i-1].y, cx, cy)
-        }
-        const lg = ctx.createLinearGradient(chain[0].x, chain[0].y, chain[len-1].x, chain[len-1].y)
-        lg.addColorStop(0, 'rgba(16,185,129,0.9)'); lg.addColorStop(1, 'rgba(99,102,241,0.15)')
-        ctx.strokeStyle = lg; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore()
-      }
+    // Teks bergerak (saat tidak idle)
+    for (let i = len-1; i >= 0; i--) {
+      const ratio = 1 - i/len; const [r,g,b] = colorAt(ratio)
+      const fs = 12 + 6 * ratio; const bi = blends[i]
+      const pulse = bi * (0.5 + 0.5 * Math.sin(idleAngle * 2.5 + i * 0.4))
+      const alpha = 0.5 + ratio * 0.45 + pulse * 0.05
+      const idleRot = idleAngle + (i/len) * Math.PI*2 + Math.PI/2
+      const rot = idleRot * eio(bi)
+      ctx.save(); ctx.translate(chain[i].x, chain[i].y); ctx.rotate(rot)
+      if (i < 3) { ctx.shadowColor = `rgba(${r},${g},${b},${0.5 * ratio})`; ctx.shadowBlur = 8 + ratio * 8 }
+      ctx.font = `bold ${fs}px ui-sans-serif,system-ui,sans-serif`
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText(text[i] || '', 0, 0); ctx.restore()
+    }
 
-      for (let i = len-1; i >= 0; i--) {
-        const ratio = 1 - i/len; const [r,g,b] = colorAt(ratio)
-        const fs = 12 + 6 * ratio; const bi = blends[i]
-        const pulse = bi * (0.5 + 0.5 * Math.sin(idleAngle * 2.5 + i * 0.4))
-        const alpha = 0.5 + ratio * 0.45 + pulse * 0.05
-        const idleRot = idleAngle + (i/len) * Math.PI*2 + Math.PI/2
-        const rot = idleRot * eio(bi)
-        ctx.save(); ctx.translate(chain[i].x, chain[i].y); ctx.rotate(rot)
-        if (i < 3) { ctx.shadowColor = `rgba(${r},${g},${b},${0.5 * ratio})`; ctx.shadowBlur = 8 + ratio * 8 }
-        ctx.font = `bold ${fs}px ui-sans-serif,system-ui,sans-serif`
-        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
+    // ── IDLE EMOJI ORBITS ──────────────────────────────────────────
+    if (blend > 0.05) {
+      const opa = Math.min(1, blend * 2)
+
+      // Orbit 1 — dalam, cepat, emoji hati/warna
+      const r1 = 38 + Math.sin(idleAngle * 2) * 3
+      ORBIT1.forEach((em, i) => {
+        const a = idleAngle * 1.8 + (i / ORBIT1.length) * Math.PI * 2
+        const x = mx + Math.cos(a) * r1
+        const y = my + Math.sin(a) * r1
+        const scale = 0.7 + 0.3 * Math.sin(idleAngle * 3 + i)
+        const fs = Math.round(14 * scale)
+        ctx.save()
+        ctx.globalAlpha = opa * (0.7 + 0.3 * Math.sin(idleAngle * 2 + i))
+        ctx.translate(x, y)
+        ctx.rotate(a + Math.PI / 2)
+        ctx.font = `${fs}px serif`
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-        ctx.fillText(text[i] || '', 0, 0); ctx.restore()
-      }
+        ctx.fillText(em, 0, 0)
+        ctx.restore()
+      })
 
-      renderLogo(ctx, mx, my, dataRef.current.logo, idleAngle, blend)
+      // Orbit 2 — tengah, berlawanan arah
+      const r2 = 62 + Math.sin(idleAngle * 1.3) * 5
+      ORBIT2.forEach((em, i) => {
+        const a = -idleAngle * 1.2 + (i / ORBIT2.length) * Math.PI * 2
+        const x = mx + Math.cos(a) * r2
+        const y = my + Math.sin(a) * r2
+        const scale = 0.8 + 0.2 * Math.sin(idleAngle * 2.5 + i * 1.2)
+        const fs = Math.round(16 * scale)
+        ctx.save()
+        ctx.globalAlpha = opa * (0.6 + 0.4 * Math.sin(idleAngle * 1.5 + i * 0.8))
+        ctx.translate(x, y)
+        ctx.rotate(-a + Math.PI / 2)
+        ctx.font = `${fs}px serif`
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+        ctx.fillText(em, 0, 0)
+        ctx.restore()
+      })
+
+      // Orbit 3 — luar, lambat, besar
+      const r3 = 88 + Math.sin(idleAngle * 0.8) * 6
+      ORBIT3.forEach((em, i) => {
+        const a = idleAngle * 0.7 + (i / ORBIT3.length) * Math.PI * 2
+        const x = mx + Math.cos(a) * r3
+        const y = my + Math.sin(a) * r3
+        const scale = 0.9 + 0.1 * Math.sin(idleAngle * 1.8 + i * 1.5)
+        const fs = Math.round(18 * scale)
+        ctx.save()
+        ctx.globalAlpha = opa * (0.5 + 0.3 * Math.sin(idleAngle + i * 0.6))
+        ctx.translate(x, y)
+        ctx.rotate(a * 0.5)
+        ctx.font = `${fs}px serif`
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+        ctx.fillText(em, 0, 0)
+        ctx.restore()
+      })
+
+      // Glow ring di belakang emoji
+      ctx.save()
+      ctx.globalAlpha = opa * 0.12
+      const gRing = ctx.createRadialGradient(mx, my, 30, mx, my, 100)
+      gRing.addColorStop(0, 'rgba(16,185,129,0.4)')
+      gRing.addColorStop(0.5, 'rgba(99,102,241,0.2)')
+      gRing.addColorStop(1, 'rgba(0,0,0,0)')
+      ctx.beginPath(); ctx.arc(mx, my, 100, 0, Math.PI * 2)
+      ctx.fillStyle = gRing; ctx.fill()
+      ctx.restore()
+    }
+
+    renderLogo(ctx, mx, my, dataRef.current.logo, idleAngle, blend)
     }
 
     raf = requestAnimationFrame(loop)
