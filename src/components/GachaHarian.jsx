@@ -259,67 +259,35 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
               ?{y:{repeat:Infinity,duration:2.6,ease:'easeInOut'},rotate:{repeat:Infinity,duration:2.6,ease:'easeInOut'}}
               :{duration:0.2}}
             whileTap={canRoll&&!rolling?{scale:0.88,rotate:-3}:{}}>
-            {/* BOX */}
+            {/* Foto kotak kado — sebelum dibuka */}
             <div className="relative" style={{width:120,height:130}}>
-              {/* BODY */}
-              <div className="absolute left-0 right-0 bottom-0 rounded-2xl overflow-hidden"
-                style={{height:88,background:boxBg,
-                  boxShadow:canRoll
-                    ?th(isDark,'0 12px 36px rgba(109,40,217,0.5),inset 0 1px 0 rgba(255,255,255,0.2)','0 12px 36px rgba(109,40,217,0.18),inset 0 1px 0 rgba(255,255,255,0.8)')
-                    :th(isDark,'0 6px 18px rgba(0,0,0,0.4)','0 6px 18px rgba(0,0,0,0.07)')}}>
-                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-6" style={{background:ribbonBg}}/>
-                {canRoll&&(
-                  <motion.div animate={{x:['-140%','240%']}}
-                    transition={{repeat:Infinity,duration:3,ease:'linear',repeatDelay:2.5}}
-                    className="absolute inset-0 w-2/5 skew-x-12 pointer-events-none"
-                    style={{background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)'}}/>
-                )}
-                <div className="absolute right-0 top-0 bottom-0 w-3 rounded-r-2xl"
-                  style={{background:th(isDark,'rgba(0,0,0,0.15)','rgba(0,0,0,0.05)')}}/>
-              </div>
-              {/* LID */}
-              <motion.div
-                animate={rolling?{rotateX:-130,y:-26,opacity:0,scale:0.8}:{rotateX:0,y:0,opacity:1,scale:1}}
-                transition={{duration:0.5,ease:[0.4,0,0.2,1]}}
-                style={{transformOrigin:'top center',transformStyle:'preserve-3d',
-                  position:'absolute',top:38,left:-4,right:-4,height:32}}>
-                <div className="w-full h-full rounded-xl overflow-hidden"
-                  style={{background:lidBg,
-                    boxShadow:canRoll
-                      ?th(isDark,'inset 0 1px 0 rgba(255,255,255,0.25)','inset 0 1px 0 rgba(255,255,255,0.6)')
-                      :th(isDark,'inset 0 1px 0 rgba(255,255,255,0.06)','inset 0 1px 0 rgba(255,255,255,0.7)')}}>
-                  <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-6" style={{background:ribbonBg}}/>
-                  <div className="absolute right-0 top-0 bottom-0 w-3 rounded-r-xl"
-                    style={{background:th(isDark,'rgba(0,0,0,0.12)','rgba(0,0,0,0.04)')}}/>
-                </div>
-                {/* BOW */}
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 z-10">
-                  <div className="w-6 h-6 rounded-full -rotate-[20deg]"
-                    style={{border:`3px solid ${bowColor}`,background:bowBg,
-                      boxShadow:canRoll?`0 0 8px rgba(196,181,253,0.4)`:'none'}}/>
-                  <div className="w-3 h-3 rounded-full -mx-0.5 z-10"
-                    style={{background:canRoll?th(isDark,'#7c3aed','#6d28d9'):th(isDark,'#475569','#94a3b8'),
-                      border:`2px solid ${bowColor}`,
-                      boxShadow:canRoll?`0 0 8px rgba(124,58,237,0.6)`:'none'}}/>
-                  <div className="w-6 h-6 rounded-full rotate-[20deg]"
-                    style={{border:`3px solid ${bowColor}`,background:bowBg,
-                      boxShadow:canRoll?`0 0 8px rgba(196,181,253,0.4)`:'none'}}/>
-                </div>
-              </motion.div>
+              {!rolling && canRoll && (
+                <img src="/image/kotak.png" alt="kotak kado"
+                  className="w-full h-full object-contain select-none pointer-events-none"
+                  style={{filter:'drop-shadow(0 12px 24px rgba(124,58,237,0.5))'}}/>
+              )}
               {/* ROLLING */}
               {rolling&&(
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div animate={{rotate:360,scale:[1,1.4,1]}}
                     transition={{rotate:{repeat:Infinity,duration:0.45,ease:'linear'},scale:{repeat:Infinity,duration:0.9}}}
-                    className="text-3xl text-violet-300">✦</motion.div>
+                    className="w-full h-full">
+                    <img src="/image/kotak.png" alt="kotak kado"
+                      className="w-full h-full object-contain"
+                      style={{filter:'drop-shadow(0 0 20px rgba(124,58,237,0.8)) brightness(1.2)'}}/>
+                  </motion.div>
                 </div>
               )}
               {/* LOCKED */}
               {!canRoll&&!rolling&&(
-                <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-1"
-                  style={{background:th(isDark,'rgba(0,0,0,0.5)','rgba(255,255,255,0.55)')}}>
-                  <Lock size={18} className="text-slate-400"/>
-                  <span className="text-[9px] text-slate-500 font-semibold">Besok lagi</span>
+                <div className="relative w-full h-full">
+                  <img src="/image/kotak.png" alt="kotak kado"
+                    className="w-full h-full object-contain select-none"
+                    style={{filter:'grayscale(1) opacity(0.4)'}}/>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <Lock size={18} className="text-slate-400"/>
+                    <span className="text-[9px] text-slate-500 font-semibold">Besok lagi</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -406,14 +374,10 @@ function RevealModal({ badge, onClose }) {
           {phase==='box'&&(
             <motion.div animate={{scale:[0.9,1.1,0.95,1.05,1],rotate:[0,-5,5,-3,0]}}
               transition={{duration:0.75,ease:'easeOut'}}
-              className="relative z-10 select-none w-24 h-24 rounded-3xl flex items-center justify-center"
-              style={{background:'linear-gradient(145deg,#dc2626,#b91c1c)',boxShadow:'0 0 40px rgba(139,92,246,0.6), 0 8px 32px rgba(220,38,38,0.5)'}}>
-              {/* Ribbon */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-4" style={{background:'linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24)'}}/>
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4" style={{background:'linear-gradient(180deg,#fbbf24,#f59e0b,#fbbf24)'}}/>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center" style={{background:'#f59e0b'}}>
-                <Star size={14} className="text-white" fill="white"/>
-              </div>
+              className="relative z-10 select-none w-32 h-32">
+              <img src="/image/kotak.png" alt="kotak kado"
+                className="w-full h-full object-contain"
+                style={{filter:'drop-shadow(0 0 30px rgba(139,92,246,0.7)) drop-shadow(0 0 60px rgba(124,58,237,0.4))'}}/>
             </motion.div>
           )}
           {phase==='question'&&(
@@ -722,7 +686,7 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                 animate={{ y: [0, -8, 0] }}
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}>
 
-                {/* Gift box */}
+                {/* Gift box — foto kotak.png */}
                 <div className="relative w-16 h-16">
                   {/* Glow ring */}
                   <motion.div
@@ -731,32 +695,9 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                     className="absolute inset-0 rounded-2xl"
                     style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.6) 0%, transparent 70%)' }}/>
 
-                  {/* Box body */}
-                  <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden"
-                    style={{ background: 'linear-gradient(145deg,#dc2626,#b91c1c,#991b1b)', boxShadow: '0 8px 32px rgba(220,38,38,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}>
-
-                    {/* Ribbon horizontal */}
-                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3"
-                      style={{ background: 'linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24)' }}/>
-                    {/* Ribbon vertical */}
-                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3"
-                      style={{ background: 'linear-gradient(180deg,#fbbf24,#f59e0b,#fbbf24)' }}/>
-
-                    {/* Bow top — icon */}
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                        style={{ background: '#f59e0b' }}>
-                        <Star size={12} className="text-white" fill="white"/>
-                      </div>
-                    </div>
-
-                    {/* Shine */}
-                    <motion.div
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ repeat: Infinity, duration: 2.5, repeatDelay: 1 }}
-                      className="absolute inset-0 w-1/3"
-                      style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)', transform: 'skewX(-20deg)' }}/>
-                  </div>
+                  <img src="/image/kotak.png" alt="kotak kado"
+                    className="relative z-10 w-full h-full object-contain select-none pointer-events-none"
+                    style={{ filter: 'drop-shadow(0 8px 16px rgba(220,38,38,0.6)) drop-shadow(0 0 20px rgba(124,58,237,0.4))' }}/>
 
                   {/* Ping dot */}
                   <motion.span
