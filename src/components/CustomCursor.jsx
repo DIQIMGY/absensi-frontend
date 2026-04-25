@@ -53,25 +53,24 @@ export default function CustomCursor() {
       // Logo/dot di tengah
       particles.push({ type: 'logo', x, y, r: 0, maxR: 16, life: 1, decay: 0.025, logo })
 
-      // Huruf menyebar
-      const chars = text.split('')
-      chars.forEach((ch, i) => {
-        const angle = (i / chars.length) * Math.PI * 2
+      // Partikel shapes menyebar (ganti huruf)
+      const SHAPE_COLORS = ['#10b981','#6366f1','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#34d399','#fbbf24']
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2
         const speed = 2.5 + Math.random() * 2
-        const ratio = i / chars.length
-        const [r,g,b] = colorAt(ratio)
+        const col = SHAPE_COLORS[i % SHAPE_COLORS.length]
+        const shapeType = i % 3 // 0=circle, 1=diamond, 2=triangle
         particles.push({
-          type: 'char', ch,
+          type: 'shape', shapeType, col,
           x, y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           life: 1, decay: 0.022 + Math.random() * 0.01,
-          fs: 11 + ratio * 7,
-          color: [r,g,b],
+          sz: 4 + Math.random() * 4,
           rot: Math.random() * Math.PI * 2,
           rotSpeed: (Math.random() - 0.5) * 0.15,
         })
-      })
+      }
     }
 
     const loop = () => {
@@ -116,18 +115,26 @@ export default function CustomCursor() {
           ctx.restore()
         }
 
-        if (p.type === 'char') {
+        if (p.type === 'shape') {
           p.x += p.vx; p.y += p.vy
           p.vx *= 0.93; p.vy *= 0.93
           p.rot += p.rotSpeed
-          const [r,g,b] = p.color
           ctx.save()
           ctx.globalAlpha = alpha
           ctx.translate(p.x, p.y); ctx.rotate(p.rot)
-          ctx.font = `bold ${p.fs}px ui-sans-serif,system-ui,sans-serif`
-          ctx.fillStyle = `rgb(${r},${g},${b})`
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-          ctx.fillText(p.ch, 0, 0)
+          ctx.fillStyle = p.col
+          ctx.shadowColor = p.col; ctx.shadowBlur = 8
+          if (p.shapeType === 0) {
+            ctx.beginPath(); ctx.arc(0, 0, p.sz, 0, Math.PI * 2); ctx.fill()
+          } else if (p.shapeType === 1) {
+            ctx.beginPath()
+            ctx.moveTo(0, -p.sz); ctx.lineTo(p.sz, 0); ctx.lineTo(0, p.sz); ctx.lineTo(-p.sz, 0)
+            ctx.closePath(); ctx.fill()
+          } else {
+            ctx.beginPath()
+            ctx.moveTo(0, -p.sz); ctx.lineTo(p.sz * 0.866, p.sz * 0.5); ctx.lineTo(-p.sz * 0.866, p.sz * 0.5)
+            ctx.closePath(); ctx.fill()
+          }
           ctx.restore()
         }
       }
@@ -207,11 +214,7 @@ export default function CustomCursor() {
       while (chain.length < len)  { chain.push({ x: mx, y: my }); blends.push(0) }
       while (chain.length > len)  { chain.pop(); blends.pop() }
 
-    // Emoji yang berputar saat idle — 3 orbit berbeda
-    const ORBIT1 = ['❤️','💚','💙','💜','🧡'] // orbit dalam
-    const ORBIT2 = ['⭐','✨','🌟','💫','⚡']  // orbit tengah
-    const ORBIT3 = ['🌸','🦋','🎵','🎀','🍀']  // orbit luar
-
+    // ── IDLE ORBITS — geometric shapes (no emoji) ──────────────────
     blend = lerp(blend, isIdle ? 1 : 0, clamp(0.05 * dt, 0, 0.2))
     idleAngle += 0.022 * dt
 
@@ -280,65 +283,72 @@ export default function CustomCursor() {
       ctx.fillText(text[i] || '', 0, 0); ctx.restore()
     }
 
-    // ── IDLE EMOJI ORBITS ──────────────────────────────────────────
+    // ── IDLE ORBITS — geometric shapes (no emoji) ──────────────────
     if (blend > 0.05) {
       const opa = Math.min(1, blend * 2)
 
-      // Orbit 1 — dalam, cepat, emoji hati/warna
+      // Orbit 1 — dalam, cepat — filled circles
       const r1 = 38 + Math.sin(idleAngle * 2) * 3
-      ORBIT1.forEach((em, i) => {
-        const a = idleAngle * 1.8 + (i / ORBIT1.length) * Math.PI * 2
+      const COLORS1 = ['#10b981','#34d399','#6ee7b7','#059669','#047857']
+      COLORS1.forEach((col, i) => {
+        const a = idleAngle * 1.8 + (i / COLORS1.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r1
         const y = my + Math.sin(a) * r1
-        const scale = 0.7 + 0.3 * Math.sin(idleAngle * 3 + i)
-        const fs = Math.round(14 * scale)
+        const sz = 4 + 2 * Math.sin(idleAngle * 3 + i)
         ctx.save()
         ctx.globalAlpha = opa * (0.7 + 0.3 * Math.sin(idleAngle * 2 + i))
-        ctx.translate(x, y)
-        ctx.rotate(a + Math.PI / 2)
-        ctx.font = `${fs}px serif`
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-        ctx.fillText(em, 0, 0)
+        ctx.beginPath(); ctx.arc(x, y, sz, 0, Math.PI * 2)
+        ctx.fillStyle = col
+        ctx.shadowColor = col; ctx.shadowBlur = 8
+        ctx.fill()
         ctx.restore()
       })
 
-      // Orbit 2 — tengah, berlawanan arah
+      // Orbit 2 — tengah, berlawanan — diamonds (rotated squares)
       const r2 = 62 + Math.sin(idleAngle * 1.3) * 5
-      ORBIT2.forEach((em, i) => {
-        const a = -idleAngle * 1.2 + (i / ORBIT2.length) * Math.PI * 2
+      const COLORS2 = ['#6366f1','#818cf8','#a5b4fc','#4f46e5','#7c3aed']
+      COLORS2.forEach((col, i) => {
+        const a = -idleAngle * 1.2 + (i / COLORS2.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r2
         const y = my + Math.sin(a) * r2
-        const scale = 0.8 + 0.2 * Math.sin(idleAngle * 2.5 + i * 1.2)
-        const fs = Math.round(16 * scale)
+        const sz = 5 + 2 * Math.sin(idleAngle * 2.5 + i * 1.2)
+        const rot = idleAngle * 2 + i
         ctx.save()
         ctx.globalAlpha = opa * (0.6 + 0.4 * Math.sin(idleAngle * 1.5 + i * 0.8))
-        ctx.translate(x, y)
-        ctx.rotate(-a + Math.PI / 2)
-        ctx.font = `${fs}px serif`
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-        ctx.fillText(em, 0, 0)
+        ctx.translate(x, y); ctx.rotate(rot)
+        ctx.beginPath()
+        ctx.moveTo(0, -sz); ctx.lineTo(sz, 0); ctx.lineTo(0, sz); ctx.lineTo(-sz, 0)
+        ctx.closePath()
+        ctx.fillStyle = col
+        ctx.shadowColor = col; ctx.shadowBlur = 10
+        ctx.fill()
         ctx.restore()
       })
 
-      // Orbit 3 — luar, lambat, besar
+      // Orbit 3 — luar, lambat — triangles
       const r3 = 88 + Math.sin(idleAngle * 0.8) * 6
-      ORBIT3.forEach((em, i) => {
-        const a = idleAngle * 0.7 + (i / ORBIT3.length) * Math.PI * 2
+      const COLORS3 = ['#f59e0b','#fbbf24','#fcd34d','#d97706','#b45309']
+      COLORS3.forEach((col, i) => {
+        const a = idleAngle * 0.7 + (i / COLORS3.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r3
         const y = my + Math.sin(a) * r3
-        const scale = 0.9 + 0.1 * Math.sin(idleAngle * 1.8 + i * 1.5)
-        const fs = Math.round(18 * scale)
+        const sz = 6 + 2 * Math.sin(idleAngle * 1.8 + i * 1.5)
+        const rot = a * 0.5 + idleAngle
         ctx.save()
         ctx.globalAlpha = opa * (0.5 + 0.3 * Math.sin(idleAngle + i * 0.6))
-        ctx.translate(x, y)
-        ctx.rotate(a * 0.5)
-        ctx.font = `${fs}px serif`
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-        ctx.fillText(em, 0, 0)
+        ctx.translate(x, y); ctx.rotate(rot)
+        ctx.beginPath()
+        ctx.moveTo(0, -sz)
+        ctx.lineTo(sz * 0.866, sz * 0.5)
+        ctx.lineTo(-sz * 0.866, sz * 0.5)
+        ctx.closePath()
+        ctx.fillStyle = col
+        ctx.shadowColor = col; ctx.shadowBlur = 8
+        ctx.fill()
         ctx.restore()
       })
 
-      // Glow ring di belakang emoji
+      // Glow ring
       ctx.save()
       ctx.globalAlpha = opa * 0.12
       const gRing = ctx.createRadialGradient(mx, my, 30, mx, my, 100)

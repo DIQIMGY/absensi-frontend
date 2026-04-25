@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Star, Zap } from 'lucide-react'
+import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, Package } from 'lucide-react'
 import { siswaApi } from '../services/siswaService'
 import { useThemeStore } from '../stores/themeStore'
 import toast from 'react-hot-toast'
@@ -406,8 +406,15 @@ function RevealModal({ badge, onClose }) {
           {phase==='box'&&(
             <motion.div animate={{scale:[0.9,1.1,0.95,1.05,1],rotate:[0,-5,5,-3,0]}}
               transition={{duration:0.75,ease:'easeOut'}}
-              className="relative z-10 text-8xl select-none"
-              style={{filter:'drop-shadow(0 0 20px rgba(139,92,246,0.6))'}}>🎁</motion.div>
+              className="relative z-10 select-none w-24 h-24 rounded-3xl flex items-center justify-center"
+              style={{background:'linear-gradient(145deg,#dc2626,#b91c1c)',boxShadow:'0 0 40px rgba(139,92,246,0.6), 0 8px 32px rgba(220,38,38,0.5)'}}>
+              {/* Ribbon */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-4" style={{background:'linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24)'}}/>
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4" style={{background:'linear-gradient(180deg,#fbbf24,#f59e0b,#fbbf24)'}}/>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center" style={{background:'#f59e0b'}}>
+                <Star size={14} className="text-white" fill="white"/>
+              </div>
+            </motion.div>
           )}
           {phase==='question'&&(
             <motion.div initial={{scale:0,y:30}} animate={{scale:1,y:0}}
@@ -455,7 +462,7 @@ function RevealModal({ badge, onClose }) {
               <motion.button whileTap={{scale:0.96}} onClick={onClose}
                 className="w-full py-3.5 rounded-2xl text-sm font-black text-white transition-all"
                 style={{background:cfg.gradBtn,boxShadow:`0 6px 28px ${cfg.glow2}`}}>
-                Lihat Hadiah ✨
+                <SparklesIcon size={14} className="inline mr-1"/>Lihat Hadiah
               </motion.button>
             </motion.div>
           )}
@@ -564,7 +571,7 @@ function GachaInlinePanel({ canRoll, badges, activeId, rolling, nextLabel, isDar
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{background:canRoll?th(isDark,'rgba(124,58,237,0.2)','rgba(124,58,237,0.1)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
               border:`1px solid ${canRoll?th(isDark,'rgba(139,92,246,0.4)','rgba(139,92,246,0.3)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
-            <span className="text-lg">{canRoll?'🎁':'🔒'}</span>
+            {canRoll ? <Gift size={18} className="text-violet-500"/> : <Lock size={18} className="text-slate-400"/>}
           </div>
           {canRoll&&<motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
             className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500"
@@ -735,9 +742,12 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                     <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3"
                       style={{ background: 'linear-gradient(180deg,#fbbf24,#f59e0b,#fbbf24)' }}/>
 
-                    {/* Bow top */}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex items-center justify-center">
-                      <span className="text-xl leading-none" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}>🎀</span>
+                    {/* Bow top — icon */}
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{ background: '#f59e0b' }}>
+                        <Star size={12} className="text-white" fill="white"/>
+                      </div>
                     </div>
 
                     {/* Shine */}
@@ -754,15 +764,19 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                     transition={{ repeat: Infinity, duration: 1.5 }}
                     className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-400 border-2 border-white shadow-lg"/>
 
-                  {/* Stars particles */}
-                  {['⭐','✨','🌟'].map((s, i) => (
-                    <motion.span key={i}
-                      className="absolute text-xs pointer-events-none"
-                      style={{ top: i === 0 ? '-8px' : i === 1 ? '50%' : 'auto', bottom: i === 2 ? '-8px' : 'auto', left: i === 1 ? '-12px' : '50%', transform: 'translateX(-50%)' }}
-                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5], y: [0, -6, 0] }}
-                      transition={{ repeat: Infinity, duration: 2, delay: i * 0.6 }}>
-                      {s}
-                    </motion.span>
+                  {/* Particle icons */}
+                  {[
+                    { icon: Star, top: '-10px', left: '50%', delay: 0 },
+                    { icon: SparklesIcon, top: '50%', left: '-14px', delay: 0.6 },
+                    { icon: Gift, bottom: '-10px', left: '50%', delay: 1.2 },
+                  ].map(({ icon: Icon, top, left, bottom, delay }, i) => (
+                    <motion.div key={i}
+                      className="absolute pointer-events-none"
+                      style={{ top, left, bottom, transform: 'translateX(-50%)' }}
+                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.1, 0.5], y: [0, -5, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, delay }}>
+                      <Icon size={10} className="text-amber-400" fill="currentColor"/>
+                    </motion.div>
                   ))}
                 </div>
 
@@ -771,9 +785,9 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                   animate={{ opacity: [0.8, 1, 0.8] }}
                   transition={{ repeat: Infinity, duration: 2 }}
                   className="mt-1 text-center">
-                  <span className="text-[10px] font-black text-white px-2 py-0.5 rounded-full shadow-lg"
+                  <span className="text-[10px] font-black text-white px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1"
                     style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 2px 8px rgba(220,38,38,0.5)' }}>
-                    BUKA!
+                    <Gift size={9}/> BUKA!
                   </span>
                 </motion.div>
               </motion.div>
@@ -847,7 +861,7 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{background:canRoll?th(isDark,'rgba(124,58,237,0.2)','rgba(124,58,237,0.1)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
                 border:`1px solid ${canRoll?th(isDark,'rgba(139,92,246,0.4)','rgba(139,92,246,0.3)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
-              <span className="text-lg">{canRoll?'🎁':'🔒'}</span>
+              {canRoll ? <Gift size={18} className="text-violet-500"/> : <Lock size={18} className="text-slate-400"/>}
             </div>
             {canRoll&&(
               <motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
