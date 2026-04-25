@@ -544,12 +544,80 @@ function EquipDialog({ badge, onEquip, onSkip, isDark }) {
 }
 
 // ─── GACHA HARIAN (main) ──────────────────────────────────────
-export default function GachaHarian({ onBadgeChange }) {
+// ─── INLINE PANEL (used in floating mode) ─────────────────────
+function GachaInlinePanel({ canRoll, badges, activeId, rolling, nextLabel, isDark, onRoll, onToggle }) {
+  return (
+    <div className="relative rounded-2xl overflow-hidden"
+      style={{
+        background: canRoll
+          ? th(isDark,'linear-gradient(160deg,#0d0820,#160d35,#0d0820)','linear-gradient(160deg,#f5f3ff,#ede9fe,#f5f3ff)')
+          : th(isDark,'linear-gradient(160deg,#0c1018,#141c28,#0c1018)','linear-gradient(160deg,#f8fafc,#f1f5f9,#f8fafc)'),
+        boxShadow: canRoll
+          ? th(isDark,'0 0 0 1px rgba(124,58,237,0.25), 0 20px 60px rgba(109,40,217,0.2)','0 0 0 1px rgba(139,92,246,0.2), 0 20px 60px rgba(109,40,217,0.1)')
+          : th(isDark,'0 0 0 1px rgba(71,85,105,0.2), 0 8px 32px rgba(0,0,0,0.3)','0 0 0 1px rgba(203,213,225,0.8), 0 8px 32px rgba(0,0,0,0.06)'),
+      }}>
+      <motion.div animate={canRoll?{opacity:[0.4,1,0.4]}:{opacity:0.2}} transition={{repeat:Infinity,duration:2.5}}
+        className="absolute top-0 inset-x-0 h-px pointer-events-none"
+        style={{background:canRoll?'linear-gradient(90deg,transparent,rgba(139,92,246,0.9),transparent)':'linear-gradient(90deg,transparent,rgba(71,85,105,0.5),transparent)'}}/>
+      <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+        <div className="relative">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{background:canRoll?th(isDark,'rgba(124,58,237,0.2)','rgba(124,58,237,0.1)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
+              border:`1px solid ${canRoll?th(isDark,'rgba(139,92,246,0.4)','rgba(139,92,246,0.3)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
+            <span className="text-lg">{canRoll?'🎁':'🔒'}</span>
+          </div>
+          {canRoll&&<motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
+            className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500"
+            style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}/>}
+        </div>
+        <div>
+          <p className={`text-sm font-black ${th(isDark,'text-white','text-slate-800')}`}>Gacha Harian</p>
+          <p className="text-[10px] font-medium"
+            style={{color:canRoll?th(isDark,'rgba(167,139,250,0.85)','rgba(109,40,217,0.8)'):th(isDark,'rgba(100,116,139,0.7)','rgba(100,116,139,0.8)')}}>
+            {canRoll?'✨ Hadiahmu menunggu hari ini!':`Tersedia lagi pukul ${nextLabel}`}
+          </p>
+        </div>
+      </div>
+      <div className="flex justify-center px-5 py-4">
+        <GiftBox canRoll={canRoll} rolling={rolling} onClick={onRoll} isDark={isDark}/>
+      </div>
+      {badges.length>0&&(
+        <div className="px-5 pb-5">
+          <div className="flex flex-wrap gap-2">
+            {badges.map(badge=>{
+              const cfg=RARITY_CFG[badge.rarity]||RARITY_CFG.common
+              const isActive=activeId===badge.id
+              return (
+                <motion.button key={badge.id} whileTap={{scale:0.88}}
+                  onClick={()=>onToggle(badge)}
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
+                  style={isActive?{background:cfg.gradBtn,border:`1px solid ${cfg.particle}`,color:'#fff'}
+                    :{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
+                      border:`1px solid ${th(isDark,'rgba(255,255,255,0.09)','rgba(0,0,0,0.1)')}`,
+                      color:th(isDark,'rgba(255,255,255,0.45)','rgba(0,0,0,0.5)')}}>
+                  <span className="text-base leading-none">{badge.emoji}</span>
+                  <span>{badge.name}</span>
+                  {isActive&&<span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
+                    style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}>
+                    <span className="text-[8px] text-white font-black">✓</span>
+                  </span>}
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function GachaHarian({ onBadgeChange, floating = false }) {
   const [status, setStatus]       = useState(null)
   const [rolling, setRolling]     = useState(false)
   const [result, setResult]       = useState(null)
   const [equipDialog, setEquipDialog] = useState(null)
   const [loading, setLoading]     = useState(true)
+  const [showPanel, setShowPanel] = useState(false)
   const { isDark } = useThemeStore()
 
   useEffect(() => { fetchStatus() }, [])
@@ -622,6 +690,137 @@ export default function GachaHarian({ onBadgeChange }) {
   if (!canRoll && status?.next_roll_at) {
     try { nextLabel = new Date(status.next_roll_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) }
     catch { /**/ }
+  }
+
+  // ── FLOATING MODE ──
+  if (floating) {
+    return (
+      <>
+        <AnimatePresence>
+          {canRoll && !showPanel && (
+            <motion.button
+              key="float-btn"
+              initial={{ scale: 0, opacity: 0, y: 20 }}
+              animate={{
+                scale: 1, opacity: 1, y: 0,
+              }}
+              exit={{ scale: 0, opacity: 0, y: 20, transition: { duration: 0.3, ease: 'backIn' } }}
+              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+              onClick={() => setShowPanel(true)}
+              className="fixed top-20 right-4 z-50 cursor-pointer select-none"
+              title="Gacha Harian tersedia!">
+
+              {/* Floating bounce wrapper */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}>
+
+                {/* Gift box */}
+                <div className="relative w-16 h-16">
+                  {/* Glow ring */}
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.2, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="absolute inset-0 rounded-2xl"
+                    style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.6) 0%, transparent 70%)' }}/>
+
+                  {/* Box body */}
+                  <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden"
+                    style={{ background: 'linear-gradient(145deg,#dc2626,#b91c1c,#991b1b)', boxShadow: '0 8px 32px rgba(220,38,38,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}>
+
+                    {/* Ribbon horizontal */}
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3"
+                      style={{ background: 'linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24)' }}/>
+                    {/* Ribbon vertical */}
+                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3"
+                      style={{ background: 'linear-gradient(180deg,#fbbf24,#f59e0b,#fbbf24)' }}/>
+
+                    {/* Bow top */}
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                      <span className="text-xl leading-none" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}>🎀</span>
+                    </div>
+
+                    {/* Shine */}
+                    <motion.div
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 2.5, repeatDelay: 1 }}
+                      className="absolute inset-0 w-1/3"
+                      style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)', transform: 'skewX(-20deg)' }}/>
+                  </div>
+
+                  {/* Ping dot */}
+                  <motion.span
+                    animate={{ scale: [1, 2, 1], opacity: [1, 0, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-400 border-2 border-white shadow-lg"/>
+
+                  {/* Stars particles */}
+                  {['⭐','✨','🌟'].map((s, i) => (
+                    <motion.span key={i}
+                      className="absolute text-xs pointer-events-none"
+                      style={{ top: i === 0 ? '-8px' : i === 1 ? '50%' : 'auto', bottom: i === 2 ? '-8px' : 'auto', left: i === 1 ? '-12px' : '50%', transform: 'translateX(-50%)' }}
+                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5], y: [0, -6, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, delay: i * 0.6 }}>
+                      {s}
+                    </motion.span>
+                  ))}
+                </div>
+
+                {/* Label */}
+                <motion.div
+                  animate={{ opacity: [0.8, 1, 0.8] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="mt-1 text-center">
+                  <span className="text-[10px] font-black text-white px-2 py-0.5 rounded-full shadow-lg"
+                    style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 2px 8px rgba(220,38,38,0.5)' }}>
+                    BUKA!
+                  </span>
+                </motion.div>
+              </motion.div>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showPanel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowPanel(false)}>
+              <motion.div
+                initial={{ scale: 0.85, y: 30, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.85, y: 30, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-sm relative">
+                <button onClick={() => setShowPanel(false)}
+                  className="absolute -top-3 -right-3 z-10 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-800 text-sm font-bold">
+                  ✕
+                </button>
+                <GachaInlinePanel
+                  canRoll={canRoll} badges={badges} activeId={activeId}
+                  rolling={rolling} nextLabel={nextLabel} isDark={isDark}
+                  onRoll={handleRoll} onToggle={handleToggleBadge}/>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Modals */}
+        <AnimatePresence>
+          {result && <RevealModal badge={result} isDark={isDark}
+            onClose={() => { setResult(null); setEquipDialog(result) }}/>}
+        </AnimatePresence>
+        <AnimatePresence>
+          {equipDialog && <EquipDialog badge={equipDialog} activeId={activeId} isDark={isDark}
+            onEquip={handleEquipFromModal} onClose={() => setEquipDialog(null)}/>}
+        </AnimatePresence>
+      </>
+    )
   }
 
   return (

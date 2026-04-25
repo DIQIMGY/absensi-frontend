@@ -977,8 +977,8 @@ export default function SiswaDashboard() {
           </div>
 
 
-          {/* Gacha Harian */}
-          <GachaHarian onBadgeChange={(newBadgeId, newBadges) => {
+          {/* Gacha Harian — floating di pojok kanan atas */}
+          <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
             setActiveBadge(newBadgeId)
             setOwnedBadges(newBadges || [])
           }} />
