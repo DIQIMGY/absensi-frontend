@@ -409,153 +409,79 @@ export default function AbsensiGuru() {
   ]
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4 sm:space-y-6 lg:space-y-8 px-4 sm:px-6 lg:px-8">
-      {/* Header - UNGU + HIJAU */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3"
-        >
+    <div className="w-full max-w-full overflow-x-hidden space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-3">
           <div className="relative">
-            <motion.div 
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="p-3 bg-gradient-to-br from-[#8B5CF6] to-[#10B981] rounded-xl shadow-lg shadow-[#8B5CF6]/30"
-            >
-              <UserCheck size={24} className="text-white" />
-            </motion.div>
-            <motion.div 
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="absolute -top-1 -right-1 w-3 h-3 bg-[#10B981] border-2 border-white dark:border-[#1F3A44] rounded-full"
-            />
+            <div className="p-2.5 bg-gradient-to-br from-violet-500 to-emerald-500 rounded-xl shadow-lg shadow-violet-500/30">
+              <UserCheck size={20} className="text-white" />
+            </div>
+            <motion.div animate={{ scale: [1,1.3,1] }} transition={{ duration:2, repeat:Infinity }}
+              className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-white dark:border-slate-900 rounded-full"/>
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-              Absensi <span className="text-gradient-purple-green">Guru</span>
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <Sparkles size={14} className="text-[#8B5CF6]" />
-              Kelola dan pantau kehadiran guru
+            <h1 className="text-base font-bold text-slate-800 dark:text-slate-100">Absensi Guru</h1>
+            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+              <Sparkles size={10} className="text-violet-500"/>Kelola dan pantau kehadiran guru
             </p>
           </div>
         </motion.div>
 
         <div className="flex items-center gap-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-2.5 bg-white dark:bg-[#1F3A44] border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2F4F5A] transition-all shadow-sm hover:shadow-md"
-          >
-            <RefreshCw size={18} className={refreshing ? 'animate-spin text-[#8B5CF6]' : 'text-slate-600 dark:text-slate-400'} />
-          </motion.button>
-          
+          <button onClick={handleRefresh} disabled={refreshing}
+            className="p-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            <RefreshCw size={15} className={refreshing ? 'animate-spin text-violet-500' : 'text-slate-500'}/>
+          </button>
           <div className="relative group">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2.5 bg-gradient-to-r from-[#8B5CF6] to-[#10B981] hover:from-[#7C3AED] hover:to-[#059669] text-white rounded-xl flex items-center gap-2 shadow-lg shadow-[#8B5CF6]/30 transition-all text-sm font-medium"
-            >
-              <Download size={16} />
-              <span className="hidden sm:inline">Export</span>
-            </motion.button>
-            
-            {/* Export Dropdown */}
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#1F3A44] rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <button
-                onClick={() => handleExport('excel')}
-                className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-[#2F4F5A] transition-colors text-sm"
-              >
-                <FileSpreadsheet size={16} className="text-[#10B981]" />
-                Excel (.xlsx)
+            <button className="px-3 py-2 bg-gradient-to-r from-violet-500 to-emerald-500 text-white rounded-xl flex items-center gap-1.5 text-xs font-bold shadow-lg shadow-violet-500/25">
+              <Download size={13}/><span className="hidden sm:inline">Export</span>
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              <button onClick={() => handleExport('excel')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs rounded-t-xl">
+                <FileSpreadsheet size={14} className="text-emerald-500"/>Excel (.xlsx)
               </button>
-              <button
-                onClick={() => handleExport('pdf')}
-                className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-[#2F4F5A] transition-colors text-sm"
-              >
-                <FileText size={16} className="text-[#EF4444]" />
-                PDF (.pdf)
+              <button onClick={() => handleExport('pdf')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs rounded-b-xl">
+                <FileText size={14} className="text-red-500"/>PDF (.pdf)
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs - UNGU + HIJAU */}
-      <div className="flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-700">
-        {['list', 'statistik', 'rekap'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab)}
-            className={`px-4 py-2 text-sm font-medium transition-all relative ${
-              selectedTab === tab
-                ? 'text-[#8B5CF6] dark:text-[#C084FC]'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            {tab === 'list' && 'Daftar Absensi'}
-            {tab === 'statistik' && 'Statistik'}
-            {tab === 'rekap' && 'Rekap Per Guru'}
-            {selectedTab === tab && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#8B5CF6] to-[#10B981]"
-              />
-            )}
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl w-fit">
+        {[
+          { key:'list', label:'Daftar Absensi' },
+          { key:'statistik', label:'Statistik' },
+          { key:'rekap', label:'Rekap Per Guru' },
+        ].map(tab => (
+          <button key={tab.key} onClick={() => setSelectedTab(tab.key)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              selectedTab === tab.key
+                ? 'bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+            }`}>
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Statistik Cards - UNGU + HIJAU */}
+      {/* Stat Cards */}
       {statistik && (
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-          <StatCard
-            title="Total Guru"
-            value={statistik.total_guru}
-            icon={Users}
-            color="purple"
-            description="Terdaftar"
-            subStats={[
-              { label: 'Sudah Absen', value: statistik.total_guru_absen || 0 },
-              { label: 'Belum Absen', value: statistik.total_guru_belum_absen || 0 }
-            ]}
-          />
-          <StatCard
-            title="Sudah Absen"
-            value={statistik.total_guru_absen}
-            icon={CheckCircle}
-            color="green"
-            description="Hari ini"
-            trend="up"
-            trendValue={`${statistik.total_guru > 0 ? Math.round((statistik.total_guru_absen / statistik.total_guru) * 100) : 0}%`}
-          />
-          <StatCard
-            title="Belum Absen"
-            value={statistik.total_guru_belum_absen}
-            icon={AlertCircle}
-            color="orange"
-            description="Hari ini"
-            trend="down"
-            trendValue={`${statistik.total_guru > 0 ? Math.round((statistik.total_guru_belum_absen / statistik.total_guru) * 100) : 0}%`}
-          />
-          <StatCard
-            title="Total Hadir"
-            value={statistik.total_hadir}
-            icon={UserCheck}
-            color="green"
-            description="Bulan ini"
-            trend="up"
-            trendValue={`${statistik.persentase_kehadiran || 0}%`}
-          />
-          <StatCard
-            title="Total Terlambat"
-            value={statistik.total_terlambat}
-            icon={Clock}
-            color="orange"
-            description={`Rata-rata ${statistik.rata_rata_terlambat || 0} menit`}
-          />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <StatCard title="Total Guru"      value={statistik.total_guru}             icon={Users}      color="purple" description="Terdaftar"
+            subStats={[{label:'Sudah Absen',value:statistik.total_guru_absen||0},{label:'Belum',value:statistik.total_guru_belum_absen||0}]}/>
+          <StatCard title="Sudah Absen"     value={statistik.total_guru_absen}        icon={CheckCircle} color="green"  description="Hari ini"
+            trend="up" trendValue={`${statistik.total_guru>0?Math.round((statistik.total_guru_absen/statistik.total_guru)*100):0}%`}/>
+          <StatCard title="Belum Absen"     value={statistik.total_guru_belum_absen}  icon={AlertCircle} color="orange" description="Hari ini"
+            trend="down" trendValue={`${statistik.total_guru>0?Math.round((statistik.total_guru_belum_absen/statistik.total_guru)*100):0}%`}/>
+          <StatCard title="Total Hadir"     value={statistik.total_hadir}             icon={UserCheck}   color="green"  description="Bulan ini"
+            trend="up" trendValue={`${statistik.persentase_kehadiran||0}%`}/>
+          <StatCard title="Total Terlambat" value={statistik.total_terlambat}         icon={Clock}       color="orange" description={`Rata-rata ${statistik.rata_rata_terlambat||0} menit`}/>
         </div>
       )}
 
@@ -570,111 +496,63 @@ export default function AbsensiGuru() {
             className="space-y-4"
           >
             {/* Filters */}
-            <div className="bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden">
-              <div className="p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1">
-                    <form onSubmit={handleSearch} className="relative group">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#8B5CF6] transition-colors" size={18} />
-                      <input
-                        type="text"
-                        placeholder="Cari nama guru atau NIP..."
-                        value={filters.search}
-                        onChange={(e) => handleFilterChange('search', e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm text-slate-900 dark:text-white placeholder-slate-400"
-                      />
-                    </form>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+              <div className="p-4">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14}/>
+                    <input type="text" placeholder="Cari nama guru atau NIP..."
+                      value={filters.search}
+                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-xs text-slate-900 dark:text-white placeholder-slate-400"/>
                   </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={filters.bulan}
-                      onChange={(e) => handleFilterChange('bulan', e.target.value)}
-                      className="px-4 py-3 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm text-slate-900 dark:text-white appearance-none"
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {new Date(2000, i).toLocaleDateString('id-ID', { month: 'long' })}
-                        </option>
+                  <div className="flex gap-2 flex-wrap">
+                    <select value={filters.bulan} onChange={(e) => handleFilterChange('bulan', e.target.value)}
+                      className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
+                      {Array.from({length:12},(_,i)=>(
+                        <option key={i+1} value={i+1}>{new Date(2000,i).toLocaleDateString('id-ID',{month:'long'})}</option>
                       ))}
                     </select>
-
-                    <select
-                      value={filters.tahun}
-                      onChange={(e) => handleFilterChange('tahun', e.target.value)}
-                      className="px-4 py-3 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm text-slate-900 dark:text-white"
-                    >
-                      {Array.from({ length: 5 }, (_, i) => {
-                        const year = new Date().getFullYear() - i
-                        return <option key={year} value={year}>{year}</option>
-                      })}
+                    <select value={filters.tahun} onChange={(e) => handleFilterChange('tahun', e.target.value)}
+                      className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
+                      {Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-i;return <option key={y} value={y}>{y}</option>})}
                     </select>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowFilters(!showFilters)}
-                      className={`px-4 py-3 rounded-xl flex items-center gap-2 transition-all text-sm font-medium border ${
-                        showFilters 
-                          ? 'bg-gradient-to-r from-[#8B5CF6] to-[#10B981] text-white border-transparent shadow-lg shadow-[#8B5CF6]/30' 
-                          : 'bg-white dark:bg-[#1F3A44] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-[#8B5CF6]/30 dark:hover:border-[#C084FC]/30'
-                      }`}
-                    >
-                      <Filter size={16} />
-                      <span className="hidden sm:inline">Filter</span>
-                    </motion.button>
+                    <button onClick={() => setShowFilters(!showFilters)}
+                      className={`px-3 py-2 rounded-xl flex items-center gap-1.5 text-xs font-semibold border transition-all ${
+                        showFilters ? 'bg-violet-500 text-white border-violet-500' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                      }`}>
+                      <Filter size={13}/><span className="hidden sm:inline">Filter</span>
+                    </button>
                   </div>
                 </div>
 
                 <AnimatePresence>
                   {showFilters && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700"
-                    >
+                    <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                      className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Status
-                          </label>
-                          <select
-                            value={filters.status}
-                            onChange={(e) => handleFilterChange('status', e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm"
-                          >
+                          <label className="block text-[10px] font-semibold text-slate-500 mb-1">Status</label>
+                          <select value={filters.status} onChange={(e) => handleFilterChange('status', e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
                             <option value="">Semua Status</option>
                             <option value="hadir">Hadir</option>
                             <option value="terlambat">Terlambat</option>
                           </select>
                         </div>
-
                         <div>
-                          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Metode
-                          </label>
-                          <select
-                            value={filters.metode}
-                            onChange={(e) => handleFilterChange('metode', e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm"
-                          >
+                          <label className="block text-[10px] font-semibold text-slate-500 mb-1">Metode</label>
+                          <select value={filters.metode} onChange={(e) => handleFilterChange('metode', e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500">
                             <option value="">Semua Metode</option>
                             <option value="manual">Manual</option>
                             <option value="qr_code">QR Code</option>
                           </select>
                         </div>
-
                         <div>
-                          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Tanggal
-                          </label>
-                          <input
-                            type="date"
-                            value={filters.tanggal}
-                            onChange={(e) => handleFilterChange('tanggal', e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#8B5CF6]/20 focus:border-[#8B5CF6] transition-all text-sm"
-                          />
+                          <label className="block text-[10px] font-semibold text-slate-500 mb-1">Tanggal</label>
+                          <input type="date" value={filters.tanggal} onChange={(e) => handleFilterChange('tanggal', e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"/>
                         </div>
                       </div>
                     </motion.div>
@@ -683,38 +561,17 @@ export default function AbsensiGuru() {
               </div>
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-gradient-to-r from-[#8B5CF6] to-[#10B981] text-white shadow-lg shadow-[#8B5CF6]/30'
-                    : 'bg-white dark:bg-[#1F3A44] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
-                }`}
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all ${
-                  viewMode === 'list'
-                    ? 'bg-gradient-to-r from-[#8B5CF6] to-[#10B981] text-white shadow-lg shadow-[#8B5CF6]/30'
-                    : 'bg-white dark:bg-[#1F3A44] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
-                }`}
-              >
-                <List size={18} />
-              </button>
-            </div>
-
             {/* Data Table */}
-            <DataTable
-              columns={columns}
-              data={data}
-              loading={loading}
-              pagination={pagination}
-              onPageChange={handlePageChange}
-            />
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+              <DataTable
+                columns={columns}
+                data={data}
+                loading={loading}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                searchPlaceholder="Cari guru..."
+              />
+            </div>
           </motion.div>
         )}
 
