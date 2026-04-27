@@ -15,12 +15,8 @@ export const useAuthStore = create(
         try {
           const response = await api.post('/login', credentials)
           const { user, token } = response.data.data
-
           set({ user, token, isAuthenticated: true, isLoading: false })
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-          window.__authToken = token
-          window.__authLogout = get().logout
-          
           toast.success('Login berhasil!')
           return { success: true, user }
         } catch (error) {
@@ -34,12 +30,8 @@ export const useAuthStore = create(
         try {
           const response = await api.post('/register', data)
           const { user, token } = response.data.data
-
           set({ user, token, isAuthenticated: true, isLoading: false })
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-          window.__authToken = token
-          window.__authLogout = get().logout
-          
           toast.success('Registrasi berhasil!')
           return { success: true, user: response.data.data.user }
         } catch (error) {
@@ -57,30 +49,20 @@ export const useAuthStore = create(
         } finally {
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
           delete api.defaults.headers.common['Authorization']
-          window.__authToken = null
           toast.success('Logout berhasil')
         }
       },
 
       checkAuth: async () => {
         const { token } = get()
-        
-        if (!token) {
-          set({ isLoading: false })
-          return
-        }
-
+        if (!token) { set({ isLoading: false }); return }
         try {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-          window.__authToken = token
-          window.__authLogout = get().logout
           const response = await api.get('/me')
-          
           set({ user: response.data.data, isAuthenticated: true, isLoading: false })
         } catch (error) {
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
           delete api.defaults.headers.common['Authorization']
-          window.__authToken = null
         }
       },
 
@@ -102,12 +84,6 @@ export const useAuthStore = create(
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token }),
-      onRehydrateStorage: () => (state) => {
-        // Sync token ke window setelah rehydrate dari localStorage
-        if (state?.token) {
-          window.__authToken = state.token
-        }
-      }
     }
   )
 )

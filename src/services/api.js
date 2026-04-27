@@ -11,11 +11,12 @@ const api = axios.create({
   timeout: 30000,
 })
 
-// Request interceptor — ambil token dari zustand store tanpa circular import
+// Request interceptor — import authStore secara lazy di dalam fungsi
 api.interceptors.request.use(
   async (config) => {
-    // Akses store via window global yang di-set oleh authStore setelah init
-    const token = window.__authToken || null
+    // Lazy import untuk hindari circular dependency
+    const { useAuthStore } = await import('../stores/authStore')
+    const token = useAuthStore.getState().token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -33,7 +34,7 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const { response, config } = error
 
     if (config?.skipErrorToast) return Promise.reject(error)
@@ -44,7 +45,8 @@ api.interceptors.response.use(
     }
 
     if (response.status === 401) {
-      window.__authLogout?.()
+      const { useAuthStore } = await import('../stores/authStore')
+      useAuthStore.getState().logout()
       toast.error('Sesi telah berakhir. Silakan login kembali.')
       window.location.href = '/login'
     } else if (response.status === 403) {
