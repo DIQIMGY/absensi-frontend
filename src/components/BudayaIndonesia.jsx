@@ -49,19 +49,20 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
 
-  // Canvas blur sync dengan video — jalankan setelah video play
   useEffect(() => {
     const video = videoRef.current
     const canvas = canvasRef.current
-    if (!video || !canvas) return
+    if (!video || !canvas || !isVideoSlide) return
     const ctx = canvas.getContext('2d')
     let raf
     const draw = () => {
-      if (!video.paused && !video.ended && video.readyState >= 2) {
-        canvas.width = video.videoWidth || 320
-        canvas.height = video.videoHeight || 180
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-      }
+      try {
+        if (video && !video.paused && !video.ended && video.readyState >= 2 && video.videoWidth > 0) {
+          canvas.width = video.videoWidth
+          canvas.height = video.videoHeight
+          ctx.drawImage(video, 0, 0)
+        }
+      } catch(e) {}
       raf = requestAnimationFrame(draw)
     }
     raf = requestAnimationFrame(draw)
@@ -181,14 +182,14 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
 
             {videos.length > 0 && (
               <>
-                {/* Canvas blur background — sync dengan video */}
+                {/* Canvas blur — bayangan sesuai warna video */}
                 <canvas ref={canvasRef}
-                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0'}`}
-                  style={{ objectFit: 'cover', filter: 'blur(16px)', transform: 'scale(1.1)', opacity: isVideoSlide ? 0.7 : 0 }}/>
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-60' : 'opacity-0'}`}
+                  style={{ objectFit:'cover', filter:'blur(18px)', transform:'scale(1.12)' }}/>
                 {/* Video utama — contain agar tidak crop */}
                 <video ref={videoRef} src={videoSrc || ''} loop muted playsInline
                   className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  style={{ objectFit: 'contain' }}/>
+                  style={{ objectFit:'contain' }}/>
               </>
             )}
 

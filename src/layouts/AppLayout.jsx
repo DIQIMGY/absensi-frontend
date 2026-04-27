@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera } from 'lucide-react'
+import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera, FileText, Clock, CheckCircle, XCircle, Trophy, GraduationCap, Users, UserCheck, Settings2, BarChart2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { useThemeStore } from '../stores/themeStore'
 import { usePengaturanStore } from '../stores/pengaturanStore'
@@ -10,6 +10,22 @@ import { guruApi } from '../services/guruService'
 import { siswaApi } from '../services/siswaService'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
+
+// Helper: tentukan icon notifikasi berdasarkan pesan — di luar komponen agar tidak TDZ
+function getNotifIcon(message) {
+  const msg = (message || '').toLowerCase()
+  if (msg.includes('izin') || msg.includes('sakit')) return { Icon: FileText, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-500' }
+  if (msg.includes('terlambat') || msg.includes('telat')) return { Icon: Clock, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-500' }
+  if (msg.includes('hadir') || msg.includes('absen') || msg.includes('masuk')) return { Icon: CheckCircle, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-500' }
+  if (msg.includes('alpha') || msg.includes('tidak hadir')) return { Icon: XCircle, bg: 'bg-rose-100 dark:bg-rose-900/30', color: 'text-rose-500' }
+  if (msg.includes('ranking') || msg.includes('peringkat') || msg.includes('juara')) return { Icon: Trophy, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-500' }
+  if (msg.includes('naik kelas') || msg.includes('lulus') || msg.includes('alumni')) return { Icon: GraduationCap, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-500' }
+  if (msg.includes('siswa') || msg.includes('murid')) return { Icon: Users, bg: 'bg-indigo-100 dark:bg-indigo-900/30', color: 'text-indigo-500' }
+  if (msg.includes('guru') || msg.includes('pengajar')) return { Icon: UserCheck, bg: 'bg-teal-100 dark:bg-teal-900/30', color: 'text-teal-500' }
+  if (msg.includes('pengaturan') || msg.includes('setting')) return { Icon: Settings2, bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-500' }
+  if (msg.includes('laporan') || msg.includes('rekap')) return { Icon: BarChart2, bg: 'bg-purple-100 dark:bg-purple-900/30', color: 'text-purple-500' }
+  return { Icon: Bell, bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-400' }
+}
 
 function Avatar({ src, name, size = 32 }) {
   const [err, setErr] = useState(false)
@@ -409,19 +425,25 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
                       <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
                         {notifications.length === 0
                           ? <div className="py-8 text-center text-slate-400 text-xs">Tidak ada notifikasi</div>
-                          : notifications.map(n => (
-                            <div key={n.id} className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${n.read ? 'opacity-60' : ''}`}>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-snug">{n.message || n.title}</p>
-                                {n.time && <p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p>}
+                          : notifications.map(n => {
+                            const { Icon, bg, color } = getNotifIcon(n.message || n.title)
+                            return (
+                              <div key={n.id} className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${n.read ? 'opacity-60' : ''}`}>
+                                <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5 ${bg}`}>
+                                  <Icon size={13} className={color}/>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-snug">{n.message || n.title}</p>
+                                  {n.time && <p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p>}
+                                </div>
+                                {!n.read && (
+                                  <button onClick={() => handleMarkRead(n.id)} className="flex-shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors mt-0.5">
+                                    <X size={11}/>
+                                  </button>
+                                )}
                               </div>
-                              {!n.read && (
-                                <button onClick={() => handleMarkRead(n.id)} className="flex-shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors mt-0.5">
-                                  <X size={11}/>
-                                </button>
-                              )}
-                            </div>
-                          ))}
+                            )
+                          })}
                       </div>
                     </motion.div>
                   )}
