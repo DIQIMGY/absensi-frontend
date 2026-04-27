@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, Package } from 'lucide-react'
+import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, Package, X } from 'lucide-react'
 import { siswaApi } from '../services/siswaService'
 import { useThemeStore } from '../stores/themeStore'
 import toast from 'react-hot-toast'
