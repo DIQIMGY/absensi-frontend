@@ -47,27 +47,6 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
     return () => obs.disconnect()
   }, [])
   const videoRef = useRef(null)
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas || !isVideoSlide) return
-    const ctx = canvas.getContext('2d')
-    let raf
-    const draw = () => {
-      try {
-        if (video && !video.paused && !video.ended && video.readyState >= 2 && video.videoWidth > 0) {
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          ctx.drawImage(video, 0, 0)
-        }
-      } catch(e) {}
-      raf = requestAnimationFrame(draw)
-    }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
-  }, [isVideoSlide])
 
   const fotos  = (budayaFotos || []).filter(Boolean)
   const videos = [budayaVideo, budayaVideo2].filter(Boolean)
@@ -181,16 +160,16 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
             </AnimatePresence>
 
             {videos.length > 0 && (
-              <>
-                {/* Canvas blur — bayangan sesuai warna video */}
-                <canvas ref={canvasRef}
-                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-60' : 'opacity-0'}`}
-                  style={{ objectFit:'cover', filter:'blur(18px)', transform:'scale(1.12)' }}/>
-                {/* Video utama — contain agar tidak crop */}
+              <div className={`absolute inset-0 transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {/* Blur background — duplikat video pakai CSS */}
+                <video src={videoSrc || ''} loop muted playsInline autoPlay
+                  className="absolute inset-0 w-full h-full"
+                  style={{ objectFit:'cover', filter:'blur(18px)', transform:'scale(1.12)', opacity:0.65 }}/>
+                {/* Video utama — contain */}
                 <video ref={videoRef} src={videoSrc || ''} loop muted playsInline
-                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  className="absolute inset-0 w-full h-full"
                   style={{ objectFit:'contain' }}/>
-              </>
+              </div>
             )}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none"/>
