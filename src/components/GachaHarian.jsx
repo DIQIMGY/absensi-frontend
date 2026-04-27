@@ -437,16 +437,18 @@ function RevealModal({ badge, onClose }) {
 }
 
 // ─── EQUIP DIALOG ─────────────────────────────────────────────
-function EquipDialog({ badge, onEquip, onSkip, isDark }) {
+function EquipDialog({ badge, onEquip, onSkip, onClose, isDark }) {
   const cfg = RARITY_CFG[badge?.rarity] || RARITY_CFG.common
   const [loading, setLoading] = useState(false)
+  const handleClose = onClose || onSkip
 
   const handleEquip = async () => {
     setLoading(true)
     try {
       await siswaApi.equipBadge(badge.id)
       onEquip(badge.id)
-      toast.success(`${badge.emoji} ${badge.name} terpasang di profil!`)
+      toast.success(`${badge.name} terpasang di profil!`)
+      handleClose()
     } catch { toast.error('Gagal memasang badge') }
     finally { setLoading(false) }
   }
@@ -455,14 +457,20 @@ function EquipDialog({ badge, onEquip, onSkip, isDark }) {
     <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6"
       style={{background:'rgba(0,0,0,0.7)',backdropFilter:'blur(12px)'}}
-      onClick={onSkip}>
+      onClick={handleClose}>
       <motion.div initial={{y:80,opacity:0,scale:0.95}} animate={{y:0,opacity:1,scale:1}}
         exit={{y:60,opacity:0,scale:0.95}}
         transition={{type:'spring',stiffness:200,damping:22}}
-        className="w-full max-w-sm rounded-3xl overflow-hidden"
+        className="w-full max-w-sm rounded-3xl overflow-hidden relative"
         onClick={e=>e.stopPropagation()}
         style={{background:th(isDark,'linear-gradient(160deg,#0f0a1e,#1a1035)','linear-gradient(160deg,#ffffff,#f5f3ff)'),
           boxShadow:`0 0 0 1px ${cfg.particle}44, 0 24px 60px rgba(0,0,0,0.5)`}}>
+        {/* Tombol X */}
+        <button onClick={handleClose}
+          className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+          style={{background:th(isDark,'rgba(255,255,255,0.1)','rgba(0,0,0,0.08)'),color:th(isDark,'rgba(255,255,255,0.5)','rgba(0,0,0,0.4)')}}>
+          <X size={13}/>
+        </button>
         <div className="h-1 w-full" style={{background:cfg.gradBtn}}/>
         <div className="p-6">
           <div className="flex items-center gap-4 mb-5">
@@ -500,7 +508,7 @@ function EquipDialog({ badge, onEquip, onSkip, isDark }) {
               style={{background:cfg.gradBtn,boxShadow:`0 4px 20px ${cfg.glow2}`}}>
               {loading ? '...' : `Pasang ${badge.emoji}`}
             </motion.button>
-            <motion.button whileTap={{scale:0.96}} onClick={onSkip}
+            <motion.button whileTap={{scale:0.96}} onClick={handleClose}
               className="px-5 py-3.5 rounded-2xl text-sm font-semibold transition-all"
               style={{background:th(isDark,'rgba(255,255,255,0.06)','rgba(0,0,0,0.05)'),
                 color:th(isDark,'rgba(255,255,255,0.4)','rgba(0,0,0,0.4)'),
@@ -772,7 +780,7 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
         </AnimatePresence>
         <AnimatePresence>
           {equipDialog && <EquipDialog badge={equipDialog} activeId={activeId} isDark={isDark}
-            onEquip={handleEquipFromModal} onClose={() => setEquipDialog(null)}/>}
+            onEquip={handleEquipFromModal} onClose={() => setEquipDialog(null)} onSkip={() => setEquipDialog(null)}/>}
         </AnimatePresence>
       </>
     )
