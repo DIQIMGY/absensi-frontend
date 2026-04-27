@@ -978,10 +978,10 @@ export default function SiswaDashboard() {
 
 
           {/* Gacha Harian — floating di pojok kanan atas */}
-          <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
+          {false && <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
             setActiveBadge(newBadgeId)
             setOwnedBadges(newBadges || [])
-          }} />
+          }} />}
 
           {/* Kampus Impian */}
           <KampusImpian pctHadir={pctHadir} totalAlpha={data?.total_alpha||0} totalTerlambat={data?.total_terlambat||0} streak={streak}
