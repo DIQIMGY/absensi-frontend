@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera, FileText, Clock, CheckCircle, XCircle, Trophy, GraduationCap, Users, UserCheck, Settings, BarChart2 as BarChart } from 'lucide-react'
+import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera, FileText, Clock, CheckCircle, XCircle, Trophy, GraduationCap, Users, UserCheck, Settings as SettingsIcon, BarChart2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { useThemeStore } from '../stores/themeStore'
 import { usePengaturanStore } from '../stores/pengaturanStore'
@@ -430,30 +430,20 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
                         ) : notifications.map(n => {
                           // Tentukan icon & warna berdasarkan konten pesan
                           const msg = (n.message || n.title || '').toLowerCase()
-                          let Icon, iconBg, iconColor
-                          if (msg.includes('izin') || msg.includes('sakit')) {
-                            Icon = FileText; iconBg = 'bg-blue-100 dark:bg-blue-900/30'; iconColor = 'text-blue-500'
-                          } else if (msg.includes('terlambat') || msg.includes('telat')) {
-                            Icon = Clock; iconBg = 'bg-amber-100 dark:bg-amber-900/30'; iconColor = 'text-amber-500'
-                          } else if (msg.includes('hadir') || msg.includes('absen') || msg.includes('masuk')) {
-                            Icon = CheckCircle; iconBg = 'bg-emerald-100 dark:bg-emerald-900/30'; iconColor = 'text-emerald-500'
-                          } else if (msg.includes('alpha') || msg.includes('tidak hadir') || msg.includes('bolos')) {
-                            Icon = XCircle; iconBg = 'bg-rose-100 dark:bg-rose-900/30'; iconColor = 'text-rose-500'
-                          } else if (msg.includes('ranking') || msg.includes('peringkat') || msg.includes('juara')) {
-                            Icon = Trophy; iconBg = 'bg-amber-100 dark:bg-amber-900/30'; iconColor = 'text-amber-500'
-                          } else if (msg.includes('naik kelas') || msg.includes('lulus') || msg.includes('alumni')) {
-                            Icon = GraduationCap; iconBg = 'bg-violet-100 dark:bg-violet-900/30'; iconColor = 'text-violet-500'
-                          } else if (msg.includes('siswa') || msg.includes('murid')) {
-                            Icon = Users; iconBg = 'bg-indigo-100 dark:bg-indigo-900/30'; iconColor = 'text-indigo-500'
-                          } else if (msg.includes('guru') || msg.includes('pengajar')) {
-                            Icon = UserCheck; iconBg = 'bg-teal-100 dark:bg-teal-900/30'; iconColor = 'text-teal-500'
-                          } else if (msg.includes('pengaturan') || msg.includes('setting')) {
-                            Icon = Settings; iconBg = 'bg-slate-100 dark:bg-slate-800'; iconColor = 'text-slate-500'
-                          } else if (msg.includes('laporan') || msg.includes('rekap')) {
-                            Icon = BarChart; iconBg = 'bg-purple-100 dark:bg-purple-900/30'; iconColor = 'text-purple-500'
-                          } else {
-                            Icon = Bell; iconBg = 'bg-slate-100 dark:bg-slate-800'; iconColor = 'text-slate-400'
+                          const getIconConfig = () => {
+                            if (msg.includes('izin') || msg.includes('sakit')) return { Icon: FileText, iconBg: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'text-blue-500' }
+                            if (msg.includes('terlambat') || msg.includes('telat')) return { Icon: Clock, iconBg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-500' }
+                            if (msg.includes('hadir') || msg.includes('absen') || msg.includes('masuk')) return { Icon: CheckCircle, iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-500' }
+                            if (msg.includes('alpha') || msg.includes('tidak hadir') || msg.includes('bolos')) return { Icon: XCircle, iconBg: 'bg-rose-100 dark:bg-rose-900/30', iconColor: 'text-rose-500' }
+                            if (msg.includes('ranking') || msg.includes('peringkat') || msg.includes('juara')) return { Icon: Trophy, iconBg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-500' }
+                            if (msg.includes('naik kelas') || msg.includes('lulus') || msg.includes('alumni')) return { Icon: GraduationCap, iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-500' }
+                            if (msg.includes('siswa') || msg.includes('murid')) return { Icon: Users, iconBg: 'bg-indigo-100 dark:bg-indigo-900/30', iconColor: 'text-indigo-500' }
+                            if (msg.includes('guru') || msg.includes('pengajar')) return { Icon: UserCheck, iconBg: 'bg-teal-100 dark:bg-teal-900/30', iconColor: 'text-teal-500' }
+                            if (msg.includes('pengaturan') || msg.includes('setting')) return { Icon: SettingsIcon, iconBg: 'bg-slate-100 dark:bg-slate-800', iconColor: 'text-slate-500' }
+                            if (msg.includes('laporan') || msg.includes('rekap')) return { Icon: BarChart2, iconBg: 'bg-purple-100 dark:bg-purple-900/30', iconColor: 'text-purple-500' }
+                            return { Icon: Bell, iconBg: 'bg-slate-100 dark:bg-slate-800', iconColor: 'text-slate-400' }
                           }
+                          const { Icon, iconBg, iconColor } = getIconConfig()
 
                           return (
                             <div key={n.id}
