@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera, FileText, Clock, CheckCircle, XCircle, Trophy, GraduationCap, Users, UserCheck, Settings as SettingsIcon, BarChart2 } from 'lucide-react'
+import { Menu, X, LogOut, Moon, Sun, Bell, ChevronLeft, ChevronRight, Search, School, Camera } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { useThemeStore } from '../stores/themeStore'
 import { usePengaturanStore } from '../stores/pengaturanStore'
@@ -401,81 +401,27 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
                 <AnimatePresence>
                   {notifOpen && (
                     <motion.div initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                      className="absolute right-0 mt-1 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50">
-                      {/* Header */}
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50">
-                        <div className="flex items-center gap-2">
-                          <Bell size={13} className="text-slate-500 dark:text-slate-400"/>
-                          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Notifikasi</p>
-                          {unread > 0 && (
-                            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: ac.color }}>
-                              {unread}
-                            </span>
-                          )}
-                        </div>
-                        {unread > 0 && (
-                          <button onClick={handleMarkAll}
-                            className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors font-medium">
-                            Hapus semua
-                          </button>
-                        )}
+                      className="absolute right-0 mt-1 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Notifikasi</p>
+                        {unread > 0 && <button onClick={handleMarkAll} className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Hapus semua</button>}
                       </div>
-                      {/* List */}
-                      <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800/60">
-                        {notifications.length === 0 ? (
-                          <div className="py-10 flex flex-col items-center gap-2 text-slate-400 dark:text-slate-600">
-                            <Bell size={24} className="opacity-30"/>
-                            <p className="text-xs">Tidak ada notifikasi</p>
-                          </div>
-                        ) : notifications.map(n => {
-                          // Tentukan icon & warna berdasarkan konten pesan
-                          const msg = (n.message || n.title || '').toLowerCase()
-                          const getIconConfig = () => {
-                            if (msg.includes('izin') || msg.includes('sakit')) return { Icon: FileText, iconBg: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'text-blue-500' }
-                            if (msg.includes('terlambat') || msg.includes('telat')) return { Icon: Clock, iconBg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-500' }
-                            if (msg.includes('hadir') || msg.includes('absen') || msg.includes('masuk')) return { Icon: CheckCircle, iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-500' }
-                            if (msg.includes('alpha') || msg.includes('tidak hadir') || msg.includes('bolos')) return { Icon: XCircle, iconBg: 'bg-rose-100 dark:bg-rose-900/30', iconColor: 'text-rose-500' }
-                            if (msg.includes('ranking') || msg.includes('peringkat') || msg.includes('juara')) return { Icon: Trophy, iconBg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-500' }
-                            if (msg.includes('naik kelas') || msg.includes('lulus') || msg.includes('alumni')) return { Icon: GraduationCap, iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-500' }
-                            if (msg.includes('siswa') || msg.includes('murid')) return { Icon: Users, iconBg: 'bg-indigo-100 dark:bg-indigo-900/30', iconColor: 'text-indigo-500' }
-                            if (msg.includes('guru') || msg.includes('pengajar')) return { Icon: UserCheck, iconBg: 'bg-teal-100 dark:bg-teal-900/30', iconColor: 'text-teal-500' }
-                            if (msg.includes('pengaturan') || msg.includes('setting')) return { Icon: SettingsIcon, iconBg: 'bg-slate-100 dark:bg-slate-800', iconColor: 'text-slate-500' }
-                            if (msg.includes('laporan') || msg.includes('rekap')) return { Icon: BarChart2, iconBg: 'bg-purple-100 dark:bg-purple-900/30', iconColor: 'text-purple-500' }
-                            return { Icon: Bell, iconBg: 'bg-slate-100 dark:bg-slate-800', iconColor: 'text-slate-400' }
-                          }
-                          const { Icon, iconBg, iconColor } = getIconConfig()
-
-                          return (
-                            <div key={n.id}
-                              className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${n.read ? 'opacity-50' : ''}`}>
-                              {/* Icon */}
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center mt-0.5 ${iconBg}`}>
-                                <Icon size={14} className={iconColor}/>
-                              </div>
-                              {/* Text */}
+                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+                        {notifications.length === 0
+                          ? <div className="py-8 text-center text-slate-400 text-xs">Tidak ada notifikasi</div>
+                          : notifications.map(n => (
+                            <div key={n.id} className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${n.read ? 'opacity-60' : ''}`}>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-snug">
-                                  {n.message || n.title}
-                                </p>
-                                {n.time && (
-                                  <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-1">
-                                    <Clock size={9}/>{n.time}
-                                  </p>
-                                )}
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-snug">{n.message || n.title}</p>
+                                {n.time && <p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p>}
                               </div>
-                              {/* Unread dot + dismiss */}
-                              <div className="flex-shrink-0 flex flex-col items-center gap-1.5 mt-0.5">
-                                {!n.read && (
-                                  <span className="w-2 h-2 rounded-full" style={{ background: ac.color }}/>
-                                )}
-                                <button onClick={() => handleMarkRead(n.id)}
-                                  className="text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                              {!n.read && (
+                                <button onClick={() => handleMarkRead(n.id)} className="flex-shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors mt-0.5">
                                   <X size={11}/>
                                 </button>
-                              </div>
+                              )}
                             </div>
-                          )
-                        })}
+                          ))}
                       </div>
                     </motion.div>
                   )}
