@@ -999,8 +999,8 @@ export default function SiswaDashboard() {
             />
           )}
 
-          {/* Budaya Indonesia */}
-          {(pengaturan?.budaya_info || (pengaturan?.budaya_fotos || []).some(Boolean) || pengaturan?.budaya_video) && (
+          {/* Budaya Indonesia — disabled for debug */}
+          {false && (pengaturan?.budaya_info || (pengaturan?.budaya_fotos || []).some(Boolean) || pengaturan?.budaya_video) && (
             <BudayaIndonesia
               budayaInfo={pengaturan.budaya_info}
               budayaFotos={pengaturan.budaya_fotos || []}
