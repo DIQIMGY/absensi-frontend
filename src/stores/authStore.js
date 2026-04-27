@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import api from '../services/api'
+import api, { setApiToken, setApiUnauthorizedHandler } from '../services/api'
 import toast from 'react-hot-toast'
 
 export const useAuthStore = create(
@@ -16,7 +16,7 @@ export const useAuthStore = create(
           const response = await api.post('/login', credentials)
           const { user, token } = response.data.data
           set({ user, token, isAuthenticated: true, isLoading: false })
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          setApiToken(token)
           toast.success('Login berhasil!')
           return { success: true, user }
         } catch (error) {
@@ -31,7 +31,7 @@ export const useAuthStore = create(
           const response = await api.post('/register', data)
           const { user, token } = response.data.data
           set({ user, token, isAuthenticated: true, isLoading: false })
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          setApiToken(token)
           toast.success('Registrasi berhasil!')
           return { success: true, user: response.data.data.user }
         } catch (error) {
@@ -48,7 +48,7 @@ export const useAuthStore = create(
           console.error('Logout error:', error)
         } finally {
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
-          delete api.defaults.headers.common['Authorization']
+          setApiToken(null)
           toast.success('Logout berhasil')
         }
       },
@@ -57,12 +57,17 @@ export const useAuthStore = create(
         const { token } = get()
         if (!token) { set({ isLoading: false }); return }
         try {
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          setApiToken(token)
+          // Set unauthorized handler sekali saja
+          setApiUnauthorizedHandler(() => {
+            set({ user: null, token: null, isAuthenticated: false, isLoading: false })
+            setApiToken(null)
+          })
           const response = await api.get('/me')
           set({ user: response.data.data, isAuthenticated: true, isLoading: false })
         } catch (error) {
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
-          delete api.defaults.headers.common['Authorization']
+          setApiToken(null)
         }
       },
 
@@ -84,6 +89,9 @@ export const useAuthStore = create(
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.token) setApiToken(state.token)
+      }
     }
   )
 )

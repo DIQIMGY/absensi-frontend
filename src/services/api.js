@@ -11,21 +11,34 @@ const api = axios.create({
   timeout: 30000,
 })
 
-// Request interceptor — import authStore secara lazy di dalam fungsi
+// Token disimpan di sini — di-set dari authStore setelah init
+// Ini menghindari circular import sepenuhnya
+let _token = null
+let _onUnauthorized = null
+
+export function setApiToken(token) {
+  _token = token
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  } else {
+    delete api.defaults.headers.common['Authorization']
+  }
+}
+
+export function setApiUnauthorizedHandler(fn) {
+  _onUnauthorized = fn
+}
+
+// Request interceptor
 api.interceptors.request.use(
-  async (config) => {
-    // Lazy import untuk hindari circular dependency
-    const { useAuthStore } = await import('../stores/authStore')
-    const token = useAuthStore.getState().token
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+  (config) => {
+    if (_token) {
+      config.headers.Authorization = `Bearer ${_token}`
     }
-    
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type']
       config.timeout = 300000
     }
-    
     return config
   },
   (error) => Promise.reject(error)
@@ -34,29 +47,22 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  (error) => {
     const { response, config } = error
-
     if (config?.skipErrorToast) return Promise.reject(error)
-
     if (!response) {
       toast.error('Koneksi ke server gagal. Pastikan backend berjalan.')
       return Promise.reject(error)
     }
-
     if (response.status === 401) {
-      const { useAuthStore } = await import('../stores/authStore')
-      useAuthStore.getState().logout()
+      _onUnauthorized?.()
       toast.error('Sesi telah berakhir. Silakan login kembali.')
       window.location.href = '/login'
     } else if (response.status === 403) {
       toast.error('Anda tidak memiliki akses ke fitur ini.')
-    } else if (response.status >= 500) {
-      if (!config?.silent) {
-        toast.error('Terjadi kesalahan server. Silakan coba lagi.')
-      }
+    } else if (response.status >= 500 && !config?.silent) {
+      toast.error('Terjadi kesalahan server. Silakan coba lagi.')
     }
-
     return Promise.reject(error)
   }
 )
