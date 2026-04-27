@@ -14,6 +14,7 @@ import {
   Target, Sparkles, Shield,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
+import { publicApi } from '../../services/publicApi'
 import { usePengaturanStore } from '../../stores/pengaturanStore'
 import LiburCountdown from '../../components/LiburCountdown'
 import EventCountdown from '../../components/EventCountdown'
@@ -128,7 +129,6 @@ export default function GuruDashboard() {
     try {
       // Fetch events langsung dari public API
       try {
-        const { publicApi } = await import('../../services/publicApi')
         const pRes = await publicApi.getPengaturan()
         const evts  = pRes?.data?.data?.events
         const fotos = pRes?.data?.data?.event_fotos

@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { siswaApi } from '../../services/siswaService'
+import { publicApi } from '../../services/publicApi'
 import { useAuthStore } from '../../stores/authStore'
 import { usePengaturanStore } from '../../stores/pengaturanStore'
 import RankingNotification from '../../components/RankingNotification'
@@ -93,7 +94,6 @@ export default function SiswaDashboard() {
       await fetchPengaturan(true)
       // Ambil events dari public API langsung
       try {
-        const { publicApi } = await import('../../services/publicApi')
         const pRes = await publicApi.getPengaturan()
         const evts = pRes?.data?.data?.events
         if (Array.isArray(evts)) setEvents(evts)
