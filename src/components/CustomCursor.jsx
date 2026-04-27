@@ -53,13 +53,14 @@ export default function CustomCursor() {
       // Logo/dot di tengah
       particles.push({ type: 'logo', x, y, r: 0, maxR: 16, life: 1, decay: 0.025, logo })
 
-      // Partikel shapes menyebar (ganti huruf)
+      // Partikel icon shapes menyebar (heart, star, lightning)
       const SHAPE_COLORS = ['#10b981','#6366f1','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#34d399','#fbbf24']
+      const SHAPE_TYPES = ['heart','star','lightning','star','heart','ring','star','heart','lightning','star','heart','ring']
       for (let i = 0; i < 12; i++) {
         const angle = (i / 12) * Math.PI * 2
         const speed = 2.5 + Math.random() * 2
         const col = SHAPE_COLORS[i % SHAPE_COLORS.length]
-        const shapeType = i % 3 // 0=circle, 1=diamond, 2=triangle
+        const shapeType = SHAPE_TYPES[i % SHAPE_TYPES.length]
         particles.push({
           type: 'shape', shapeType, col,
           x, y,
@@ -122,18 +123,35 @@ export default function CustomCursor() {
           ctx.save()
           ctx.globalAlpha = alpha
           ctx.translate(p.x, p.y); ctx.rotate(p.rot)
-          ctx.fillStyle = p.col
+          ctx.fillStyle = p.col; ctx.strokeStyle = p.col
           ctx.shadowColor = p.col; ctx.shadowBlur = 8
-          if (p.shapeType === 0) {
-            ctx.beginPath(); ctx.arc(0, 0, p.sz, 0, Math.PI * 2); ctx.fill()
-          } else if (p.shapeType === 1) {
+          const sz = p.sz
+          if (p.shapeType === 'heart') {
             ctx.beginPath()
-            ctx.moveTo(0, -p.sz); ctx.lineTo(p.sz, 0); ctx.lineTo(0, p.sz); ctx.lineTo(-p.sz, 0)
+            ctx.moveTo(0, sz * 0.3)
+            ctx.bezierCurveTo(0, 0, -sz, 0, -sz, sz * 0.3)
+            ctx.bezierCurveTo(-sz, sz * 0.65, 0, sz, 0, sz)
+            ctx.bezierCurveTo(0, sz, sz, sz * 0.65, sz, sz * 0.3)
+            ctx.bezierCurveTo(sz, 0, 0, 0, 0, sz * 0.3)
+            ctx.closePath(); ctx.fill()
+          } else if (p.shapeType === 'star') {
+            ctx.beginPath()
+            for (let j = 0; j < 10; j++) {
+              const r = j % 2 === 0 ? sz : sz * 0.4
+              const a = (j * Math.PI) / 5 - Math.PI / 2
+              j === 0 ? ctx.moveTo(r * Math.cos(a), r * Math.sin(a))
+                      : ctx.lineTo(r * Math.cos(a), r * Math.sin(a))
+            }
+            ctx.closePath(); ctx.fill()
+          } else if (p.shapeType === 'lightning') {
+            ctx.beginPath()
+            ctx.moveTo(sz * 0.3, -sz); ctx.lineTo(-sz * 0.1, 0)
+            ctx.lineTo(sz * 0.2, 0); ctx.lineTo(-sz * 0.3, sz)
+            ctx.lineTo(sz * 0.1, sz * 0.1); ctx.lineTo(-sz * 0.1, sz * 0.1)
             ctx.closePath(); ctx.fill()
           } else {
-            ctx.beginPath()
-            ctx.moveTo(0, -p.sz); ctx.lineTo(p.sz * 0.866, p.sz * 0.5); ctx.lineTo(-p.sz * 0.866, p.sz * 0.5)
-            ctx.closePath(); ctx.fill()
+            ctx.beginPath(); ctx.arc(0, 0, sz, 0, Math.PI * 2)
+            ctx.lineWidth = 2; ctx.stroke()
           }
           ctx.restore()
         }
@@ -283,53 +301,99 @@ export default function CustomCursor() {
       ctx.fillText(text[i] || '', 0, 0); ctx.restore()
     }
 
-    // ── IDLE ORBITS — geometric shapes (no emoji) ──────────────────
+    // ── IDLE ORBITS — icon shapes (heart, star, lightning, etc) ──────────────────
     if (blend > 0.05) {
       const opa = Math.min(1, blend * 2)
 
-      // Orbit 1 — dalam, cepat — filled circles
+      // Helper: draw heart
+      const drawHeart = (ctx, x, y, size) => {
+        ctx.beginPath()
+        ctx.moveTo(x, y + size * 0.3)
+        ctx.bezierCurveTo(x, y, x - size, y, x - size, y + size * 0.3)
+        ctx.bezierCurveTo(x - size, y + size * 0.65, x, y + size, x, y + size)
+        ctx.bezierCurveTo(x, y + size, x + size, y + size * 0.65, x + size, y + size * 0.3)
+        ctx.bezierCurveTo(x + size, y, x, y, x, y + size * 0.3)
+        ctx.closePath()
+      }
+
+      // Helper: draw star
+      const drawStar = (ctx, x, y, size, points = 5) => {
+        ctx.beginPath()
+        for (let i = 0; i < points * 2; i++) {
+          const r = i % 2 === 0 ? size : size * 0.4
+          const a = (i * Math.PI) / points - Math.PI / 2
+          i === 0 ? ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a))
+                  : ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a))
+        }
+        ctx.closePath()
+      }
+
+      // Helper: draw lightning bolt
+      const drawLightning = (ctx, x, y, size) => {
+        ctx.beginPath()
+        ctx.moveTo(x + size * 0.3, y - size)
+        ctx.lineTo(x - size * 0.1, y)
+        ctx.lineTo(x + size * 0.2, y)
+        ctx.lineTo(x - size * 0.3, y + size)
+        ctx.lineTo(x + size * 0.1, y + size * 0.1)
+        ctx.lineTo(x - size * 0.1, y + size * 0.1)
+        ctx.closePath()
+      }
+
+      // Helper: draw circle ring
+      const drawRing = (ctx, x, y, size) => {
+        ctx.beginPath()
+        ctx.arc(x, y, size, 0, Math.PI * 2)
+      }
+
+      // Orbit 1 — dalam, cepat — hearts emerald
       const r1 = 38 + Math.sin(idleAngle * 2) * 3
+      const ICONS1 = ['heart','heart','star','heart','star']
       const COLORS1 = ['#10b981','#34d399','#6ee7b7','#059669','#047857']
-      COLORS1.forEach((col, i) => {
-        const a = idleAngle * 1.8 + (i / COLORS1.length) * Math.PI * 2
+      ICONS1.forEach((type, i) => {
+        const a = idleAngle * 1.8 + (i / ICONS1.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r1
         const y = my + Math.sin(a) * r1
-        const sz = 4 + 2 * Math.sin(idleAngle * 3 + i)
+        const sz = 5 + 2 * Math.sin(idleAngle * 3 + i)
+        const rot = idleAngle * 1.5 + i
         ctx.save()
         ctx.globalAlpha = opa * (0.7 + 0.3 * Math.sin(idleAngle * 2 + i))
-        ctx.beginPath(); ctx.arc(x, y, sz, 0, Math.PI * 2)
-        ctx.fillStyle = col
-        ctx.shadowColor = col; ctx.shadowBlur = 8
+        ctx.translate(x, y); ctx.rotate(rot)
+        ctx.fillStyle = COLORS1[i]
+        ctx.shadowColor = COLORS1[i]; ctx.shadowBlur = 8
+        if (type === 'heart') drawHeart(ctx, 0, -sz * 0.5, sz * 0.6)
+        else drawStar(ctx, 0, 0, sz)
         ctx.fill()
         ctx.restore()
       })
 
-      // Orbit 2 — tengah, berlawanan — diamonds (rotated squares)
+      // Orbit 2 — tengah, berlawanan — stars + lightning indigo
       const r2 = 62 + Math.sin(idleAngle * 1.3) * 5
+      const ICONS2 = ['star','lightning','star','lightning','star']
       const COLORS2 = ['#6366f1','#818cf8','#a5b4fc','#4f46e5','#7c3aed']
-      COLORS2.forEach((col, i) => {
-        const a = -idleAngle * 1.2 + (i / COLORS2.length) * Math.PI * 2
+      ICONS2.forEach((type, i) => {
+        const a = -idleAngle * 1.2 + (i / ICONS2.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r2
         const y = my + Math.sin(a) * r2
-        const sz = 5 + 2 * Math.sin(idleAngle * 2.5 + i * 1.2)
+        const sz = 6 + 2 * Math.sin(idleAngle * 2.5 + i * 1.2)
         const rot = idleAngle * 2 + i
         ctx.save()
         ctx.globalAlpha = opa * (0.6 + 0.4 * Math.sin(idleAngle * 1.5 + i * 0.8))
         ctx.translate(x, y); ctx.rotate(rot)
-        ctx.beginPath()
-        ctx.moveTo(0, -sz); ctx.lineTo(sz, 0); ctx.lineTo(0, sz); ctx.lineTo(-sz, 0)
-        ctx.closePath()
-        ctx.fillStyle = col
-        ctx.shadowColor = col; ctx.shadowBlur = 10
+        ctx.fillStyle = COLORS2[i]
+        ctx.shadowColor = COLORS2[i]; ctx.shadowBlur = 10
+        if (type === 'star') drawStar(ctx, 0, 0, sz)
+        else drawLightning(ctx, 0, 0, sz * 0.7)
         ctx.fill()
         ctx.restore()
       })
 
-      // Orbit 3 — luar, lambat — triangles
+      // Orbit 3 — luar, lambat — rings + hearts amber
       const r3 = 88 + Math.sin(idleAngle * 0.8) * 6
+      const ICONS3 = ['ring','heart','ring','star','ring']
       const COLORS3 = ['#f59e0b','#fbbf24','#fcd34d','#d97706','#b45309']
-      COLORS3.forEach((col, i) => {
-        const a = idleAngle * 0.7 + (i / COLORS3.length) * Math.PI * 2
+      ICONS3.forEach((type, i) => {
+        const a = idleAngle * 0.7 + (i / ICONS3.length) * Math.PI * 2
         const x = mx + Math.cos(a) * r3
         const y = my + Math.sin(a) * r3
         const sz = 6 + 2 * Math.sin(idleAngle * 1.8 + i * 1.5)
@@ -337,14 +401,17 @@ export default function CustomCursor() {
         ctx.save()
         ctx.globalAlpha = opa * (0.5 + 0.3 * Math.sin(idleAngle + i * 0.6))
         ctx.translate(x, y); ctx.rotate(rot)
-        ctx.beginPath()
-        ctx.moveTo(0, -sz)
-        ctx.lineTo(sz * 0.866, sz * 0.5)
-        ctx.lineTo(-sz * 0.866, sz * 0.5)
-        ctx.closePath()
-        ctx.fillStyle = col
-        ctx.shadowColor = col; ctx.shadowBlur = 8
-        ctx.fill()
+        ctx.fillStyle = COLORS3[i]
+        ctx.strokeStyle = COLORS3[i]
+        ctx.shadowColor = COLORS3[i]; ctx.shadowBlur = 8
+        if (type === 'ring') {
+          drawRing(ctx, 0, 0, sz)
+          ctx.lineWidth = 2; ctx.stroke()
+        } else if (type === 'heart') {
+          drawHeart(ctx, 0, -sz * 0.5, sz * 0.6); ctx.fill()
+        } else {
+          drawStar(ctx, 0, 0, sz); ctx.fill()
+        }
         ctx.restore()
       })
 

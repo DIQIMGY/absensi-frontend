@@ -47,6 +47,26 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
     return () => obs.disconnect()
   }, [])
   const videoRef = useRef(null)
+  const canvasRef = useRef(null)
+
+  // Canvas blur sync dengan video — jalankan setelah video play
+  useEffect(() => {
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    if (!video || !canvas) return
+    const ctx = canvas.getContext('2d')
+    let raf
+    const draw = () => {
+      if (!video.paused && !video.ended && video.readyState >= 2) {
+        canvas.width = video.videoWidth || 320
+        canvas.height = video.videoHeight || 180
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      }
+      raf = requestAnimationFrame(draw)
+    }
+    raf = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(raf)
+  }, [isVideoSlide])
 
   const fotos  = (budayaFotos || []).filter(Boolean)
   const videos = [budayaVideo, budayaVideo2].filter(Boolean)
@@ -160,8 +180,16 @@ export default function BudayaIndonesia({ budayaInfo, budayaFotos = [], budayaVi
             </AnimatePresence>
 
             {videos.length > 0 && (
-              <video ref={videoRef} src={videoSrc || ''} loop muted playsInline
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}/>
+              <>
+                {/* Canvas blur background — sync dengan video */}
+                <canvas ref={canvasRef}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ objectFit: 'cover', filter: 'blur(16px)', transform: 'scale(1.1)', opacity: isVideoSlide ? 0.7 : 0 }}/>
+                {/* Video utama — contain agar tidak crop */}
+                <video ref={videoRef} src={videoSrc || ''} loop muted playsInline
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-400 ${isVideoSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  style={{ objectFit: 'contain' }}/>
+              </>
             )}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none"/>
