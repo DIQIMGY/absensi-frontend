@@ -6,6 +6,8 @@ import { useAuthStore } from '../stores/authStore'
 import { useThemeStore } from '../stores/themeStore'
 import { usePengaturanStore } from '../stores/pengaturanStore'
 import { adminApi } from '../services/adminService'
+import { guruApi } from '../services/guruService'
+import { siswaApi } from '../services/siswaService'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 
@@ -280,10 +282,8 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
       if (user.role === 'admin') {
         await adminApi.uploadFotoUser(user.id, fd)
       } else if (user.role === 'guru') {
-        const { guruApi } = await import('../services/guruService')
         await guruApi.updateProfile(fd)
       } else {
-        const { siswaApi } = await import('../services/siswaService')
         await siswaApi.updateFoto(fd)
       }
       // Refresh user data
