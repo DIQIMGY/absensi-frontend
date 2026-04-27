@@ -16,24 +16,14 @@ export const useAuthStore = create(
           const response = await api.post('/login', credentials)
           const { user, token } = response.data.data
 
-          console.log('login - User data:', user)
-          console.log('login - User foto:', user?.foto)
-          console.log('login - User siswa:', user?.siswa)
-          console.log('login - User siswa foto:', user?.siswa?.foto)
-
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-          })
-
+          set({ user, token, isAuthenticated: true, isLoading: false })
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          window.__authToken = token
+          window.__authLogout = get().logout
           
           toast.success('Login berhasil!')
           return { success: true, user }
         } catch (error) {
-          console.error('Login error:', error)
           const message = error.response?.data?.message || 'Login gagal'
           toast.error(message)
           return { success: false, error: message }
@@ -45,19 +35,14 @@ export const useAuthStore = create(
           const response = await api.post('/register', data)
           const { user, token } = response.data.data
 
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-          })
-
+          set({ user, token, isAuthenticated: true, isLoading: false })
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          window.__authToken = token
+          window.__authLogout = get().logout
           
           toast.success('Registrasi berhasil!')
           return { success: true, user: response.data.data.user }
         } catch (error) {
-          console.error('Register error:', error)
           const message = error.response?.data?.message || 'Registrasi gagal'
           toast.error(message)
           return { success: false, error: message }
@@ -70,13 +55,9 @@ export const useAuthStore = create(
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          })
+          set({ user: null, token: null, isAuthenticated: false, isLoading: false })
           delete api.defaults.headers.common['Authorization']
+          window.__authToken = null
           toast.success('Logout berhasil')
         }
       },
@@ -91,27 +72,15 @@ export const useAuthStore = create(
 
         try {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          window.__authToken = token
+          window.__authLogout = get().logout
           const response = await api.get('/me')
           
-          console.log('checkAuth - Response from /me:', response.data.data)
-          console.log('checkAuth - User foto:', response.data.data?.foto)
-          console.log('checkAuth - User siswa:', response.data.data?.siswa)
-          console.log('checkAuth - User siswa foto:', response.data.data?.siswa?.foto)
-          
-          set({
-            user: response.data.data,
-            isAuthenticated: true,
-            isLoading: false,
-          })
+          set({ user: response.data.data, isAuthenticated: true, isLoading: false })
         } catch (error) {
-          console.error('checkAuth error:', error)
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          })
+          set({ user: null, token: null, isAuthenticated: false, isLoading: false })
           delete api.defaults.headers.common['Authorization']
+          window.__authToken = null
         }
       },
 
@@ -122,22 +91,23 @@ export const useAuthStore = create(
       getDashboardRoute: () => {
         const { user } = get()
         if (!user) return '/login'
-        
         switch (user.role) {
-          case 'admin':
-            return '/admin/dashboard'
-          case 'guru':
-            return '/guru/dashboard'
-          case 'siswa':
-            return '/siswa/dashboard'
-          default:
-            return '/login'
+          case 'admin': return '/admin/dashboard'
+          case 'guru': return '/guru/dashboard'
+          case 'siswa': return '/siswa/dashboard'
+          default: return '/login'
         }
       },
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token }),
+      onRehydrateStorage: () => (state) => {
+        // Sync token ke window setelah rehydrate dari localStorage
+        if (state?.token) {
+          window.__authToken = state.token
+        }
+      }
     }
   )
 )

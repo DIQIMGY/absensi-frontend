@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 
 const api = axios.create({
@@ -12,41 +11,31 @@ const api = axios.create({
   timeout: 30000,
 })
 
-// Request interceptor
+// Request interceptor — ambil token dari zustand store tanpa circular import
 api.interceptors.request.use(
   async (config) => {
-    const token = useAuthStore.getState().token
+    // Akses store via window global yang di-set oleh authStore setelah init
+    const token = window.__authToken || null
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
     
-    // Jika data adalah FormData, hapus Content-Type agar axios set otomatis
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type']
-      // Naikkan timeout untuk upload file (video bisa besar)
-      config.timeout = 300000  // 5 menit
-      console.log('📦 Sending FormData - Content-Type will be set automatically')
+      config.timeout = 300000
     }
-    
-    console.log(`🚀 API Request: ${config.method.toUpperCase()} ${config.url}`)
     
     return config
   },
-  (error) => {
-    console.error('❌ Request Error:', error)
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    return response
-  },
+  (response) => response,
   (error) => {
     const { response, config } = error
 
-    // Kalau request pakai skipErrorToast: true, jangan tampilkan toast
     if (config?.skipErrorToast) return Promise.reject(error)
 
     if (!response) {
@@ -55,17 +44,12 @@ api.interceptors.response.use(
     }
 
     if (response.status === 401) {
-      useAuthStore.getState().logout()
+      window.__authLogout?.()
       toast.error('Sesi telah berakhir. Silakan login kembali.')
       window.location.href = '/login'
     } else if (response.status === 403) {
       toast.error('Anda tidak memiliki akses ke fitur ini.')
-    } else if (response.status === 404) {
-      // Jangan toast 404 — banyak endpoint optional yang memang bisa 404
-    } else if (response.status === 422) {
-      // Validation errors — biarkan component handle
     } else if (response.status >= 500) {
-      // Hanya toast kalau bukan request background (notifikasi, polling, dll)
       if (!config?.silent) {
         toast.error('Terjadi kesalahan server. Silakan coba lagi.')
       }
