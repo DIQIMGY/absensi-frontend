@@ -330,7 +330,7 @@ export default function AbsensiGuru() {
               </div>
             )}
             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-white dark:ring-[#1F3A44] ${
-              row.status === 'hadir' ? 'bg-[#10B981]' : 'bg-[#F59E0B]'
+              row.status === 'hadir' ? 'bg-[#10B981]' : row.status === 'terlambat' ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'
             }`} />
           </div>
           <div className="min-w-0">
@@ -383,12 +383,16 @@ export default function AbsensiGuru() {
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
           row.status === 'hadir'
             ? 'bg-[#10B981]/20 text-[#10B981] dark:bg-[#34D399]/20 dark:text-[#34D399] border border-[#10B981]/30 dark:border-[#34D399]/30'
-            : 'bg-[#F59E0B]/20 text-[#F59E0B] dark:bg-[#FBBF24]/20 dark:text-[#FBBF24] border border-[#F59E0B]/30 dark:border-[#FBBF24]/30'
+            : row.status === 'terlambat'
+            ? 'bg-[#F59E0B]/20 text-[#F59E0B] dark:bg-[#FBBF24]/20 dark:text-[#FBBF24] border border-[#F59E0B]/30 dark:border-[#FBBF24]/30'
+            : 'bg-[#EF4444]/20 text-[#EF4444] dark:bg-[#EF4444]/20 dark:text-[#F87171] border border-[#EF4444]/30 dark:border-[#EF4444]/30'
         }`}>
           {row.status === 'hadir' ? (
             <CheckCircle size={12} />
-          ) : (
+          ) : row.status === 'terlambat' ? (
             <Clock size={12} />
+          ) : (
+            <XCircle size={12} />
           )}
           <span>{row.status_label}</span>
           {row.menit_keterlambatan > 0 && (
@@ -538,6 +542,7 @@ export default function AbsensiGuru() {
                             <option value="">Semua Status</option>
                             <option value="hadir">Hadir</option>
                             <option value="terlambat">Terlambat</option>
+                            <option value="alpha">Alpha</option>
                           </select>
                         </div>
                         <div>

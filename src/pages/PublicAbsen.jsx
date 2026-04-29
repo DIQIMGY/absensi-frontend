@@ -135,12 +135,12 @@ export default function PublicAbsen() {
   ]
 
   return (
-    <div className={`flex flex-col lg:flex-row lg:h-screen lg:overflow-hidden font-sans ${isDark ? 'bg-[#080e1a]' : 'bg-[#f0fdf4]'}`}>
+    <div className={`flex flex-col md:flex-row md:h-screen md:overflow-hidden font-sans ${isDark ? 'bg-[#080e1a]' : 'bg-[#f0fdf4]'}`}>
 
       {/* ══════════════════════════════════════════════════════════════════
           LEFT — Dark premium panel, full height
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="hidden lg:flex w-[400px] xl:w-[440px] flex-shrink-0 flex-col h-screen relative overflow-hidden">
+      <div className="hidden md:flex w-[300px] lg:w-[360px] xl:w-[420px] flex-shrink-0 flex-col h-screen relative overflow-hidden">
         {/* Multi-layer gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#064e3b] via-[#065f46] to-[#0f172a]"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"/>
@@ -154,7 +154,7 @@ export default function PublicAbsen() {
           <rect width="100%" height="100%" fill="url(#dp)"/>
         </svg>
 
-        <div className="relative z-10 flex flex-col h-full p-7 xl:p-8 overflow-y-auto">
+        <div className="relative z-10 flex flex-col h-full p-5 lg:p-7 xl:p-8 overflow-y-auto">
 
           {/* ── Header row ── */}
           <div className="flex items-center justify-between mb-8">
@@ -181,7 +181,7 @@ export default function PublicAbsen() {
           <div className="mb-1">
             <motion.p
               key={fmtJam(waktu)}
-              className="text-[58px] xl:text-[66px] font-black text-white tabular-nums tracking-tight leading-none"
+              className="text-[44px] lg:text-[58px] xl:text-[66px] font-black text-white tabular-nums tracking-tight leading-none"
               style={{ textShadow: '0 0 40px rgba(52,211,153,0.3)' }}>
               {fmtJam(waktu)}
             </motion.p>
@@ -277,14 +277,14 @@ export default function PublicAbsen() {
       {/* ══════════════════════════════════════════════════════════════════
           RIGHT — Form panel, fills remaining space
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col min-h-screen lg:h-screen overflow-y-auto relative">
+      <div className="flex-1 flex flex-col min-h-screen md:h-screen overflow-y-auto relative">
         {/* Background — putih */}
         {!isDark && <div className="absolute inset-0 z-0 bg-white"/>}
         {isDark && <div className="absolute inset-0 z-0 bg-[#080e1a]"/>}
         <div className="relative z-10 flex flex-col flex-1">
 
         {/* Mobile top bar */}
-        <div className={`lg:hidden sticky top-0 z-30 border-b backdrop-blur-xl ${isDark ? 'bg-[#080e1a]/90 border-white/5' : 'bg-white/90 border-slate-100'}`}>
+        <div className={`md:hidden sticky top-0 z-30 border-b backdrop-blur-xl ${isDark ? 'bg-[#080e1a]/90 border-white/5' : 'bg-white/90 border-slate-100'}`}>
           <div className="flex items-center justify-between px-4 py-2.5">
             <div className="flex items-center gap-2.5">
               {pengaturan.logo_sekolah
@@ -320,7 +320,7 @@ export default function PublicAbsen() {
         </div>
 
         {/* ── Right content ── */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 pb-28 lg:pb-8 flex flex-col gap-3 sm:gap-4">
+        <div className="flex-1 p-4 sm:p-5 lg:p-8 xl:p-10 pb-24 md:pb-6 flex flex-col gap-3 sm:gap-4">
 
           {/* Title + theme */}
           <div className="flex items-start justify-between gap-3">
@@ -335,7 +335,7 @@ export default function PublicAbsen() {
                 {userRole==='siswa' ? 'Masukkan NIS/NISN atau scan QR Code' : 'Masukkan NIP atau scan QR Code'}
               </p>
             </div>
-            <button onClick={toggleTheme} className={`hidden lg:flex p-2.5 rounded-xl border transition-all hover:scale-105 flex-shrink-0 ${isDark?'border-white/10 text-slate-400 hover:bg-white/5':'border-slate-200 text-slate-400 hover:bg-slate-100'}`}>
+            <button onClick={toggleTheme} className={`hidden md:flex p-2.5 rounded-xl border transition-all hover:scale-105 flex-shrink-0 ${isDark?'border-white/10 text-slate-400 hover:bg-white/5':'border-slate-200 text-slate-400 hover:bg-slate-100'}`}>
               {isDark ? <Sun size={14} className="text-amber-400"/> : <Moon size={14}/>}
             </button>
           </div>
@@ -344,7 +344,7 @@ export default function PublicAbsen() {
           <AnimatePresence>
             {!boleh && pesan && (
               <motion.div initial={{opacity:0,y:-6,height:0}} animate={{opacity:1,y:0,height:'auto'}} exit={{opacity:0,height:0}}
-                className={`hidden lg:flex items-center gap-3 p-3.5 rounded-2xl border ${isDark?'bg-amber-500/10 border-amber-500/20':'bg-amber-50 border-amber-200'}`}>
+                className={`hidden md:flex items-center gap-3 p-3.5 rounded-2xl border ${isDark?'bg-amber-500/10 border-amber-500/20':'bg-amber-50 border-amber-200'}`}>
                 <span className="text-lg">{pesan.icon}</span>
                 <div>
                   <p className={`text-xs font-bold ${isDark?'text-amber-300':'text-amber-800'}`}>{pesan.title}</p>
@@ -416,7 +416,7 @@ export default function PublicAbsen() {
             {/* Card top accent */}
             <div className="h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-400"/>
 
-            <div className="p-4 sm:p-5 sm:p-6">
+            <div className="p-4 sm:p-6">
               {/* Tabs */}
               <div className={`flex gap-1 p-1 rounded-xl sm:rounded-2xl mb-4 sm:mb-5 ${isDark?'bg-white/5':'bg-slate-100'}`}>
                 {tabs.map(t => (
@@ -561,7 +561,7 @@ export default function PublicAbsen() {
           </div>
 
           {/* ── Bottom info cards ── */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {/* Jadwal */}
             <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
               <img src="/image/bg5.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
@@ -627,7 +627,7 @@ export default function PublicAbsen() {
       </div>
 
       {/* Mobile bottom role switcher */}
-      <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t px-3 py-2 backdrop-blur-xl ${isDark?'bg-[#080e1a]/95 border-white/5':'bg-white/95 border-slate-100'}`}>
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t px-3 py-2 backdrop-blur-xl ${isDark?'bg-[#080e1a]/95 border-white/5':'bg-white/95 border-slate-100'}`}>
         <div className="flex gap-2 max-w-sm mx-auto">
           {[{ key:'siswa', label:'Siswa', icon:GraduationCap },{ key:'guru', label:'Guru', icon:User }].map(r => (
             <button key={r.key}
