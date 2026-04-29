@@ -246,18 +246,18 @@ export default function AlamIndonesia({ alamInfo, alamFotos = [], alamFotos2 = [
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-        className="relative overflow-hidden"
+        className="relative overflow-hidden mx-auto w-full max-w-2xl"
         style={{ borderRadius: 20 }}
       >
         {/* ── Background ── */}
         {hasBg ? (
           <>
             <img src={alamBg} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg,rgba(5,10,20,0.92) 0%,rgba(5,20,15,0.88) 100%)' }} />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg,rgba(5,10,20,0.60) 0%,rgba(5,20,15,0.55) 100%)' }} />
           </>
         ) : (
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(160deg,#050a14 0%,#071a2e 40%,#041510 100%)'
+            background: 'linear-gradient(160deg,#0d1f35 0%,#0f2d1e 50%,#0a1a28 100%)'
           }} />
         )}
 
