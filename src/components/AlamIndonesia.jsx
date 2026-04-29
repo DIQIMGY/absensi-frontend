@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Globe2, MapPin, Camera, Compass, Star } from 'lucide-react'
 
 // ── Particle floating background ─────────────────────────────────────────────
@@ -52,7 +52,6 @@ function FotoCard({ src, label, index, onClick }) {
   const rotY = useMotionValue(0)
   const springX = useSpring(rotX, { stiffness: 300, damping: 30 })
   const springY = useSpring(rotY, { stiffness: 300, damping: 30 })
-  const glowX = useTransform(springY, [-15, 15], ['0%', '100%'])
 
   const onMove = (e) => {
     if (!ref.current) return
@@ -76,8 +75,8 @@ function FotoCard({ src, label, index, onClick }) {
         transformStyle: 'preserve-3d',
         perspective: 1000,
         width: 180,
-        height: 120,
-        borderRadius: 14,
+        height: 90,
+        borderRadius: 12,
       }}
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -131,7 +130,7 @@ function FotoCard({ src, label, index, onClick }) {
       )}
 
       {/* Glow border on hover */}
-      <div className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+      <div className="absolute inset-0 rounded-[12px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{ boxShadow: 'inset 0 0 0 1px rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15)' }} />
     </motion.button>
   )
@@ -246,7 +245,7 @@ export default function AlamIndonesia({ alamInfo, alamFotos = [], alamFotos2 = [
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-        className="relative overflow-hidden mx-auto w-full max-w-2xl"
+        className="relative overflow-hidden w-full"
         style={{ borderRadius: 20 }}
       >
         {/* ── Background ── */}
@@ -284,74 +283,50 @@ export default function AlamIndonesia({ alamInfo, alamFotos = [], alamFotos2 = [
         <div className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
           style={{ background: 'linear-gradient(90deg,transparent,rgba(16,185,129,0.3),transparent)' }} />
 
-        <div className="relative z-10 pt-5 pb-6 space-y-5">
+        <div className="relative z-10 pt-4 pb-4 space-y-3">
 
-          {/* ── Header ── */}
-          <div className="px-5 sm:px-6">
-            <div className="flex items-start justify-between gap-4">
-
-              {/* Kiri */}
-              <div className="flex-1 min-w-0">
-                {/* Badge */}
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2.5"
-                  style={{
-                    background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,212,0.1))',
-                    border: '1px solid rgba(16,185,129,0.25)',
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  <Compass size={9} className="text-emerald-400" />
-                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
-                    Explore Indonesia
-                  </span>
-                  <div className="w-1 h-1 rounded-full bg-emerald-400/60 animate-pulse" />
-                </motion.div>
-
-                {/* Judul */}
-                <motion.h3
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight tracking-tight"
-                >
-                  {desk}
-                </motion.h3>
-
-                {/* Sub info */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.25 }}
-                  className="flex items-center gap-3 mt-2"
-                >
-                  <div className="flex items-center gap-1">
-                    <Star size={9} className="text-amber-400" fill="currentColor" />
-                    <span className="text-[9px] text-white/40 font-medium">Keajaiban Nusantara</span>
-                  </div>
-                  <div className="w-1 h-1 rounded-full bg-white/20" />
-                  <div className="flex items-center gap-1">
-                    <Globe2 size={9} className="text-cyan-400" />
-                    <span className="text-[9px] text-white/40 font-medium">17.000+ Pulau</span>
-                  </div>
-                </motion.div>
+          {/* ── Header compact ── */}
+          <div className="px-4 sm:px-5">
+            <div className="flex items-center gap-3">
+              {/* Icon globe */}
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.2),rgba(6,182,212,0.15))', border: '1px solid rgba(16,185,129,0.3)' }}>
+                <Compass size={14} className="text-emerald-400" />
               </div>
 
+              {/* Teks */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm sm:text-base font-black text-white leading-tight tracking-tight truncate">
+                    {desk}
+                  </h3>
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    <div className="w-px h-3 bg-white/10" />
+                    <div className="flex items-center gap-1">
+                      <Star size={8} className="text-amber-400" fill="currentColor" />
+                      <span className="text-[8px] text-white/30 font-medium">Nusantara</span>
+                    </div>
+                    <div className="w-px h-3 bg-white/10" />
+                    <div className="flex items-center gap-1">
+                      <Globe2 size={8} className="text-cyan-400" />
+                      <span className="text-[8px] text-white/30 font-medium">17.000+ Pulau</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
+              {/* Live badge */}
+              <div className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-full"
+                style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400/70">Live</span>
+              </div>
             </div>
-          </div>
-
-          {/* ── Divider ── */}
-          <div className="px-5 sm:px-6">
-            <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }} />
           </div>
 
           {/* ── Strip 1 ── */}
           {fotos1.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <SectionLabel title={judul1} color="#10b981" icon={MapPin} />
               <Strip fotos={fotos1} direction={-1} onOpen={idx => open(fotos1, idx)} speed={0.5} />
             </div>
@@ -359,29 +334,11 @@ export default function AlamIndonesia({ alamInfo, alamFotos = [], alamFotos2 = [
 
           {/* ── Strip 2 ── */}
           {fotos2.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <SectionLabel title={judul2} color="#06b6d4" icon={Globe2} />
               <Strip fotos={fotos2} direction={1} onOpen={idx => open(fotos2, idx)} speed={0.42} />
             </div>
           )}
-
-          {/* ── Footer hint ── */}
-          <div className="px-5 sm:px-6">
-            <div className="flex items-center justify-center gap-2 py-2 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-0.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-0.5 rounded-full bg-white/10" />
-              </div>
-              <span className="text-[8px] text-white/20 font-medium tracking-widest uppercase">
-                Geser untuk menjelajahi · Klik untuk memperbesar
-              </span>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-0.5 rounded-full bg-white/10" />
-                <div className="w-3 h-0.5 rounded-full bg-white/20" />
-              </div>
-            </div>
-          </div>
 
         </div>
       </motion.div>
