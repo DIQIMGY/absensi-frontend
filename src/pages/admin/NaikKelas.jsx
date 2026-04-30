@@ -371,7 +371,8 @@ export default function NaikKelas() {
   }
 
   const toggleKelas = (kelas) => {
-    const ids = kelas.siswa.map(s => s.id)
+    // Hanya pilih siswa yang BOLEH naik (tidak_naik = false)
+    const ids = kelas.siswa.filter(s => !s.tidak_naik).map(s => s.id)
     setSelectedSiswa(prev => {
       const next = new Set(prev)
       const allSelected = ids.every(id => next.has(id))
@@ -383,7 +384,8 @@ export default function NaikKelas() {
 
   const toggleAngkatan = (tingkat) => {
     const kelasTingkat = kelasData.filter(k => k.tingkat === tingkat || k.tingkat === String(tingkat))
-    const ids = kelasTingkat.flatMap(k => k.siswa.map(s => s.id))
+    // Hanya pilih siswa yang BOLEH naik (tidak_naik = false)
+    const ids = kelasTingkat.flatMap(k => k.siswa.filter(s => !s.tidak_naik).map(s => s.id))
     setSelectedSiswa(prev => {
       const next = new Set(prev)
       const allSelected = ids.every(id => next.has(id))
@@ -891,7 +893,9 @@ export default function NaikKelas() {
             {['10','11','12'].map(t => {
               const kelasTingkat = kelasData.filter(k => String(k.tingkat) === t)
               if (!kelasTingkat.length) return null
-              const ids = kelasTingkat.flatMap(k => k.siswa.map(s => s.id))
+              // Hanya hitung siswa yang boleh naik
+              const ids = kelasTingkat.flatMap(k => k.siswa.filter(s => !s.tidak_naik).map(s => s.id))
+              const totalTidakNaik = kelasTingkat.reduce((a, k) => a + (k.total_tidak_naik || 0), 0)
               const allSel = ids.length > 0 && ids.every(id => selectedSiswa.has(id))
               const label = t === '10' ? 'Kelas X' : t === '11' ? 'Kelas XI' : 'Kelas XII'
               const aksi  = t === '12' ? '→ Alumni' : t === '11' ? '→ XII' : '→ XI'
@@ -904,6 +908,11 @@ export default function NaikKelas() {
                   }`}>
                   <Check size={11} className={allSel ? 'opacity-100' : 'opacity-0'}/>
                   {label} {aksi} ({ids.length} siswa)
+                  {totalTidakNaik > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
+                      {totalTidakNaik} tidak naik
+                    </span>
+                  )}
                 </button>
               )
             })}
@@ -923,7 +932,8 @@ export default function NaikKelas() {
           ) : (
             <div className="space-y-3">
               {filteredKelasSelektif.map(kelas => {
-                const ids = kelas.siswa.map(s => s.id)
+                // Hanya hitung siswa yang boleh naik (tidak_naik = false)
+                const ids = kelas.siswa.filter(s => !s.tidak_naik).map(s => s.id)
                 const allSel = ids.length > 0 && ids.every(id => selectedSiswa.has(id))
                 const someSel = ids.some(id => selectedSiswa.has(id))
                 const isExpanded = expandedKelas.has(kelas.kelas_id)
@@ -954,7 +964,14 @@ export default function NaikKelas() {
                       }} className="flex-1 flex items-center gap-3 text-left">
                         <div>
                           <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{kelas.nama_kelas}</p>
-                          <p className="text-[10px] text-slate-400">{kelas.jurusan} · {kelas.total_siswa} siswa</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-[10px] text-slate-400">{kelas.jurusan} · {kelas.total_siswa} siswa</p>
+                            {kelas.total_tidak_naik > 0 && (
+                              <span className="text-[9px] font-black text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                <UserX size={8}/>{kelas.total_tidak_naik} tidak naik
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span className={`text-xs font-bold ml-auto mr-2 ${aksiColor}`}>{aksiLabel}</span>
                         <ChevronDown size={14} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
@@ -968,6 +985,35 @@ export default function NaikKelas() {
                           <p className="px-4 py-3 text-xs text-slate-400 italic">Tidak ada siswa aktif</p>
                         ) : kelas.siswa.map(siswa => {
                           const isSel = selectedSiswa.has(siswa.id)
+                          const tidakNaik = siswa.tidak_naik === true
+
+                          if (tidakNaik) {
+                            // Siswa tidak naik kelas — tampil tapi tidak bisa dicentang
+                            return (
+                              <div key={siswa.id}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 bg-red-50 dark:bg-red-900/10 cursor-not-allowed opacity-80">
+                                {/* Checkbox dikunci */}
+                                <div className="w-4 h-4 rounded border-2 border-red-300 dark:border-red-700 flex items-center justify-center flex-shrink-0 bg-red-100 dark:bg-red-900/30">
+                                  <X size={9} className="text-red-500"/>
+                                </div>
+                                {siswa.foto ? (
+                                  <img src={siswa.foto} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0 opacity-60"/>
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-[10px] font-bold text-red-500">{siswa.nama?.charAt(0)}</span>
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-semibold text-red-700 dark:text-red-400 truncate">{siswa.nama}</p>
+                                  <p className="text-[10px] text-slate-400">{siswa.nis}</p>
+                                </div>
+                                <span className="text-[10px] font-black text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full flex-shrink-0 flex items-center gap-1">
+                                  <UserX size={9}/>Tidak Naik
+                                </span>
+                              </div>
+                            )
+                          }
+
                           return (
                             <button key={siswa.id} onClick={() => toggleSiswa(siswa.id)}
                               className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
