@@ -1314,16 +1314,16 @@ export default function NaikKelas() {
                         : r.status === 'diproses' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
-                        {r.status === 'pending' ? 'Menunggu' : r.status === 'diproses' ? 'Diproses' : 'Ditolak'}
+                        {r.status === 'pending' ? 'Menunggu Review' : r.status === 'diproses' ? '✓ Disetujui (Tidak Naik)' : '✗ Ditolak (Bisa Naik)'}
                       </span>
                       {r.status === 'pending' && (
                         <div className="flex gap-1">
                           <button onClick={() => handleUpdateStatusRekomendasi(r.id, 'diproses')}
-                            className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all" title="Tandai Diproses">
+                            className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all" title="Setujui — siswa tidak naik kelas">
                             <Check size={12} />
                           </button>
                           <button onClick={() => handleUpdateStatusRekomendasi(r.id, 'ditolak')}
-                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 rounded-lg transition-all" title="Tolak">
+                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 rounded-lg transition-all" title="Tolak — siswa tetap bisa naik kelas">
                             <X size={12} />
                           </button>
                         </div>
