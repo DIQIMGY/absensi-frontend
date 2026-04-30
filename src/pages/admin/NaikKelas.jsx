@@ -856,7 +856,40 @@ export default function NaikKelas() {
                 <RefreshCw size={13} className={loadingKelas ? 'animate-spin' : ''}/>
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* TOMBOL CENTANG SEMUA */}
+              {(() => {
+                const semuaBolehNaik = kelasData.flatMap(k => k.siswa.filter(s => !s.tidak_naik).map(s => s.id))
+                const semuaSelected = semuaBolehNaik.length > 0 && semuaBolehNaik.every(id => selectedSiswa.has(id))
+                const totalTidakNaik = kelasData.reduce((a, k) => a + (k.total_tidak_naik || 0), 0)
+                return (
+                  <button
+                    onClick={() => {
+                      if (semuaSelected) {
+                        setSelectedSiswa(new Set())
+                      } else {
+                        setSelectedSiswa(new Set(semuaBolehNaik))
+                      }
+                    }}
+                    disabled={loadingKelas || semuaBolehNaik.length === 0}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all disabled:opacity-40 ${
+                      semuaSelected
+                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/25'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:border-emerald-400 hover:text-emerald-600'
+                    }`}>
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${semuaSelected ? 'bg-white border-white' : 'border-current'}`}>
+                      {semuaSelected && <Check size={10} className="text-emerald-500" strokeWidth={3}/>}
+                    </div>
+                    {semuaSelected ? 'Batal Semua' : 'Centang Semua'}
+                    <span className="text-[10px] opacity-70">({semuaBolehNaik.length})</span>
+                    {totalTidakNaik > 0 && (
+                      <span className="px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
+                        {totalTidakNaik} dikecualikan
+                      </span>
+                    )}
+                  </button>
+                )
+              })()}
               {selectedSiswa.size > 0 && (
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                   {selectedSiswa.size} dipilih
