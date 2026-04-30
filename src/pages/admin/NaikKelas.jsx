@@ -112,18 +112,25 @@ const StatusBadge = ({ status }) => {
 
 // Preview Card Component - simple tanpa animasi berlebihan
 const PreviewCard = ({ item, index }) => {
+  const isDikecualikan = item.status === 'dikecualikan'
   return (
-    <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg hover:bg-purple-500/10 dark:hover:bg-purple-500/20 transition-colors cursor-default border border-transparent hover:border-purple-500/30">
+    <div className={`flex items-center justify-between p-2 rounded-lg transition-colors cursor-default border ${
+      isDikecualikan
+        ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/40'
+        : 'bg-slate-50 dark:bg-slate-800/60 border-transparent hover:bg-purple-500/10 dark:hover:bg-purple-500/20 hover:border-purple-500/30'
+    }`}>
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <div className={`flex-shrink-0 w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-bold shadow-sm ${
+          isDikecualikan ? 'bg-amber-400 text-white' :
           index < 3 ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
         }`}>
-          {index + 1}
+          {isDikecualikan ? '!' : index + 1}
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-xs text-slate-900 dark:text-white truncate flex items-center gap-1">
             {item.nama}
             {item.status === 'lulus' && <Award size={10} className="text-emerald-500 flex-shrink-0" />}
+            {isDikecualikan && <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1 py-0.5 rounded flex-shrink-0">Tidak Naik</span>}
           </p>
           <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-0.5">
             <FileText size={8} className="text-purple-500" />
@@ -135,8 +142,8 @@ const PreviewCard = ({ item, index }) => {
         <span className="text-[9px] font-medium text-slate-500 dark:text-slate-400">
           {item.kelas_lama}
         </span>
-        <ArrowRight size={8} className="text-purple-500" />
-        <span className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400">
+        <ArrowRight size={8} className={isDikecualikan ? 'text-amber-400' : 'text-purple-500'} />
+        <span className={`text-[9px] font-medium ${isDikecualikan ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
           {item.kelas_baru || 'Alumni'}
         </span>
       </div>
@@ -646,6 +653,12 @@ export default function NaikKelas() {
                       <p className="text-[8px] text-emerald-500 dark:text-emerald-400">Lulus</p>
                       <p className="font-semibold text-[10px] text-emerald-500 dark:text-emerald-400">{preview.statistik.lulus} siswa</p>
                     </div>
+                    {(preview.statistik.dikecualikan > 0 || preview.total_dikecualikan > 0) && (
+                      <div className="px-2 py-1.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-lg border border-amber-500/30 dark:border-amber-500/30">
+                        <p className="text-[8px] text-amber-600 dark:text-amber-400">Tidak Naik (Guru)</p>
+                        <p className="font-semibold text-[10px] text-amber-600 dark:text-amber-400">{preview.statistik.dikecualikan || preview.total_dikecualikan} siswa</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
