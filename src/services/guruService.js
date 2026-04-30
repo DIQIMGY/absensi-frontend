@@ -36,4 +36,10 @@ export const guruApi = {
   
   // Riwayat Absensi Guru
   getRiwayatAbsensi: (params) => api.get('/guru/riwayat-absensi', { params }),
+
+  // Naik Kelas - Rekomendasi
+  getNaikKelasKelasSiswa: () => api.get('/guru/naik-kelas/kelas-siswa'),
+  getRekomendasiSaya: () => api.get('/guru/naik-kelas/rekomendasi-saya'),
+  simpanRekomendasi: (data) => api.post('/guru/naik-kelas/rekomendasi', data),
+  hapusRekomendasi: (siswaId) => api.delete(`/guru/naik-kelas/rekomendasi/${siswaId}`),
 }

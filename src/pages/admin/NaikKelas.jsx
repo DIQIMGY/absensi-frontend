@@ -7,9 +7,10 @@ import {
   Award, Shield, BookOpen, School, UserCheck,
   ArrowUpCircle, ArrowDownCircle, ChevronRight, ChevronDown,
   Filter, Search, Check, X, HelpCircle, FileText,
-  BarChart3, Layers, ListChecks, MoveRight
+  BarChart3, Layers, ListChecks, MoveRight, UserX, Bell, MessageSquare
 } from 'lucide-react'
 import naikKelasService from '../../services/naikKelasService'
+import { adminApi } from '../../services/adminService'
 import { confirmAction } from '../../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 
@@ -186,9 +187,14 @@ export default function NaikKelas() {
   // State untuk pindah kelas
   const [kelasList, setKelasList] = useState([])
   const [loadingKelasList, setLoadingKelasList] = useState(false)
-  const [pindahTarget, setPindahTarget] = useState({}) // { kelas_id: tujuan_kelas_id }
-  const [loadingPindah, setLoadingPindah] = useState({}) // { kelas_id: bool }
+  const [pindahTarget, setPindahTarget] = useState({})
+  const [loadingPindah, setLoadingPindah] = useState({})
   const [searchPindah, setSearchPindah] = useState('')
+
+  // State untuk rekomendasi dari guru
+  const [rekomendasi, setRekomendasi] = useState([])
+  const [rekomendasiStats, setRekomendasiStats] = useState(null)
+  const [loadingRekomendasi, setLoadingRekomendasi] = useState(false)
 
   useEffect(() => {
     fetchPreview()
@@ -205,6 +211,10 @@ export default function NaikKelas() {
       fetchKelasData()
       fetchKelasList()
     }
+  }, [activeTab])
+
+  useEffect(() => {
+    if (activeTab === 'rekomendasi') fetchRekomendasi()
   }, [activeTab])
 
   // Filter data selektif berdasarkan search
@@ -310,6 +320,38 @@ export default function NaikKelas() {
     } finally {
       setLoadingKelas(false)
     }
+  }
+
+  const fetchRekomendasi = async () => {
+    try {
+      setLoadingRekomendasi(true)
+      const res = await adminApi.getRekomendasiNaikKelas()
+      const d = res.data?.data
+      setRekomendasi(d?.data || [])
+      setRekomendasiStats(d?.stats || null)
+    } catch { toast.error('Gagal memuat rekomendasi') }
+    finally { setLoadingRekomendasi(false) }
+  }
+
+  const handlePakaiRekomendasi = async () => {
+    // Ambil siswa_ids dari rekomendasi pending, lalu pindah ke tab selektif dengan pre-select
+    try {
+      const res = await adminApi.getRekomendasiSiswaIds()
+      const ids = res.data?.data?.siswa_ids || []
+      if (ids.length === 0) { toast.error('Tidak ada rekomendasi pending'); return }
+      // Set selected siswa dan pindah ke tab selektif
+      setSelectedSiswa(new Set(ids.map(Number)))
+      setActiveTab('selektif')
+      toast.success(`${ids.length} siswa dari rekomendasi guru sudah dipilih di tab Naik Kelas Selektif`)
+    } catch { toast.error('Gagal memuat data rekomendasi') }
+  }
+
+  const handleUpdateStatusRekomendasi = async (id, status) => {
+    try {
+      await adminApi.updateStatusRekomendasi(id, { status })
+      toast.success('Status diperbarui')
+      fetchRekomendasi()
+    } catch { toast.error('Gagal update status') }
   }
 
   const toggleSiswa = (siswaId) => {
@@ -526,6 +568,7 @@ export default function NaikKelas() {
           { id: 'preview', label: 'Preview', icon: Eye },
           { id: 'pindah', label: 'Pindah Kelas', icon: MoveRight },
           { id: 'selektif', label: 'Naik Kelas Selektif', icon: ListChecks },
+          { id: 'rekomendasi', label: 'Rekomendasi Guru', icon: Bell },
           { id: 'history', label: 'Riwayat', icon: History },
         ].map(tab => (
           <button
@@ -946,6 +989,110 @@ export default function NaikKelas() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tab Rekomendasi Guru */}
+      {activeTab === 'rekomendasi' && (
+        <div className="space-y-4">
+          {/* Header + action */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex-shrink-0">
+                <Bell size={16} className="text-violet-600 dark:text-violet-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Rekomendasi dari Guru</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Siswa yang direkomendasikan guru untuk tidak naik kelas. Klik tombol di bawah untuk langsung memilih mereka di tab Naik Kelas Selektif.</p>
+              </div>
+            </div>
+            <button onClick={handlePakaiRekomendasi}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-violet-500/25 transition-all flex-shrink-0 self-start sm:self-auto">
+              <ListChecks size={13} />
+              Pakai Rekomendasi → Selektif
+            </button>
+          </div>
+
+          {/* Stats */}
+          {rekomendasiStats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Total', value: rekomendasiStats.total, color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' },
+                { label: 'Menunggu', value: rekomendasiStats.pending, color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' },
+                { label: 'Diproses', value: rekomendasiStats.diproses, color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' },
+                { label: 'Ditolak', value: rekomendasiStats.ditolak, color: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
+              ].map(s => (
+                <div key={s.label} className={`${s.color} rounded-xl p-3 border border-slate-200 dark:border-slate-700`}>
+                  <p className="text-[10px] font-medium opacity-70 mb-1">{s.label}</p>
+                  <p className="text-xl font-black">{s.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* List rekomendasi */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+            {loadingRekomendasi ? (
+              <div className="flex items-center justify-center py-16"><RefreshCw size={24} className="animate-spin text-violet-500" /></div>
+            ) : rekomendasi.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <Bell size={40} className="text-slate-300 mb-3" />
+                <p className="text-sm font-semibold text-slate-500">Belum ada rekomendasi dari guru</p>
+                <p className="text-xs text-slate-400 mt-1">Guru bisa mengirim rekomendasi dari menu Naik Kelas di panel guru</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {rekomendasi.map(r => (
+                  <div key={r.id} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    {/* Avatar */}
+                    {r.foto ? (
+                      <img src={r.foto} alt={r.nama_siswa} className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white dark:ring-slate-800" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {r.nama_siswa?.charAt(0)}
+                      </div>
+                    )}
+                    {/* Info siswa */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{r.nama_siswa}</p>
+                        <span className="text-[10px] text-slate-400">NIS: {r.nis}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-[10px] text-slate-500">{r.kelas} · {r.jurusan}</span>
+                        <span className="text-[10px] text-violet-500">oleh: {r.guru_nama}</span>
+                      </div>
+                      {r.alasan && (
+                        <p className="text-[10px] text-slate-400 mt-0.5 italic truncate">"{r.alasan}"</p>
+                      )}
+                    </div>
+                    {/* Status + actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        r.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        : r.status === 'diproses' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {r.status === 'pending' ? 'Menunggu' : r.status === 'diproses' ? 'Diproses' : 'Ditolak'}
+                      </span>
+                      {r.status === 'pending' && (
+                        <div className="flex gap-1">
+                          <button onClick={() => handleUpdateStatusRekomendasi(r.id, 'diproses')}
+                            className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all" title="Tandai Diproses">
+                            <Check size={12} />
+                          </button>
+                          <button onClick={() => handleUpdateStatusRekomendasi(r.id, 'ditolak')}
+                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 rounded-lg transition-all" title="Tolak">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

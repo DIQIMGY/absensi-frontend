@@ -180,4 +180,9 @@ export const adminApi = {
     params,
     responseType: 'blob' 
   }),
+
+  // Rekomendasi Tidak Naik Kelas dari Guru
+  getRekomendasiNaikKelas: (params) => api.get('/admin/rekomendasi-naik-kelas', { params }),
+  updateStatusRekomendasi: (id, data) => api.put(`/admin/rekomendasi-naik-kelas/${id}/status`, data),
+  getRekomendasiSiswaIds: (params) => api.get('/admin/rekomendasi-naik-kelas/siswa-ids', { params }),
 }
