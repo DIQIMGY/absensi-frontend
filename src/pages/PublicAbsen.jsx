@@ -561,7 +561,7 @@ export default function PublicAbsen() {
           </div>
 
           {/* ── Bottom info cards ── */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Jadwal */}
             <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
               <img src="/image/bg5.png" alt="" className="absolute inset-0 w-full h-full object-cover"/>
