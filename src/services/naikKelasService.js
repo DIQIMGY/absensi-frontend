@@ -41,6 +41,15 @@ const naikKelasService = {
     return response.data;
   },
 
+  // Pindah siswa tertentu (selektif) ke kelas tujuan
+  pindahSiswa: async (siswaIds, kelasTujuanId) => {
+    const response = await api.post('/admin/naik-kelas/pindah-siswa', {
+      siswa_ids: siswaIds,
+      kelas_tujuan_id: kelasTujuanId,
+    });
+    return response.data;
+  },
+
   // Ambil semua kelas aktif (untuk dropdown tujuan)
   getKelasList: async () => {
     const response = await api.get('/admin/kelas', { params: { per_page: 999, is_active: 1 } });

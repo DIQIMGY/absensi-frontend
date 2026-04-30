@@ -198,6 +198,12 @@ export default function NaikKelas() {
   const [loadingPindah, setLoadingPindah] = useState({})
   const [searchPindah, setSearchPindah] = useState('')
 
+  // State pindah kelas selektif per-siswa
+  const [selectedPindah, setSelectedPindah] = useState(new Set()) // siswa_ids yang dipilih untuk dipindah
+  const [pindahTujuanGlobal, setPindahTujuanGlobal] = useState('') // kelas tujuan global
+  const [expandedPindahKelas, setExpandedPindahKelas] = useState(new Set())
+  const [loadingPindahSelektif, setLoadingPindahSelektif] = useState(false)
+
   // State untuk rekomendasi dari guru
   const [rekomendasi, setRekomendasi] = useState([])
   const [rekomendasiStats, setRekomendasiStats] = useState(null)
@@ -267,7 +273,6 @@ export default function NaikKelas() {
       if (res.success) {
         toast.success(res.message)
         setPindahTarget(prev => { const n = {...prev}; delete n[kelasAsalId]; return n })
-        // Refresh semua data sekarang juga — tidak perlu reload halaman
         await Promise.all([fetchKelasData(), fetchPreview(), fetchHistory(), fetchStatistik()])
       } else {
         toast.error(res.message || 'Gagal pindah kelas')
@@ -277,6 +282,53 @@ export default function NaikKelas() {
     } finally {
       setLoadingPindah(prev => ({ ...prev, [kelasAsalId]: false }))
     }
+  }
+
+  const handlePindahSiswaSelektif = async () => {
+    if (selectedPindah.size === 0) { toast.error('Pilih minimal 1 siswa'); return }
+    if (!pindahTujuanGlobal) { toast.error('Pilih kelas tujuan dulu'); return }
+    const tujuanNama = kelasList.find(k => k.id == pindahTujuanGlobal)?.nama_kelas || pindahTujuanGlobal
+    const confirmed = await confirmAction(
+      `Pindah ${selectedPindah.size} Siswa?`,
+      `${selectedPindah.size} siswa akan dipindah ke "${tujuanNama}". Tindakan ini tidak dapat dibatalkan!`
+    )
+    if (!confirmed) return
+    try {
+      setLoadingPindahSelektif(true)
+      const res = await naikKelasService.pindahSiswa(Array.from(selectedPindah), pindahTujuanGlobal)
+      if (res.success) {
+        toast.success(res.message)
+        setSelectedPindah(new Set())
+        setPindahTujuanGlobal('')
+        await Promise.all([fetchKelasData(), fetchPreview(), fetchHistory(), fetchStatistik()])
+      } else {
+        toast.error(res.message || 'Gagal pindah siswa')
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Gagal pindah siswa')
+    } finally {
+      setLoadingPindahSelektif(false)
+    }
+  }
+
+  const togglePindahSiswa = (siswaId) => {
+    setSelectedPindah(prev => {
+      const next = new Set(prev)
+      if (next.has(siswaId)) next.delete(siswaId)
+      else next.add(siswaId)
+      return next
+    })
+  }
+
+  const togglePindahKelas = (kelas) => {
+    const ids = kelas.siswa.map(s => s.id)
+    setSelectedPindah(prev => {
+      const next = new Set(prev)
+      const allSel = ids.every(id => next.has(id))
+      if (allSel) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
   }
 
   const fetchPreview = async () => {
@@ -361,7 +413,14 @@ export default function NaikKelas() {
     } catch { toast.error('Gagal update status') }
   }
 
+  // Set berisi semua siswa_id yang tidak boleh naik kelas (dari rekomendasi guru)
+  const tidakNaikSet = new Set(
+    kelasData.flatMap(k => k.siswa.filter(s => s.tidak_naik).map(s => s.id))
+  )
+
   const toggleSiswa = (siswaId) => {
+    // Jangan izinkan centang siswa yang tidak naik kelas
+    if (tidakNaikSet.has(siswaId)) return
     setSelectedSiswa(prev => {
       const next = new Set(prev)
       if (next.has(siswaId)) next.delete(siswaId)
@@ -400,18 +459,23 @@ export default function NaikKelas() {
       toast.error('Pilih minimal 1 siswa')
       return
     }
+    // Pastikan siswa tidak_naik tidak ikut diproses (double safeguard)
+    const idsAman = Array.from(selectedSiswa).filter(id => !tidakNaikSet.has(id))
+    if (idsAman.length === 0) {
+      toast.error('Tidak ada siswa yang bisa diproses')
+      return
+    }
     const confirmed = await confirmAction(
-      `Proses ${selectedSiswa.size} Siswa?`,
+      `Proses ${idsAman.length} Siswa?`,
       `Siswa kelas X/XI akan naik kelas. Siswa kelas XII akan dijadikan alumni. Tindakan ini tidak dapat dibatalkan!`
     )
     if (!confirmed) return
     try {
       setLoadingSelektif(true)
-      const res = await naikKelasService.prosesSelektif(Array.from(selectedSiswa))
+      const res = await naikKelasService.prosesSelektif(idsAman)
       if (res.success) {
         toast.success(res.message)
         setSelectedSiswa(new Set())
-        // Refresh semua data sekarang juga — tidak perlu reload halaman
         await Promise.all([fetchKelasData(), fetchPreview(), fetchHistory(), fetchStatistik()])
       } else {
         toast.error(res.message || 'Gagal proses naik kelas')
@@ -711,128 +775,213 @@ export default function NaikKelas() {
       {/* Tab Pindah Kelas */}
       {activeTab === 'pindah' && (
         <div className="space-y-4">
-          {/* Info */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40">
-            <Info size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-0.5">Cara Kerja Pindah Kelas</p>
-              <p className="text-[11px] text-blue-600 dark:text-blue-400">
-                Pilih kelas asal, lalu pilih kelas tujuan dari dropdown. Semua siswa aktif di kelas asal akan dipindah ke kelas tujuan. Cocok untuk naik kelas manual sesuai kebijakan sekolah.
-              </p>
+
+          {/* Toolbar: search + kelas tujuan + centang semua + proses */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 space-y-3 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchPindah}
+                  onChange={e => setSearchPindah(e.target.value)}
+                  placeholder="Cari nama siswa, NIS, atau kelas..."
+                  className="w-full pl-9 pr-8 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-700 dark:text-slate-200 placeholder-slate-400"
+                />
+                {searchPindah && (
+                  <button onClick={() => setSearchPindah('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              {/* Kelas tujuan global */}
+              <select
+                value={pindahTujuanGlobal}
+                onChange={e => setPindahTujuanGlobal(e.target.value)}
+                disabled={loadingKelasList}
+                className="sm:w-56 px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-700 dark:text-slate-200"
+              >
+                <option value="">-- Pilih kelas tujuan --</option>
+                {kelasList.map(k => (
+                  <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                ))}
+              </select>
             </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Centang Semua */}
+              {(() => {
+                const semuaIds = kelasData
+                  .flatMap(k => k.siswa)
+                  .filter(s => {
+                    if (!searchPindah) return true
+                    const q = searchPindah.toLowerCase()
+                    return s.nama?.toLowerCase().includes(q) || (s.nis || '').toLowerCase().includes(q)
+                  })
+                  .map(s => s.id)
+                const semuaSel = semuaIds.length > 0 && semuaIds.every(id => selectedPindah.has(id))
+                return (
+                  <button
+                    onClick={() => {
+                      if (semuaSel) setSelectedPindah(new Set())
+                      else setSelectedPindah(new Set(semuaIds))
+                    }}
+                    disabled={loadingKelas || semuaIds.length === 0}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all disabled:opacity-40 ${
+                      semuaSel
+                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/25'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:border-emerald-400 hover:text-emerald-600'
+                    }`}>
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${semuaSel ? 'bg-white border-white' : 'border-current'}`}>
+                      {semuaSel && <Check size={10} className="text-emerald-500" strokeWidth={3}/>}
+                    </div>
+                    {semuaSel ? 'Batal Semua' : 'Centang Semua'}
+                    <span className="text-[10px] opacity-70">({semuaIds.length})</span>
+                  </button>
+                )
+              })()}
+
+              {selectedPindah.size > 0 && (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                  {selectedPindah.size} dipilih
+                </span>
+              )}
+
+              <button
+                onClick={handlePindahSiswaSelektif}
+                disabled={loadingPindahSelektif || selectedPindah.size === 0 || !pindahTujuanGlobal}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/25 transition-all ml-auto">
+                {loadingPindahSelektif ? <RefreshCw size={13} className="animate-spin"/> : <MoveRight size={13}/>}
+                Pindah {selectedPindah.size > 0 ? `(${selectedPindah.size})` : ''} Siswa
+              </button>
+            </div>
+
+            {!pindahTujuanGlobal && selectedPindah.size > 0 && (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <AlertTriangle size={11}/> Pilih kelas tujuan dulu sebelum proses
+              </p>
+            )}
           </div>
 
-          {/* Tabel kelas */}
+          {/* List kelas + siswa */}
           {loadingKelas ? (
-            <div className="flex items-center justify-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
               <RefreshCw size={20} className="text-emerald-500 animate-spin mr-2" />
-              <span className="text-xs text-slate-500">Memuat data kelas...</span>
+              <span className="text-xs text-slate-500">Memuat data...</span>
             </div>
           ) : kelasData.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
               <School size={32} className="mx-auto mb-2 text-slate-300" />
               <p className="text-xs text-slate-400">Tidak ada data kelas</p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                  Daftar Kelas — Pilih Tujuan Pindah
-                </p>
-              </div>
-              {/* Search pindah */}
-              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                <div className="relative">
-                  <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchPindah}
-                    onChange={e => setSearchPindah(e.target.value)}
-                    placeholder="Cari nama kelas atau jurusan..."
-                    className="w-full pl-8 pr-8 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-700 dark:text-slate-200 placeholder-slate-400"
-                  />
-                  {searchPindah && (
-                    <button onClick={() => setSearchPindah('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Kelas Asal</th>
-                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Jurusan</th>
-                      <th className="text-center px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Siswa</th>
-                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider w-56">Pindah ke Kelas</th>
-                      <th className="text-center px-4 py-2.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredKelasPindah.map(kelas => {
-                      const isLoading = loadingPindah[kelas.kelas_id]
-                      const tujuanId  = pindahTarget[kelas.kelas_id] || ''
-                      // Filter kelas tujuan: exclude kelas asal sendiri
-                      const opsiTujuan = (loadingKelasList ? [] : kelasList).filter(k => k.id !== kelas.kelas_id)
-                      return (
-                        <tr key={kelas.kelas_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                          {/* Kelas asal */}
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                                <GraduationCap size={13} className="text-emerald-600 dark:text-emerald-400" />
+            <div className="space-y-3">
+              {kelasData.map(kelas => {
+                // Filter siswa berdasarkan search
+                const siswaFiltered = searchPindah
+                  ? kelas.siswa.filter(s => {
+                      const q = searchPindah.toLowerCase()
+                      return s.nama?.toLowerCase().includes(q) || (s.nis || '').toLowerCase().includes(q)
+                    })
+                  : kelas.siswa
+
+                // Sembunyikan kelas kalau search aktif dan tidak ada siswa cocok
+                if (searchPindah && siswaFiltered.length === 0) return null
+
+                const isExpanded = expandedPindahKelas.has(kelas.kelas_id) || !!searchPindah
+                const ids = siswaFiltered.map(s => s.id)
+                const allSel = ids.length > 0 && ids.every(id => selectedPindah.has(id))
+                const someSel = ids.some(id => selectedPindah.has(id))
+
+                return (
+                  <div key={kelas.kelas_id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    {/* Header kelas */}
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50">
+                      {/* Checkbox kelas */}
+                      <button onClick={() => {
+                        const next = new Set(selectedPindah)
+                        if (allSel) ids.forEach(id => next.delete(id))
+                        else ids.forEach(id => next.add(id))
+                        setSelectedPindah(next)
+                      }}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          allSel ? 'bg-emerald-500 border-emerald-500' :
+                          someSel ? 'bg-emerald-200 border-emerald-400' :
+                          'border-slate-300 dark:border-slate-600 hover:border-emerald-400'
+                        }`}>
+                        {(allSel || someSel) && <Check size={11} className="text-white"/>}
+                      </button>
+
+                      <button onClick={() => setExpandedPindahKelas(prev => {
+                        const n = new Set(prev)
+                        if (n.has(kelas.kelas_id)) n.delete(kelas.kelas_id)
+                        else n.add(kelas.kelas_id)
+                        return n
+                      })} className="flex-1 flex items-center gap-3 text-left">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                          <GraduationCap size={13} className="text-emerald-600 dark:text-emerald-400"/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{kelas.nama_kelas}</p>
+                          <p className="text-[10px] text-slate-400">{kelas.jurusan} · {siswaFiltered.length} siswa{searchPindah && siswaFiltered.length !== kelas.total_siswa ? ` (dari ${kelas.total_siswa})` : ''}</p>
+                        </div>
+                        {someSel && !allSel && (
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                            {ids.filter(id => selectedPindah.has(id)).length} dipilih
+                          </span>
+                        )}
+                        {allSel && (
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                            Semua dipilih
+                          </span>
+                        )}
+                        <ChevronDown size={14} className={`text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}/>
+                      </button>
+                    </div>
+
+                    {/* List siswa */}
+                    {isExpanded && (
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {siswaFiltered.length === 0 ? (
+                          <p className="px-4 py-3 text-xs text-slate-400 italic">Tidak ada siswa aktif</p>
+                        ) : siswaFiltered.map(siswa => {
+                          const isSel = selectedPindah.has(siswa.id)
+                          return (
+                            <button key={siswa.id} onClick={() => togglePindahSiswa(siswa.id)}
+                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                                isSel ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                              }`}>
+                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                                isSel ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600'
+                              }`}>
+                                {isSel && <Check size={9} className="text-white"/>}
                               </div>
-                              <div>
-                                <p className="font-semibold text-slate-800 dark:text-slate-100">{kelas.nama_kelas}</p>
-                                <p className="text-[10px] text-slate-400">
-                                  Kelas {kelas.tingkat == 10 ? 'X' : kelas.tingkat == 11 ? 'XI' : kelas.tingkat == 12 ? 'XII' : kelas.tingkat}
-                                </p>
+                              {siswa.foto ? (
+                                <img src={siswa.foto} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0"/>
+                              ) : (
+                                <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{siswa.nama?.charAt(0)}</span>
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">{siswa.nama}</p>
+                                <p className="text-[10px] text-slate-400">{siswa.nis}</p>
                               </div>
-                            </div>
-                          </td>
-                          {/* Jurusan */}
-                          <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{kelas.jurusan || '-'}</td>
-                          {/* Jumlah siswa */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-semibold">
-                              <Users size={9} /> {kelas.total_siswa}
-                            </span>
-                          </td>
-                          {/* Dropdown tujuan */}
-                          <td className="px-4 py-3">
-                            <select
-                              value={tujuanId}
-                              onChange={e => setPindahTarget(prev => ({ ...prev, [kelas.kelas_id]: e.target.value }))}
-                              disabled={isLoading || loadingKelasList || kelas.total_siswa === 0}
-                              className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <option value="">-- Pilih kelas tujuan --</option>
-                              {opsiTujuan.map(k => (
-                                <option key={k.id} value={k.id}>
-                                  {k.nama_kelas}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          {/* Tombol pindah */}
-                          <td className="px-4 py-3 text-center">
-                            <button
-                              onClick={() => handlePindahKelas(kelas.kelas_id, kelas.nama_kelas)}
-                              disabled={!tujuanId || isLoading || kelas.total_siswa === 0}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-                            >
-                              {isLoading
-                                ? <><RefreshCw size={11} className="animate-spin" /> Proses...</>
-                                : <><MoveRight size={11} /> Pindah</>}
+                              {isSel && pindahTujuanGlobal && (
+                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex-shrink-0 flex items-center gap-1">
+                                  <MoveRight size={10}/>
+                                  {kelasList.find(k => k.id == pindahTujuanGlobal)?.nama_kelas}
+                                </span>
+                              )}
                             </button>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
