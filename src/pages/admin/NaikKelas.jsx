@@ -413,6 +413,21 @@ export default function NaikKelas() {
     } catch { toast.error('Gagal update status') }
   }
 
+  const handleResetRekomendasi = async () => {
+    const confirmed = await confirmAction(
+      'Reset Semua Rekomendasi?',
+      'Semua rekomendasi akan dihapus. Guru bisa mengirim rekomendasi baru di siklus berikutnya.'
+    )
+    if (!confirmed) return
+    try {
+      await adminApi.resetRekomendasiNaikKelas()
+      toast.success('Semua rekomendasi berhasil direset')
+      fetchRekomendasi()
+      // Refresh kelas data supaya tidak_naik hilang
+      if (activeTab === 'selektif') fetchKelasData()
+    } catch { toast.error('Gagal reset rekomendasi') }
+  }
+
   // Set berisi semua siswa_id yang tidak boleh naik kelas (dari rekomendasi guru)
   const tidakNaikSet = new Set(
     kelasData.flatMap(k => k.siswa.filter(s => s.tidak_naik).map(s => s.id))
@@ -1251,6 +1266,11 @@ export default function NaikKelas() {
               className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-violet-500/25 transition-all flex-shrink-0 self-start sm:self-auto">
               <ListChecks size={13} />
               Pakai Rekomendasi → Selektif
+            </button>
+            <button onClick={handleResetRekomendasi}
+              className="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 rounded-xl text-xs font-bold transition-all flex-shrink-0 self-start sm:self-auto">
+              <X size={13} />
+              Reset Semua
             </button>
           </div>
 

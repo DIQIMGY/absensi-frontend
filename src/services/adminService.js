@@ -185,4 +185,5 @@ export const adminApi = {
   getRekomendasiNaikKelas: (params) => api.get('/admin/rekomendasi-naik-kelas', { params }),
   updateStatusRekomendasi: (id, data) => api.put(`/admin/rekomendasi-naik-kelas/${id}/status`, data),
   getRekomendasiSiswaIds: (params) => api.get('/admin/rekomendasi-naik-kelas/siswa-ids', { params }),
+  resetRekomendasiNaikKelas: () => api.delete('/admin/rekomendasi-naik-kelas/reset'),
 }
