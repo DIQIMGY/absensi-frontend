@@ -72,16 +72,29 @@ export default function GuruProfil() {
     setFotoFile(file); setFotoPreview(URL.createObjectURL(file))
   }
 
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0]; if (!file) return
+    if (file.size > 5 * 1024 * 1024) { toast.error('Maks 5MB'); return }
+    if (!file.type.startsWith('image/')) { toast.error('Harus gambar'); return }
+    setCoverFile(file); setCoverPreview(URL.createObjectURL(file))
+  }
+
   const handleCancel = () => {
     setIsEditing(false)
     setFormData({ nama_lengkap: profile.nama_lengkap||'', jenis_kelamin: profile.jenis_kelamin||'', tanggal_lahir: profile.tanggal_lahir||'', alamat: profile.alamat||'', no_hp: profile.no_hp||'' })
     if (fotoPreview?.startsWith('blob:')) URL.revokeObjectURL(fotoPreview)
     setFotoFile(null); setFotoPreview(profile.foto)
+    setCoverFile(null); setCoverPreview(null)
   }
 
   const handleSave = async () => {
     setSaving(true)
     try {
+      // Upload cover dulu kalau ada
+      if (coverFile) {
+        const fd = new FormData(); fd.append('foto_cover', coverFile)
+        await guruApi.updateFotoCover(fd)
+      }
       const fd = new FormData()
       Object.entries(formData).forEach(([k,v]) => fd.append(k, v))
       if (fotoFile) fd.append('foto', fotoFile)
@@ -89,7 +102,7 @@ export default function GuruProfil() {
       const d = res.data.data
       updateUser({ ...user, guru: d, foto: d.foto })
       toast.success('Profil berhasil diperbarui')
-      setIsEditing(false); setFotoFile(null)
+      setIsEditing(false); setFotoFile(null); setCoverFile(null); setCoverPreview(null)
       fetchProfile()
     } catch (e) { toast.error(e.response?.data?.message || 'Gagal memperbarui profil') }
     finally { setSaving(false) }
@@ -180,16 +193,26 @@ export default function GuruProfil() {
       {/* â•â• COVER + AVATAR (Twitter/X style) â•â• */}
       <div className="relative">
         {/* Cover photo */}
-        <div className="relative aspect-[16/7] sm:aspect-[16/5] lg:aspect-[16/4] overflow-hidden rounded-t-2xl"
-          style={{ background: 'linear-gradient(135deg,#064e3b 0%,#065f46 40%,#0f766e 70%,#0e7490 100%)' }}>
-          <div className="absolute inset-0 opacity-[0.07]"
-            style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'18px 18px' }}/>
-          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none"/>
-          <div className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full bg-teal-300/10 blur-2xl pointer-events-none"/>
+        <div className="relative aspect-[16/5] sm:aspect-[16/4] overflow-hidden rounded-t-2xl">
+          {coverPreview ? (
+            <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
+          ) : profile?.foto_cover ? (
+            <img src={profile.foto_cover} alt="cover" className="w-full h-full object-cover"/>
+          ) : (
+            <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#064e3b 0%,#065f46 40%,#0f766e 70%,#0e7490 100%)' }}>
+              <div className="absolute inset-0 opacity-[0.07]"
+                style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'18px 18px' }}/>
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none"/>
+              <div className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full bg-teal-300/10 blur-2xl pointer-events-none"/>
+            </div>
+          )}
           {/* Edit cover button */}
           {isEditing && (
-            <label className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-xl text-white text-xs font-semibold cursor-pointer transition-all border border-white/20">
-              <Camera size={12}/> Ubah Cover
+            <label className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer">
+              <div className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-xl border border-white/20 text-white text-xs font-semibold">
+                <Camera size={14}/> Ubah Foto Cover
+              </div>
+              <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange}/>
             </label>
           )}
         </div>

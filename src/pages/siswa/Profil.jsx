@@ -173,7 +173,7 @@ export default function SiswaProfil() {
       {/* COVER + AVATAR */}
       <div className="relative">
         {/* Cover photo - bisa di-upload */}
-        <div className="relative aspect-[16/7] sm:aspect-[16/5] lg:aspect-[16/4] overflow-hidden rounded-t-2xl group">
+        <div className="relative aspect-[16/5] sm:aspect-[16/4] overflow-hidden rounded-t-2xl group">
           {coverPreview ? (
             <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profil?.foto_cover_url ? (

@@ -6,7 +6,17 @@ import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import PengaturanProvider from './components/PengaturanProvider'
 import CustomCursor from './components/CustomCursor'
+import { useThemeStore } from './stores/themeStore'
 import './index.css'
+
+// Apply theme immediately before render to prevent flash
+const themeState = JSON.parse(localStorage.getItem('theme-storage') || '{}')
+const isDarkStored = themeState?.state?.isDark ?? false
+if (isDarkStored) {
+  document.documentElement.classList.add('dark')
+} else {
+  document.documentElement.classList.remove('dark')
+}
 
 // Suppress React Router removeChild errors in development
 if (import.meta.env.DEV) {
