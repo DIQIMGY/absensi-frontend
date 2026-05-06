@@ -751,83 +751,79 @@ export default function NaikKelas() {
           ) : preview ? (
             <div className="space-y-4">
               {/* Tahun ajaran card */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 p-5 shadow-lg">
-                <div className="flex flex-wrap items-center gap-4">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 shadow-lg">
+                {/* Dari → Ke → Total — stack di mobile, row di sm+ */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* From */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-slate-700">
-                      <Calendar size={16} className="text-slate-500 dark:text-slate-400" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                    <div className="w-9 h-9 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <Calendar size={15} className="text-slate-500 dark:text-slate-400" />
                     </div>
-                    <div>
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Tahun Ajaran Dari</p>
-                      <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{preview.tahun_ajaran_lama}</p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Dari</p>
+                      <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{preview.tahun_ajaran_lama}</p>
                     </div>
-                  </div>
-
-                  {/* Arrow */}
-                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg shadow-emerald-500/30 flex-shrink-0">
-                    <ArrowRight size={16} className="text-white" />
                   </div>
 
                   {/* To */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center flex-shrink-0 border border-emerald-200 dark:border-emerald-800/40">
-                      <Calendar size={16} className="text-emerald-600 dark:text-emerald-400" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40">
+                    <div className="w-9 h-9 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-emerald-200 dark:border-emerald-800/40 shadow-sm">
+                      <Calendar size={15} className="text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div>
-                      <p className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wide">Tahun Ajaran Ke</p>
-                      <p className="font-bold text-sm text-emerald-600 dark:text-emerald-400">{preview.tahun_ajaran_baru}</p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wide">Ke</p>
+                      <p className="font-bold text-sm text-emerald-600 dark:text-emerald-400 truncate">{preview.tahun_ajaran_baru}</p>
                     </div>
                   </div>
 
                   {/* Total */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="w-10 h-10 bg-teal-50 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center border border-teal-200 dark:border-teal-800/40">
-                      <Users size={16} className="text-teal-600 dark:text-teal-400" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800/40">
+                    <div className="w-9 h-9 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-teal-200 dark:border-teal-800/40 shadow-sm">
+                      <Users size={15} className="text-teal-600 dark:text-teal-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[10px] text-teal-500 font-semibold uppercase tracking-wide">Total Siswa</p>
                       <p className="font-bold text-sm text-teal-600 dark:text-teal-400">{preview.total_siswa}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Stats pills */}
+                {/* Stats pills — grid 2 kolom di mobile */}
                 {preview.statistik && (
-                  <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800/40">
-                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
+                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
                         <TrendingUp size={11} className="text-purple-600 dark:text-purple-400" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[9px] text-purple-500 font-semibold">X → XI</p>
                         <p className="text-xs font-black text-purple-700 dark:text-purple-300">{preview.statistik.naik_x_xi} siswa</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-200 dark:border-indigo-800/40">
-                      <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
+                      <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
                         <TrendingUp size={11} className="text-indigo-600 dark:text-indigo-400" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[9px] text-indigo-500 font-semibold">XI → XII</p>
                         <p className="text-xs font-black text-indigo-700 dark:text-indigo-300">{preview.statistik.naik_xi_xii} siswa</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/40">
-                      <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                      <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
                         <GraduationCap size={11} className="text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[9px] text-emerald-500 font-semibold">Lulus</p>
                         <p className="text-xs font-black text-emerald-700 dark:text-emerald-300">{preview.statistik.lulus} siswa</p>
                       </div>
                     </div>
                     {(preview.statistik.dikecualikan > 0 || preview.total_dikecualikan > 0) && (
                       <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/40">
-                        <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
+                        <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
                           <UserX size={11} className="text-amber-600 dark:text-amber-400" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-[9px] text-amber-600 font-semibold">Dikecualikan</p>
                           <p className="text-xs font-black text-amber-700 dark:text-amber-300">{preview.statistik.dikecualikan || preview.total_dikecualikan} siswa</p>
                         </div>

@@ -180,7 +180,7 @@ export default function GuruProfil() {
       {/* â•â• COVER + AVATAR (Twitter/X style) â•â• */}
       <div className="relative">
         {/* Cover photo */}
-        <div className="relative h-28 sm:h-40 lg:h-48 overflow-hidden rounded-t-2xl"
+        <div className="relative aspect-[16/7] sm:aspect-[16/5] lg:aspect-[16/4] overflow-hidden rounded-t-2xl"
           style={{ background: 'linear-gradient(135deg,#064e3b 0%,#065f46 40%,#0f766e 70%,#0e7490 100%)' }}>
           <div className="absolute inset-0 opacity-[0.07]"
             style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'18px 18px' }}/>
