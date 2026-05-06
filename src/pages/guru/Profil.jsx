@@ -193,7 +193,7 @@ export default function GuruProfil() {
       {/* â•â• COVER + AVATAR (Twitter/X style) â•â• */}
       <div className="relative">
         {/* Cover photo */}
-        <div className="relative aspect-[16/5] sm:aspect-[16/4] overflow-hidden rounded-t-2xl">
+        <div className="relative aspect-video max-h-72 sm:max-h-80 lg:max-h-96 overflow-hidden rounded-t-2xl">
           {coverPreview ? (
             <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profile?.foto_cover ? (
