@@ -639,7 +639,7 @@ export default function NaikKelas() {
             </div>
 
             {/* Right: action buttons */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
               <button
                 onClick={() => { fetchPreview(); fetchHistory(); fetchStatistik() }}
                 className="p-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 text-white rounded-xl transition-all shadow-sm"
@@ -650,46 +650,47 @@ export default function NaikKelas() {
               <button
                 onClick={handleProsesNaikKelas}
                 disabled={loading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 rounded-xl font-bold text-sm shadow-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 rounded-xl font-bold text-xs sm:text-sm shadow-lg transition-all"
               >
                 {loading ? (
                   <RefreshCw size={15} className="animate-spin" />
                 ) : (
                   <Play size={15} className="fill-emerald-600" />
                 )}
-                Proses Naik Kelas
+                <span className="hidden xs:inline sm:inline">Proses Naik Kelas</span>
+                <span className="xs:hidden sm:hidden">Proses</span>
               </button>
             </div>
           </div>
 
           {/* Stat pills row */}
           {statistik && (
-            <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-white/20">
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
-                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Users size={15} className="text-white" />
+            <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-white/20">
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-3 py-2.5">
+                <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Users size={13} className="text-white" />
                 </div>
-                <div>
-                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Total Diproses</p>
-                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.total || 0}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
-                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                  <TrendingUp size={15} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Naik Kelas</p>
-                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.naik || 0}</p>
+                <div className="min-w-0">
+                  <p className="text-white/70 text-[9px] font-semibold uppercase tracking-wide truncate">Total</p>
+                  <p className="text-white text-base font-black leading-none">{statistik.statistik?.total || 0}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
-                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                  <GraduationCap size={15} className="text-white" />
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-3 py-2.5">
+                <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={13} className="text-white" />
                 </div>
-                <div>
-                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Lulus (Alumni)</p>
-                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.lulus || 0}</p>
+                <div className="min-w-0">
+                  <p className="text-white/70 text-[9px] font-semibold uppercase tracking-wide truncate">Naik</p>
+                  <p className="text-white text-base font-black leading-none">{statistik.statistik?.naik || 0}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-3 py-2.5">
+                <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <GraduationCap size={13} className="text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white/70 text-[9px] font-semibold uppercase tracking-wide truncate">Lulus</p>
+                  <p className="text-white text-base font-black leading-none">{statistik.statistik?.lulus || 0}</p>
                 </div>
               </div>
             </div>
@@ -1107,17 +1108,17 @@ export default function NaikKelas() {
       {activeTab === 'selektif' && (
         <div className="space-y-4">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <select value={filterTingkat} onChange={e => setFilterTingkat(e.target.value)}
-                className="px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200">
+                className="flex-1 sm:flex-none px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 dark:text-slate-200">
                 <option value="">Semua Tingkat</option>
-                <option value="10">Kelas X (10)</option>
-                <option value="11">Kelas XI (11)</option>
-                <option value="12">Kelas XII (12)</option>
+                <option value="10">Kelas X</option>
+                <option value="11">Kelas XI</option>
+                <option value="12">Kelas XII</option>
               </select>
               <button onClick={fetchKelasData} disabled={loadingKelas}
-                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-emerald-600 transition-colors">
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-emerald-600 transition-colors flex-shrink-0">
                 <RefreshCw size={13} className={loadingKelas ? 'animate-spin' : ''}/>
               </button>
             </div>
@@ -1130,11 +1131,8 @@ export default function NaikKelas() {
                 return (
                   <button
                     onClick={() => {
-                      if (semuaSelected) {
-                        setSelectedSiswa(new Set())
-                      } else {
-                        setSelectedSiswa(new Set(semuaBolehNaik))
-                      }
+                      if (semuaSelected) setSelectedSiswa(new Set())
+                      else setSelectedSiswa(new Set(semuaBolehNaik))
                     }}
                     disabled={loadingKelas || semuaBolehNaik.length === 0}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all disabled:opacity-40 ${
@@ -1142,28 +1140,28 @@ export default function NaikKelas() {
                         ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/25'
                         : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:border-emerald-400 hover:text-emerald-600'
                     }`}>
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${semuaSelected ? 'bg-white border-white' : 'border-current'}`}>
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${semuaSelected ? 'bg-white border-white' : 'border-current'}`}>
                       {semuaSelected && <Check size={10} className="text-emerald-500" strokeWidth={3}/>}
                     </div>
-                    {semuaSelected ? 'Batal Semua' : 'Centang Semua'}
+                    {semuaSelected ? 'Batal' : 'Centang Semua'}
                     <span className="text-[10px] opacity-70">({semuaBolehNaik.length})</span>
                     {totalTidakNaik > 0 && (
-                      <span className="px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
-                        {totalTidakNaik} dikecualikan
+                      <span className="px-1 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
+                        -{totalTidakNaik}
                       </span>
                     )}
                   </button>
                 )
               })()}
               {selectedSiswa.size > 0 && (
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">
                   {selectedSiswa.size} dipilih
                 </span>
               )}
               <button onClick={handleProsesSelektif} disabled={loadingSelektif || selectedSiswa.size === 0}
-                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all">
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all whitespace-nowrap">
                 {loadingSelektif ? <RefreshCw size={13} className="animate-spin"/> : <Play size={13}/>}
-                Proses {selectedSiswa.size > 0 ? `(${selectedSiswa.size})` : ''} Siswa
+                Proses {selectedSiswa.size > 0 ? `(${selectedSiswa.size})` : ''}
               </button>
             </div>
           </div>
@@ -1199,16 +1197,18 @@ export default function NaikKelas() {
               const aksi  = t === '12' ? '→ Alumni' : t === '11' ? '→ XII' : '→ XI'
               return (
                 <button key={t} onClick={() => toggleAngkatan(t)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                     allSel
                       ? 'bg-emerald-500 text-white border-emerald-500'
                       : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
                   }`}>
                   <Check size={11} className={allSel ? 'opacity-100' : 'opacity-0'}/>
-                  {label} {aksi} ({ids.length} siswa)
+                  <span className="hidden sm:inline">{label} {aksi}</span>
+                  <span className="sm:hidden">{t === '10' ? 'X' : t === '11' ? 'XI' : 'XII'} {aksi}</span>
+                  <span className="text-[10px] opacity-70">({ids.length})</span>
                   {totalTidakNaik > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
-                      {totalTidakNaik} tidak naik
+                    <span className="px-1 py-0.5 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-full text-[9px] font-black">
+                      {totalTidakNaik}
                     </span>
                   )}
                 </button>
@@ -1364,20 +1364,22 @@ export default function NaikKelas() {
               </div>
             </div>
             <button onClick={handlePakaiRekomendasi}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-violet-500/25 transition-all flex-shrink-0 self-start sm:self-auto">
+              className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-violet-500/25 transition-all flex-shrink-0 self-start">
               <ListChecks size={13} />
-              Pakai Rekomendasi → Selektif
+              <span className="hidden sm:inline">Pakai Rekomendasi → Selektif</span>
+              <span className="sm:hidden">Pakai</span>
             </button>
             <button onClick={handleResetRekomendasi}
-              className="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 rounded-xl text-xs font-bold transition-all flex-shrink-0 self-start sm:self-auto">
+              className="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 rounded-xl text-xs font-bold transition-all flex-shrink-0 self-start">
               <X size={13} />
-              Reset Semua
+              <span className="hidden sm:inline">Reset Semua</span>
+              <span className="sm:hidden">Reset</span>
             </button>
           </div>
 
           {/* Stats */}
           {rekomendasiStats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {[
                 { label: 'Total', value: rekomendasiStats.total, color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' },
                 { label: 'Menunggu', value: rekomendasiStats.pending, color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' },
@@ -1429,13 +1431,13 @@ export default function NaikKelas() {
                       )}
                     </div>
                     {/* Status + actions */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-1">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold whitespace-nowrap ${
                         r.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                         : r.status === 'diproses' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
-                        {r.status === 'pending' ? 'Menunggu Review' : r.status === 'diproses' ? '✓ Disetujui (Tidak Naik)' : '✗ Ditolak (Bisa Naik)'}
+                        {r.status === 'pending' ? 'Menunggu' : r.status === 'diproses' ? '✓ Disetujui' : '✗ Ditolak'}
                       </span>
                       {r.status === 'pending' && (
                         <div className="flex gap-1">
