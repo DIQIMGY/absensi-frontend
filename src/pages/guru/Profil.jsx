@@ -188,12 +188,12 @@ export default function GuruProfil() {
   const initial = (profile.nama_lengkap || 'G').charAt(0).toUpperCase()
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
 
       {/* â•â• COVER + AVATAR (Twitter/X style) â•â• */}
       <div className="relative">
         {/* Cover photo */}
-        <div className="relative aspect-video max-h-72 sm:max-h-80 lg:max-h-96 overflow-hidden rounded-t-2xl">
+        <div className="relative w-full aspect-video overflow-hidden rounded-t-2xl">
           {coverPreview ? (
             <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profile?.foto_cover ? (

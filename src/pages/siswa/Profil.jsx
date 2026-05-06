@@ -166,14 +166,14 @@ export default function SiswaProfil() {
   const initial = (profil?.nama_lengkap || 'S').charAt(0).toUpperCase()
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
 
       {/* â•â• COVER + AVATAR (Twitter/X style) â•â• */}
 
       {/* COVER + AVATAR */}
       <div className="relative">
         {/* Cover photo - bisa di-upload */}
-        <div className="relative aspect-video max-h-72 sm:max-h-80 lg:max-h-96 overflow-hidden rounded-t-2xl group">
+        <div className="relative w-full aspect-video overflow-hidden rounded-t-2xl group">
           {coverPreview ? (
             <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profil?.foto_cover_url ? (
