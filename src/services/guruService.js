@@ -16,6 +16,9 @@ export const guruApi = {
   updateProfile: (data) => api.post('/guru/profil', data),
   downloadQrCode: () => api.get('/guru/profil/download-qr', { responseType: 'blob' }),
   downloadFoto: () => api.get('/guru/profil/download-foto', { responseType: 'blob' }),
+  updateFotoCover: (data) => api.post('/guru/profil/foto-cover', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   getQrCode: () => api.get('/guru/profil/qr'),
   
   // Ranking & Statistik

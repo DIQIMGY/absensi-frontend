@@ -364,7 +364,7 @@ export default function SiswaDashboard() {
           )}
           {/* Video + Stat Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-2.5 items-stretch">
-            <DashboardVideo className="h-28 sm:h-32 lg:h-auto lg:col-span-1"/>
+            <DashboardVideo className="aspect-video w-full lg:h-auto lg:aspect-auto lg:col-span-1"/>
             <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
               {label:'Total Hadir', val:data?.total_hadir||0,     icon:UserCheck,     color:'#10b981', grad:'from-emerald-500 to-teal-600',   border:'border-emerald-200 dark:border-emerald-700/50', tc:'text-emerald-700 dark:text-emerald-300', iconBg:'bg-emerald-100 dark:bg-emerald-900/50', bg:'bg-emerald-50 dark:bg-emerald-950/40', key:'hadir',     chartType:'area'},

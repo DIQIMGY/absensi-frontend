@@ -343,7 +343,7 @@ export default function GuruDashboard() {
 
         {/* Video + Stat Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-stretch">
-          <DashboardVideo className="h-28 sm:h-32 lg:h-auto lg:col-span-1"/>
+          <DashboardVideo className="aspect-video w-full lg:h-auto lg:aspect-auto lg:col-span-1"/>
           <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {STATS.map((s, i) => {
             const sparkData = grafikMingguan.length > 0

@@ -22,6 +22,9 @@ export const siswaApi = {
   updateFoto: (data) => api.post('/siswa/profil/foto', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  updateFotoCover: (data) => api.post('/siswa/profil/foto-cover', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 
   // Kampus Impian
   getKampusImpian: () => api.get('/siswa/kampus-impian'),

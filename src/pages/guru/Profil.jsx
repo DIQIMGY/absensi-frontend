@@ -33,6 +33,8 @@ export default function GuruProfil() {
   const [formData, setFormData] = useState({ nama_lengkap:'', jenis_kelamin:'', tanggal_lahir:'', alamat:'', no_hp:'' })
   const [fotoFile, setFotoFile] = useState(null)
   const [fotoPreview, setFotoPreview] = useState(null)
+  const [coverFile, setCoverFile] = useState(null)
+  const [coverPreview, setCoverPreview] = useState(null)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('profil')
   const [downloading, setDownloading] = useState(false)
@@ -505,4 +507,4 @@ export default function GuruProfil() {
       </AnimatePresence>
     </div>
   )
-}
+}
