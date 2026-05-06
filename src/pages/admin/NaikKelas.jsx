@@ -7,7 +7,8 @@ import {
   Award, Shield, BookOpen, School, UserCheck,
   ArrowUpCircle, ArrowDownCircle, ChevronRight, ChevronDown,
   Filter, Search, Check, X, HelpCircle, FileText,
-  BarChart3, Layers, ListChecks, MoveRight, UserX, Bell, MessageSquare
+  BarChart3, Layers, ListChecks, MoveRight, UserX, Bell, MessageSquare,
+  ChevronUp, Star, Zap
 } from 'lucide-react'
 import naikKelasService from '../../services/naikKelasService'
 import { adminApi } from '../../services/adminService'
@@ -168,6 +169,49 @@ const SiswaAvatar = ({ foto, nama, size = 'sm' }) => {
   return (
     <div className={`${dim} rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0`}>
       {nama?.charAt(0).toUpperCase()}
+    </div>
+  )
+}
+
+// Warning Banner Component
+const WarningBanner = () => {
+  const [collapsed, setCollapsed] = useState(false)
+  return (
+    <div className="rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 overflow-hidden shadow-sm">
+      <button
+        onClick={() => setCollapsed(c => !c)}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left"
+      >
+        <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-xl flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-800/40">
+          <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+            <Shield size={13} />
+            Perhatian Penting
+          </p>
+        </div>
+        <div className={`w-6 h-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center transition-transform ${collapsed ? '' : 'rotate-180'}`}>
+          <ChevronDown size={13} className="text-amber-600 dark:text-amber-400" />
+        </div>
+      </button>
+      {!collapsed && (
+        <div className="px-4 pb-4 space-y-2">
+          <p className="text-xs text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+            Proses naik kelas akan memindahkan semua siswa aktif ke kelas berikutnya.
+            Siswa kelas XII akan dijadikan alumni. Proses ini{' '}
+            <span className="font-black text-amber-800 dark:text-amber-200">tidak dapat dibatalkan</span>.
+            Pastikan data sudah benar sebelum melanjutkan.
+          </p>
+          <div className="flex items-start gap-2 pt-2 border-t border-amber-200 dark:border-amber-800/40">
+            <CheckCircle size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80">
+              Untuk auto naik kelas, aktifkan fitur di halaman{' '}
+              <span className="font-bold">Tahun Ajaran</span> dan set tanggal semester genap selesai.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -560,217 +604,271 @@ export default function NaikKelas() {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-4">
-      {/* Header - EMERALD */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg shadow-emerald-500/30">
-              <TrendingUp size={20} className="text-white" />
+    <div className="w-full max-w-full overflow-x-hidden space-y-5">
+
+      {/* ═══════════════════════════════════════════════════════════
+          HEADER CARD — Full-width gradient emerald→teal
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 shadow-2xl shadow-emerald-500/30">
+        {/* Decorative blobs */}
+        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-teal-400/20 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative p-5 sm:p-7">
+          {/* Top row: icon + title + action buttons */}
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            {/* Left: icon + title */}
+            <div className="flex items-center gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-white/30">
+                  <TrendingUp size={26} className="text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                  <Sparkles size={9} className="text-yellow-900" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-none">
+                  Naik Kelas
+                </h1>
+                <p className="text-emerald-100 text-sm mt-1 font-medium">
+                  Proses kenaikan kelas siswa akhir tahun ajaran
+                </p>
+              </div>
             </div>
-            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
-          </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-              <span className="text-gradient-emerald">Naik Kelas</span>
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
-              <Sparkles size={12} className="text-emerald-500" />
-              Proses kenaikan kelas siswa akhir tahun ajaran
-            </p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleProsesNaikKelas}
-            disabled={loading}
-            className="px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 text-white rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-500/30 transition-all text-xs font-medium"
-          >
-            {loading ? (
-              <RefreshCw size={14} className="animate-spin" />
-            ) : (
-              <Play size={14} />
-            )}
-            <span>Proses Naik Kelas</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Stats - EMERALD */}
-      {statistik && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <StatCard
-            label="Total Diproses"
-            value={statistik.statistik?.total || 0}
-            icon={Users}
-            color="purple"
-          />
-          <StatCard
-            label="Naik Kelas"
-            value={statistik.statistik?.naik || 0}
-            icon={TrendingUp}
-            color="emerald"
-            trend="up"
-            trendValue="+12"
-          />
-          <StatCard
-            label="Lulus (Alumni)"
-            value={statistik.statistik?.lulus || 0}
-            icon={GraduationCap}
-            color="orange"
-          />
-        </div>
-      )}
-
-      {/* Warning Card - Menggunakan orange untuk warning */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 to-orange-600/10 dark:from-orange-500/20 dark:to-orange-600/10 border border-orange-500/30 dark:border-orange-500/30 rounded-lg p-4 shadow-md">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(245,158,11,0.05)_0%,transparent_50%)]" />
-        <div className="relative flex items-start gap-3">
-          <div className="p-2 bg-orange-500/20 dark:bg-orange-500/20 rounded-lg border border-orange-500/30 dark:border-orange-500/30 shadow-sm">
-            <AlertTriangle size={16} className="text-orange-600 dark:text-orange-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xs font-semibold text-orange-600 dark:text-orange-400 mb-0.5 flex items-center gap-1">
-              <Shield size={12} />
-              Perhatian Penting
-            </h3>
-            <p className="text-[10px] text-orange-600/80 dark:text-orange-400/80 leading-relaxed">
-              Proses naik kelas akan memindahkan semua siswa aktif ke kelas berikutnya. 
-              Siswa kelas XII akan dijadikan alumni. Proses ini <span className="font-bold">tidak dapat dibatalkan</span>. 
-              Pastikan data sudah benar sebelum melanjutkan.
-            </p>
-            <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-orange-500/20 dark:border-orange-500/20">
-              <CheckCircle size={10} className="text-emerald-500" />
-              <p className="text-[8px] text-orange-600/70 dark:text-orange-400/70">
-                Untuk auto naik kelas, aktifkan fitur di halaman <span className="font-bold">Tahun Ajaran</span> dan set tanggal semester genap selesai.
-              </p>
+            {/* Right: action buttons */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => { fetchPreview(); fetchHistory(); fetchStatistik() }}
+                className="p-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 text-white rounded-xl transition-all shadow-sm"
+                title="Refresh data"
+              >
+                <RefreshCw size={15} />
+              </button>
+              <button
+                onClick={handleProsesNaikKelas}
+                disabled={loading}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 rounded-xl font-bold text-sm shadow-lg transition-all"
+              >
+                {loading ? (
+                  <RefreshCw size={15} className="animate-spin" />
+                ) : (
+                  <Play size={15} className="fill-emerald-600" />
+                )}
+                Proses Naik Kelas
+              </button>
             </div>
           </div>
+
+          {/* Stat pills row */}
+          {statistik && (
+            <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-white/20">
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
+                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Users size={15} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Total Diproses</p>
+                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.total || 0}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
+                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                  <TrendingUp size={15} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Naik Kelas</p>
+                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.naik || 0}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5">
+                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                  <GraduationCap size={15} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Lulus (Alumni)</p>
+                  <p className="text-white text-lg font-black leading-none">{statistik.statistik?.lulus || 0}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      {/* ═══════════════════════════════════════════════════════════
+          WARNING BANNER — Orange/amber collapsible
+      ═══════════════════════════════════════════════════════════ */}
+      <WarningBanner />
+
+      {/* ═══════════════════════════════════════════════════════════
+          TABS — Pill style, horizontal scroll on mobile
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-max min-w-full sm:w-auto">
+          {[
+            { id: 'preview', label: 'Preview', icon: Eye },
+            { id: 'pindah', label: 'Pindah Kelas', icon: MoveRight },
+            { id: 'selektif', label: 'Naik Kelas Selektif', icon: ListChecks },
+            { id: 'rekomendasi', label: 'Rekomendasi Guru', icon: Bell, badge: rekomendasiStats?.pending > 0 ? rekomendasiStats.pending : null },
+            { id: 'history', label: 'Riwayat', icon: History },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60'
+              }`}
+            >
+              <tab.icon size={13} />
+              {tab.label}
+              {tab.badge && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Tabs - EMERALD */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg w-fit flex-wrap">
-        {[
-          { id: 'preview', label: 'Preview', icon: Eye },
-          { id: 'pindah', label: 'Pindah Kelas', icon: MoveRight },
-          { id: 'selektif', label: 'Naik Kelas Selektif', icon: ListChecks },
-          { id: 'rekomendasi', label: 'Rekomendasi Guru', icon: Bell },
-          { id: 'history', label: 'Riwayat', icon: History },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-              activeTab === tab.id
-                ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-500/30 dark:border-emerald-500/30'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
-            }`}
-          >
-            <tab.icon size={12} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
+      {/* ═══════════════════════════════════════════════════════════
+          TAB CONTENT
+      ═══════════════════════════════════════════════════════════ */}
       {activeTab === 'preview' && (
         <>
           {loadingPreview ? (
-            <div className="flex flex-col items-center justify-center py-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
-              <RefreshCw size={28} className="text-emerald-500 animate-spin" />
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Memuat preview data...</p>
+            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mb-3">
+                <RefreshCw size={22} className="text-emerald-500 animate-spin" />
+              </div>
+              <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Memuat preview data...</p>
+              <p className="text-xs text-slate-400 mt-1">Mohon tunggu sebentar</p>
             </div>
           ) : preview ? (
-            <div className="space-y-3">
-              {/* Info tahun ajaran */}
-              <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700/60 p-4 shadow-md">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <Calendar size={14} className="text-slate-500 dark:text-slate-400" />
+            <div className="space-y-4">
+              {/* Tahun ajaran card */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 p-5 shadow-lg">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* From */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-slate-700">
+                      <Calendar size={16} className="text-slate-500 dark:text-slate-400" />
                     </div>
                     <div>
-                      <p className="text-[9px] text-slate-500 dark:text-slate-400">Dari</p>
-                      <p className="font-semibold text-xs text-slate-900 dark:text-white">{preview.tahun_ajaran_lama}</p>
-                    </div>
-                  </div>
-                  
-                  <ArrowRight size={16} className="text-purple-500" />
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg border border-purple-500/30 dark:border-purple-500/30">
-                      <Calendar size={14} className="text-purple-500 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 dark:text-slate-400">Ke</p>
-                      <p className="font-semibold text-xs text-purple-500 dark:text-purple-400">{preview.tahun_ajaran_baru}</p>
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Tahun Ajaran Dari</p>
+                      <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{preview.tahun_ajaran_lama}</p>
                     </div>
                   </div>
 
-                  <div className="ml-auto flex items-center gap-2">
-                    <div className="p-1.5 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg border border-emerald-500/30 dark:border-emerald-500/30">
-                      <Users size={14} className="text-emerald-500 dark:text-emerald-400" />
+                  {/* Arrow */}
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg shadow-emerald-500/30 flex-shrink-0">
+                    <ArrowRight size={16} className="text-white" />
+                  </div>
+
+                  {/* To */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center flex-shrink-0 border border-emerald-200 dark:border-emerald-800/40">
+                      <Calendar size={16} className="text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-[9px] text-slate-500 dark:text-slate-400">Total</p>
-                      <p className="font-semibold text-xs text-emerald-500 dark:text-emerald-400">{preview.total_siswa}</p>
+                      <p className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wide">Tahun Ajaran Ke</p>
+                      <p className="font-bold text-sm text-emerald-600 dark:text-emerald-400">{preview.tahun_ajaran_baru}</p>
+                    </div>
+                  </div>
+
+                  {/* Total */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="w-10 h-10 bg-teal-50 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center border border-teal-200 dark:border-teal-800/40">
+                      <Users size={16} className="text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-teal-500 font-semibold uppercase tracking-wide">Total Siswa</p>
+                      <p className="font-bold text-sm text-teal-600 dark:text-teal-400">{preview.total_siswa}</p>
                     </div>
                   </div>
                 </div>
 
+                {/* Stats pills */}
                 {preview.statistik && (
-                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <div className="px-2 py-1.5 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg border border-purple-500/30 dark:border-purple-500/30">
-                      <p className="text-[8px] text-purple-500 dark:text-purple-400">X → XI</p>
-                      <p className="font-semibold text-[10px] text-purple-500 dark:text-purple-400">{preview.statistik.naik_x_xi} siswa</p>
+                  <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800/40">
+                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
+                        <TrendingUp size={11} className="text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-purple-500 font-semibold">X → XI</p>
+                        <p className="text-xs font-black text-purple-700 dark:text-purple-300">{preview.statistik.naik_x_xi} siswa</p>
+                      </div>
                     </div>
-                    <div className="px-2 py-1.5 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg border border-purple-500/30 dark:border-purple-500/30">
-                      <p className="text-[8px] text-purple-500 dark:text-purple-400">XI → XII</p>
-                      <p className="font-semibold text-[10px] text-purple-500 dark:text-purple-400">{preview.statistik.naik_xi_xii} siswa</p>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-200 dark:border-indigo-800/40">
+                      <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg flex items-center justify-center">
+                        <TrendingUp size={11} className="text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-indigo-500 font-semibold">XI → XII</p>
+                        <p className="text-xs font-black text-indigo-700 dark:text-indigo-300">{preview.statistik.naik_xi_xii} siswa</p>
+                      </div>
                     </div>
-                    <div className="px-2 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg border border-emerald-500/30 dark:border-emerald-500/30">
-                      <p className="text-[8px] text-emerald-500 dark:text-emerald-400">Lulus</p>
-                      <p className="font-semibold text-[10px] text-emerald-500 dark:text-emerald-400">{preview.statistik.lulus} siswa</p>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/40">
+                      <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                        <GraduationCap size={11} className="text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-emerald-500 font-semibold">Lulus</p>
+                        <p className="text-xs font-black text-emerald-700 dark:text-emerald-300">{preview.statistik.lulus} siswa</p>
+                      </div>
                     </div>
                     {(preview.statistik.dikecualikan > 0 || preview.total_dikecualikan > 0) && (
-                      <div className="px-2 py-1.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-lg border border-amber-500/30 dark:border-amber-500/30">
-                        <p className="text-[8px] text-amber-600 dark:text-amber-400">Tidak Naik (Guru)</p>
-                        <p className="font-semibold text-[10px] text-amber-600 dark:text-amber-400">{preview.statistik.dikecualikan || preview.total_dikecualikan} siswa</p>
+                      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/40">
+                        <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center">
+                          <UserX size={11} className="text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-amber-600 font-semibold">Dikecualikan</p>
+                          <p className="text-xs font-black text-amber-700 dark:text-amber-300">{preview.statistik.dikecualikan || preview.total_dikecualikan} siswa</p>
+                        </div>
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                {/* Toggle detail */}
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <button
                     onClick={() => setShowDetails(!showDetails)}
-                    className="flex items-center gap-1 text-[10px] font-medium text-purple-500 dark:text-purple-400 hover:text-purple-600 transition-colors"
+                    className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors"
                   >
-                    {showDetails ? 'Sembunyikan' : 'Tampilkan'} detail preview
-                    <ChevronDown size={12} className={`transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+                    <div className={`w-5 h-5 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center transition-transform ${showDetails ? 'rotate-180' : ''}`}>
+                      <ChevronDown size={12} className="text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    {showDetails ? 'Sembunyikan' : 'Tampilkan'} detail preview siswa
                   </button>
                 </div>
               </div>
 
               {/* Detail Preview */}
               {showDetails && (
-                <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden">
-                  <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800/50">
-                    <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
-                      <Eye size={12} className="text-purple-500" />
-                      Daftar Preview Siswa
-                    </h3>
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden">
+                  <div className="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
+                      <Eye size={14} className="text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">Daftar Preview Siswa</h3>
+                      <p className="text-[10px] text-slate-400">{preview.detail?.length || 0} siswa total</p>
+                    </div>
                   </div>
-                  <div className="p-3 max-h-96 overflow-y-auto">
-                    <div className="space-y-0.5">
+                  <div className="p-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-1">
                       {preview.detail?.slice(0, 50).map((item, idx) => (
                         <PreviewCard key={idx} item={item} index={idx} />
                       ))}
                     </div>
                     {preview.detail?.length > 50 && (
-                      <div className="mt-3 pt-3 text-center text-[9px] text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">
+                      <div className="mt-4 pt-4 text-center text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800">
                         Menampilkan 50 dari {preview.detail.length} siswa
                       </div>
                     )}
@@ -779,9 +877,12 @@ export default function NaikKelas() {
               )}
             </div>
           ) : (
-            <div className="text-center py-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
-              <Info size={40} className="mx-auto mb-3 text-slate-400" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">Tidak ada data preview</p>
+            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-4">
+                <Info size={28} className="text-slate-400" />
+              </div>
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Tidak ada data preview</p>
+              <p className="text-xs text-slate-400 mt-1">Belum ada data naik kelas yang bisa ditampilkan</p>
             </div>
           )}
         </>
@@ -1361,50 +1462,69 @@ export default function NaikKelas() {
       {activeTab === 'history' && (
         <>
           {loadingHistory ? (
-            <div className="flex flex-col items-center justify-center py-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
-              <RefreshCw size={28} className="text-emerald-500 animate-spin" />
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Memuat riwayat...</p>
+            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center mb-3">
+                <RefreshCw size={22} className="text-emerald-500 animate-spin" />
+              </div>
+              <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Memuat riwayat...</p>
             </div>
           ) : history.length > 0 ? (
-            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden">
+              {/* Table header */}
+              <div className="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20">
+                <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
+                  <History size={14} className="text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">Riwayat Naik Kelas</h3>
+                  <p className="text-[10px] text-slate-400">{history.length} data riwayat</p>
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Siswa</th>
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Ajaran</th>
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kelas Lama</th>
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kelas Baru</th>
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                      <th className="text-left px-3 py-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tanggal</th>
+                    <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Siswa</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Ajaran</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kelas Lama</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kelas Baru</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tanggal</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800/80">
                     {history.map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-purple-500/5 transition-colors">
-                        <td className="px-3 py-2">
-                          <div className="flex items-center gap-2">
+                      <tr key={item.id} className="hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2.5">
                             <SiswaAvatar foto={item.siswa?.foto_url} nama={item.siswa_nama} size="sm" />
-                            <span className="font-medium text-xs text-slate-900 dark:text-white">
+                            <span className="font-semibold text-xs text-slate-800 dark:text-slate-100">
                               {item.siswa_nama}
                             </span>
                           </div>
                         </td>
-                        <td className="px-3 py-2 font-mono text-[10px] text-slate-500 dark:text-slate-400">
-                          {item.tahun_ajaran_lama}
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
+                            {item.tahun_ajaran_lama}
+                          </span>
                         </td>
-                        <td className="px-3 py-2 text-[10px] text-slate-500 dark:text-slate-400">
+                        <td className="px-4 py-3 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                           {item.kelas_lama}
                         </td>
-                        <td className="px-3 py-2 text-[10px] text-slate-500 dark:text-slate-400">
-                          {item.kelas_baru || '-'}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <ArrowRight size={10} className="text-emerald-500 flex-shrink-0" />
+                            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                              {item.kelas_baru || 'Alumni'}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-4 py-3">
                           <StatusBadge status={item.status} />
                         </td>
-                        <td className="px-3 py-2 text-[9px] text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-0.5">
-                            <Clock size={8} className="text-slate-400" />
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                            <Clock size={9} className="text-slate-400 flex-shrink-0" />
                             {formatDate(item.tanggal_naik_kelas)}
                           </div>
                         </td>
@@ -1415,29 +1535,16 @@ export default function NaikKelas() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
-              <History size={40} className="mx-auto mb-3 text-slate-400" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">Belum ada riwayat naik kelas</p>
+            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-lg">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-4">
+                <History size={28} className="text-slate-400" />
+              </div>
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum ada riwayat naik kelas</p>
+              <p className="text-xs text-slate-400 mt-1">Riwayat akan muncul setelah proses naik kelas dilakukan</p>
             </div>
           )}
         </>
       )}
-
-      {/* Inline styles */}
-      <style jsx>{`
-        .text-gradient-emerald {
-          background: linear-gradient(135deg, #10B981 0%, #059669 50%, #10B981 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .dark .text-gradient-emerald {
-          background: linear-gradient(135deg, #34D399 0%, #10B981 50%, #34D399 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-      `}</style>
     </div>
   )
 }
