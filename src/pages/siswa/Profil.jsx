@@ -250,7 +250,7 @@ export default function SiswaProfil() {
           <div className="relative">
             <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-xl bg-violet-700 ${
               activeBadge && !editMode
-                ? 'ring-4 ring-amber-400 shadow-amber-400/40'
+                ? 'ring-0'
                 : 'ring-4 ring-white dark:ring-slate-900'
             }`}>
               {avatar

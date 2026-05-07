@@ -72,17 +72,19 @@ export const RARITY_CFG = {
 }
 
 // ─── BADGE POOL ───────────────────────────────────────────────
+// borderImg = file foto border kamu (b1.png - b10.png) di /image/
+// Urutan: b1=Legendary, b2=Legendary, b3=Epic, b4=Epic, b5=Rare, b6=Rare, b7=Uncommon, b8=Uncommon, b9=Common, b10=Common
 export const BADGE_POOL = [
-  { id:'mahkota',      name:'Mahkota Raja', emoji:'👑', rarity:'legendary' },
-  { id:'bintang_emas', name:'Bintang Emas', emoji:'⭐', rarity:'legendary' },
-  { id:'berlian',      name:'Berlian',      emoji:'💎', rarity:'epic'      },
-  { id:'petir',        name:'Petir',        emoji:'⚡', rarity:'epic'      },
-  { id:'api',          name:'Api Abadi',    emoji:'🔥', rarity:'rare'      },
-  { id:'pelangi',      name:'Pelangi',      emoji:'🌈', rarity:'rare'      },
-  { id:'roket',        name:'Roket',        emoji:'🚀', rarity:'uncommon'  },
-  { id:'daun',         name:'Semanggi',     emoji:'🍀', rarity:'uncommon'  },
-  { id:'buku',         name:'Buku Pintar',  emoji:'📚', rarity:'common'    },
-  { id:'pensil',       name:'Pensil Ajaib', emoji:'✏️', rarity:'common'    },
+  { id:'wayang',    name:'Wayang Kulit',          emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png'  },
+  { id:'phoenix',   name:'Phoenix Api Abadi',      emoji:'🔥', rarity:'legendary', borderImg:'/image/b2.png'  },
+  { id:'thor',      name:'Thor Petir & Kilat',     emoji:'⚡', rarity:'epic',      borderImg:'/image/b3.png'  },
+  { id:'griffin',   name:'Griffin Sang Singa',     emoji:'🦁', rarity:'epic',      borderImg:'/image/b4.png'  },
+  { id:'fenrir',    name:'Fenrir Serigala Es',     emoji:'🧊', rarity:'rare',      borderImg:'/image/b5.png'  },
+  { id:'ksatria',   name:'Ksatria Zirah Hitam',    emoji:'⚔️', rarity:'rare',      borderImg:'/image/b6.png'  },
+  { id:'kalajengking', name:'Kalajengking Racun',  emoji:'🦂', rarity:'uncommon',  borderImg:'/image/b7.png'  },
+  { id:'bulan',     name:'Bulan & Bintang',        emoji:'🌙', rarity:'uncommon',  borderImg:'/image/b8.png'  },
+  { id:'oni',       name:'Oni Topeng Iblis',       emoji:'🌀', rarity:'common',    borderImg:'/image/b9.png'  },
+  { id:'harimau',   name:'Harimau Putih Sakura',   emoji:'🐅', rarity:'common',    borderImg:'/image/b10.png' },
 ]
 
 // ─── CONFETTI CANVAS ──────────────────────────────────────────
@@ -125,57 +127,89 @@ function Confetti({ color, run }) {
 }
 
 // ─── BADGE OVERLAY ────────────────────────────────────────────
+// Menampilkan border foto (b1.png - b10.png) di atas foto profil.
+// Foto border harus PNG transparan, bagian tengah bolong supaya foto profil keliatan.
 export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
   const badge = badges.find(b=>b.id===badgeId) || BADGE_POOL.find(b=>b.id===badgeId)
   if (!badge) return null
   const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
-  const pad = {sm:3,md:4,lg:5}[size]??4
-  const eSz = {sm:'w-5 h-5 text-xs',md:'w-7 h-7 text-sm',lg:'w-9 h-9 text-base'}[size]
-  const ePos = {sm:'-bottom-1 -right-1',md:'-bottom-1.5 -right-1.5',lg:'-bottom-2 -right-2'}[size]
+  // Seberapa jauh border keluar dari tepi foto profil (px)
+  const outsetPx = {sm:5, md:7, lg:10}[size] ?? 7
+
   return (
     <>
-      <div className="absolute inset-0 rounded-2xl pointer-events-none z-10"
-        style={{padding:pad,background:`linear-gradient(135deg,${cfg.frameGrad.join(',')})`,
-          WebkitMask:'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          WebkitMaskComposite:'xor',maskComposite:'exclude',borderRadius:'inherit'}}/>
-      <motion.div className="absolute inset-0 rounded-2xl pointer-events-none z-10 overflow-hidden" style={{borderRadius:'inherit'}}>
-        <motion.div animate={{x:['-100%','200%']}} transition={{repeat:Infinity,duration:2.5,ease:'linear',repeatDelay:1.5}}
-          className="absolute inset-0 w-1/2 skew-x-12"
-          style={{background:`linear-gradient(90deg,transparent,${cfg.glow2},transparent)`}}/>
-      </motion.div>
-      <div className="absolute pointer-events-none z-10"
-        style={{inset:-pad-2,borderRadius:'inherit',boxShadow:`0 0 18px 4px ${cfg.glow2}`}}/>
-      {[{top:-2,left:-2},{top:-2,right:-2},{bottom:-2,left:-2},{bottom:-2,right:-2}].map((pos,i)=>(
-        <motion.div key={i} animate={{scale:[1,1.4,1],opacity:[0.6,1,0.6]}}
-          transition={{repeat:Infinity,duration:2,delay:i*0.4}}
-          className="absolute w-2 h-2 rounded-full pointer-events-none z-20"
-          style={{...pos,background:cfg.particle,boxShadow:`0 0 6px ${cfg.glow}`}}/>
-      ))}
-      <motion.div initial={{scale:0,rotate:-20}} animate={{scale:1,rotate:0}}
+      {/* Foto border PNG — posisi absolute keluar dari container foto */}
+      <motion.img
+        src={badge.borderImg}
+        alt={badge.name}
+        className="absolute pointer-events-none select-none"
+        style={{
+          top:    -outsetPx,
+          left:   -outsetPx,
+          right:  -outsetPx,
+          bottom: -outsetPx,
+          width:  `calc(100% + ${outsetPx * 2}px)`,
+          height: `calc(100% + ${outsetPx * 2}px)`,
+          objectFit: 'fill',
+          zIndex: 20,
+          borderRadius: 'inherit',
+          filter: `drop-shadow(0 0 8px ${cfg.glow2})`,
+        }}
+        animate={{ filter: [
+          `drop-shadow(0 0 6px ${cfg.glow2})`,
+          `drop-shadow(0 0 16px ${cfg.glow})`,
+          `drop-shadow(0 0 6px ${cfg.glow2})`,
+        ]}}
+        transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+      />
+      {/* Label rarity kecil di pojok kanan bawah */}
+      <motion.div
+        initial={{scale:0,rotate:-20}} animate={{scale:1,rotate:0}}
         transition={{type:'spring',stiffness:280,damping:14}}
-        className={`absolute ${ePos} ${eSz} rounded-full flex items-center justify-center z-30 border-2 border-white dark:border-slate-900 shadow-xl`}
-        style={{background:cfg.gradBtn,boxShadow:`0 2px 14px ${cfg.glow}`}}
+        className="absolute pointer-events-none"
+        style={{
+          bottom: -outsetPx - 2,
+          right:  -outsetPx - 2,
+          zIndex: 30,
+        }}
         title={`${badge.name} · ${cfg.label}`}>
-        <span className="leading-none select-none">{badge.emoji}</span>
+        <span className={`
+          ${size==='sm'?'text-[9px] px-1.5 py-0.5':size==='lg'?'text-[11px] px-2.5 py-1':'text-[10px] px-2 py-0.5'}
+          rounded-full font-black text-white shadow-lg leading-none block
+        `} style={{background:cfg.gradBtn, boxShadow:`0 2px 8px ${cfg.glow}`}}>
+          {badge.emoji}
+        </span>
       </motion.div>
     </>
   )
 }
 
 // ─── BADGE CIRCLE ─────────────────────────────────────────────
-function BadgeCircle({ emoji, rarity, size, delay }) {
+// Preview border kecil mengambang di sekitar kotak kado
+function BadgeCircle({ borderImg, emoji, rarity, size, delay }) {
   const cfg = RARITY_CFG[rarity]
   return (
     <motion.div
-      className="flex items-center justify-center rounded-full select-none flex-shrink-0"
-      style={{width:size,height:size,background:cfg.gradBtn,fontSize:size*0.44,
-        boxShadow:`0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`}}
-      animate={{y:[0,-7,0],scale:[1,1.07,1],
-        boxShadow:[`0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
+      className="relative flex items-center justify-center rounded-full select-none flex-shrink-0 overflow-hidden"
+      style={{
+        width: size, height: size,
+        background: cfg.gradBtn,
+        boxShadow: `0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
+      }}
+      animate={{
+        y:[0,-7,0], scale:[1,1.07,1],
+        boxShadow:[
+          `0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
           `0 10px 26px ${cfg.glow}, 0 0 0 3px ${cfg.particle}88`,
-          `0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`]}}
+          `0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
+        ],
+      }}
       transition={{repeat:Infinity,duration:2.2,delay,ease:'easeInOut'}}>
-      {emoji}
+      {/* Foto border sebagai thumbnail */}
+      {borderImg
+        ? <img src={borderImg} alt={emoji} className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{borderRadius:'inherit'}}/>
+        : <span style={{fontSize:size*0.44}}>{emoji}</span>
+      }
     </motion.div>
   )
 }
@@ -222,23 +256,23 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
 
         {/* Badge ATAS TENGAH */}
         <div className="absolute" style={{left:'50%',top:0,transform:'translateX(-50%)'}}>
-          <BadgeCircle emoji="👑" rarity="legendary" size={50} delay={0}/>
+          <BadgeCircle borderImg="/image/b1.png" emoji="🎭" rarity="legendary" size={50} delay={0}/>
         </div>
         {/* Badge KIRI ATAS */}
         <div className="absolute" style={{left:10,top:58}}>
-          <BadgeCircle emoji="🔥" rarity="rare" size={44} delay={0.5}/>
+          <BadgeCircle borderImg="/image/b5.png" emoji="🧊" rarity="rare" size={44} delay={0.5}/>
         </div>
         {/* Badge KANAN ATAS */}
         <div className="absolute" style={{right:10,top:58}}>
-          <BadgeCircle emoji="💎" rarity="epic" size={44} delay={0.2}/>
+          <BadgeCircle borderImg="/image/b3.png" emoji="⚡" rarity="epic" size={44} delay={0.2}/>
         </div>
         {/* Badge KIRI BAWAH */}
         <div className="absolute" style={{left:18,bottom:18}}>
-          <BadgeCircle emoji="📚" rarity="common" size={38} delay={1.0}/>
+          <BadgeCircle borderImg="/image/b9.png" emoji="🌀" rarity="common" size={38} delay={1.0}/>
         </div>
         {/* Badge KANAN BAWAH */}
         <div className="absolute" style={{right:18,bottom:18}}>
-          <BadgeCircle emoji="🚀" rarity="uncommon" size={38} delay={0.7}/>
+          <BadgeCircle borderImg="/image/b7.png" emoji="🦂" rarity="uncommon" size={38} delay={0.7}/>
         </div>
 
         {/* KOTAK KADO — tengah */}
@@ -389,9 +423,23 @@ function RevealModal({ badge, onClose }) {
           {phase==='reveal'&&(
             <motion.div initial={{scale:0.2,y:80,opacity:0}} animate={{scale:1,y:0,opacity:1}}
               transition={{type:'spring',stiffness:180,damping:13}}
-              className="relative z-10 select-none"
-              style={{fontSize:100,filter:`drop-shadow(0 0 40px ${cfg.particle}) drop-shadow(0 0 20px ${cfg.particle})`}}>
-              {badge.emoji}
+              className="relative z-10 select-none flex items-center justify-center"
+              style={{width:160,height:160}}>
+              {/* Preview border foto — lingkaran dengan border image */}
+              <div className="relative w-full h-full rounded-full overflow-hidden"
+                style={{background:'rgba(255,255,255,0.08)',boxShadow:`0 0 40px ${cfg.particle}, 0 0 20px ${cfg.particle}`}}>
+                {/* Foto profil dummy di tengah */}
+                <div className="absolute inset-4 rounded-full flex items-center justify-center text-5xl"
+                  style={{background:'rgba(255,255,255,0.12)'}}>
+                  {badge.emoji}
+                </div>
+                {/* Border foto */}
+                {badge.borderImg && (
+                  <img src={badge.borderImg} alt={badge.name}
+                    className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-10"
+                    style={{filter:`drop-shadow(0 0 12px ${cfg.particle})`}}/>
+                )}
+              </div>
             </motion.div>
           )}
         </div>
@@ -475,9 +523,19 @@ function EquipDialog({ badge, onEquip, onSkip, onClose, isDark }) {
         <div className="p-6">
           <div className="flex items-center gap-4 mb-5">
             <div className="relative flex-shrink-0">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
+              {/* Preview border foto di EquipDialog */}
+              <div className="w-16 h-16 rounded-2xl overflow-hidden relative"
                 style={{background:cfg.gradBtn,boxShadow:`0 8px 24px ${cfg.glow2}`}}>
-                {badge.emoji}
+                {/* Emoji di tengah sebagai "foto profil" dummy */}
+                <div className="absolute inset-2 rounded-xl flex items-center justify-center text-2xl"
+                  style={{background:'rgba(255,255,255,0.15)'}}>
+                  {badge.emoji}
+                </div>
+                {/* Border foto */}
+                {badge.borderImg && (
+                  <img src={badge.borderImg} alt={badge.name}
+                    className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-10"/>
+                )}
               </div>
               <motion.div animate={{scale:[1,1.3,1],opacity:[0.5,0,0.5]}}
                 transition={{repeat:Infinity,duration:2,ease:'easeInOut'}}
@@ -574,7 +632,14 @@ function GachaInlinePanel({ canRoll, badges, activeId, rolling, nextLabel, isDar
                     :{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
                       border:`1px solid ${th(isDark,'rgba(255,255,255,0.09)','rgba(0,0,0,0.1)')}`,
                       color:th(isDark,'rgba(255,255,255,0.45)','rgba(0,0,0,0.5)')}}>
-                  <span className="text-base leading-none">{badge.emoji}</span>
+                  {/* Thumbnail border kecil */}
+                  <div className="relative w-6 h-6 rounded-lg overflow-hidden flex-shrink-0"
+                    style={{background:cfg.gradBtn}}>
+                    {badge.borderImg
+                      ? <img src={badge.borderImg} alt={badge.name} className="absolute inset-0 w-full h-full object-cover"/>
+                      : <span className="text-base leading-none flex items-center justify-center w-full h-full">{badge.emoji}</span>
+                    }
+                  </div>
                   <span>{badge.name}</span>
                   {isActive&&<span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
                     style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}>
@@ -859,7 +924,14 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
                       :{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
                         border:`1px solid ${th(isDark,'rgba(255,255,255,0.09)','rgba(0,0,0,0.1)')}`,
                         color:th(isDark,'rgba(255,255,255,0.45)','rgba(0,0,0,0.5)')}}>
-                    <span className="text-base leading-none">{badge.emoji}</span>
+                    {/* Thumbnail border kecil */}
+                    <div className="relative w-6 h-6 rounded-lg overflow-hidden flex-shrink-0"
+                      style={{background:cfg.gradBtn}}>
+                      {badge.borderImg
+                        ? <img src={badge.borderImg} alt={badge.name} className="absolute inset-0 w-full h-full object-cover"/>
+                        : <span className="text-base leading-none flex items-center justify-center w-full h-full">{badge.emoji}</span>
+                      }
+                    </div>
                     <span className="hidden sm:inline">{badge.name}</span>
                     <span className={`text-[9px] font-black ${isActive?'text-white/75':cfg.text}`}>{cfg.short}</span>
                     {isActive&&(

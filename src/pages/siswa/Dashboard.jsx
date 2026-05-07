@@ -133,6 +133,12 @@ export default function SiswaDashboard() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
+  // Auto-polling setiap 30 detik — supaya dashboard update otomatis setelah sync fingerprint
+  useEffect(() => {
+    const poll = setInterval(() => fetchAll(true), 30000)
+    return () => clearInterval(poll)
+  }, [fetchAll])
+
   const getGreeting = () => {
     const h = now.getHours()
     if (h < 12) return { text:'Pagi', icon:<Coffee size={11} className="text-amber-400"/> }
@@ -489,6 +495,23 @@ export default function SiswaDashboard() {
                         </p>
                       </div>
                     </div>
+                    {/* Metode absen */}
+                    {absenHariIni.metode && (
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          absenHariIni.metode === 'fingerprint'
+                            ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800/40'
+                            : absenHariIni.metode === 'qr_code'
+                            ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                        }`}>
+                          {absenHariIni.metode === 'fingerprint' ? '🖐 Sidik Jari'
+                            : absenHariIni.metode === 'qr_code' ? '📷 QR Code'
+                            : absenHariIni.metode === 'manual' ? '✏️ Manual'
+                            : absenHariIni.metode}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">

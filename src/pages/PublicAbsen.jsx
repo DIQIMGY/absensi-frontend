@@ -30,6 +30,26 @@ export default function PublicAbsen() {
 
   const getKet = () => { try { return `public-absen; ua=${navigator.userAgent}` } catch { return 'public-absen' } }
 
+  // Helper: tampilkan pesan "sudah absen" dengan info metode
+  const showSudahAbsen = async (existingData) => {
+    const metodeMap = {
+      fingerprint: '🖐 Sidik Jari',
+      qr_code:     '📷 QR Code',
+      manual:      '✏️ Manual',
+      sistem:      '⚙️ Sistem',
+    }
+    const metodeLabel = metodeMap[existingData?.metode] || '✅ Sistem'
+    const jamAbsen = existingData?.jam_masuk
+      ? ` pukul ${existingData.jam_masuk.substring(0, 5)}`
+      : ''
+    const statusLabel = existingData?.status === 'terlambat' ? ' (Terlambat)' : ' (Tepat Waktu)'
+    playAlreadyAbsenSound()
+    await showWarning(
+      'Sudah Absen Hari Ini',
+      `Kamu sudah tercatat absen${jamAbsen}${statusLabel} via ${metodeLabel}. Tidak perlu absen lagi.`
+    )
+  }
+
   useEffect(() => { const t = setInterval(() => setWaktu(new Date()), 1000); return () => clearInterval(t) }, [])
 
   useEffect(() => {
@@ -98,7 +118,7 @@ export default function PublicAbsen() {
       if (r?.errors) setErrors(r.errors)
       if (r?.message?.includes('belum dibuka')) { playWarningSound(); await showWarning('Belum Dibuka', r.message); return }
       if (r?.message?.includes('sudah ditutup')) { playWarningSound(); await showWarning('Sudah Ditutup', r.message); return }
-      if (r?.message?.includes('sudah melakukan absensi')) { playAlreadyAbsenSound(); await showWarning('Sudah Absen', 'Anda sudah absen hari ini'); return }
+      if (r?.message?.includes('sudah melakukan absensi')) { await showSudahAbsen(r?.data); return }
       playErrorSound()
       if (r?.message?.includes('belum terdaftar') || r?.errors?.registrasi) showError('Belum Registrasi', 'Data ditemukan tapi belum punya akun.')
       else if (r?.message?.includes('tidak ditemukan')) showError('Tidak Ditemukan', `${userRole === 'siswa' ? 'NISN' : 'NIP'} tidak terdaftar.`)
@@ -120,7 +140,7 @@ export default function PublicAbsen() {
       setAbsenResult({ success: false, message: r?.message || 'Terjadi kesalahan', role: userRole })
       if (r?.message?.includes('belum dibuka')) { playWarningSound(); await showWarning('Belum Dibuka', r.message); return }
       if (r?.message?.includes('sudah ditutup')) { playWarningSound(); await showWarning('Sudah Ditutup', r.message); return }
-      if (r?.message?.includes('sudah melakukan absensi')) { playAlreadyAbsenSound(); await showWarning('Sudah Absen', 'Anda sudah absen hari ini'); return }
+      if (r?.message?.includes('sudah melakukan absensi')) { await showSudahAbsen(r?.data); return }
       playErrorSound()
       if (r?.message?.includes('belum terdaftar')) showError('Belum Registrasi', 'QR valid tapi belum punya akun.')
       else if (r?.message?.includes('tidak valid')) showError('QR Tidak Valid', 'QR Code tidak dikenali.')
@@ -535,12 +555,23 @@ export default function PublicAbsen() {
                       <p className={`text-xs mb-3 ${isDark?'text-slate-300':'text-slate-600'}`}>{absenResult.message}</p>
                       {absenResult.success && absenResult.data && (
                         <div className={`rounded-xl p-3 grid grid-cols-2 gap-2.5 ${isDark?'bg-white/5':'bg-white border border-slate-100'}`}>
-                          {[
-                            { label:'Nama', value: absenResult.role==='siswa'?absenResult.data.siswa?.nama:absenResult.data.guru?.nama },
-                            ...(absenResult.role==='siswa' ? [{ label:'Kelas', value: absenResult.data.siswa?.kelas }] : []),
-                            { label:'Status', value: absenResult.data.is_terlambat?'Terlambat':'Tepat Waktu', badge: true, late: absenResult.data.is_terlambat },
-                            ...(absenResult.data.absensi ? [{ label:'Jam', value: absenResult.data.absensi.jam_masuk, mono: true }] : []),
-                          ].map((item,i) => (
+                          {(() => {
+                            const metodeMap = {
+                              fingerprint: '🖐 Sidik Jari',
+                              qr_code:     '📷 QR Code',
+                              manual:      '✏️ Manual',
+                              sistem:      '⚙️ Sistem',
+                            }
+                            const metode = absenResult.data.absensi?.metode
+                            const metodeLabel = metodeMap[metode] || metode || '-'
+                            return [
+                              { label:'Nama', value: absenResult.role==='siswa'?absenResult.data.siswa?.nama:absenResult.data.guru?.nama },
+                              ...(absenResult.role==='siswa' ? [{ label:'Kelas', value: absenResult.data.siswa?.kelas }] : []),
+                              { label:'Status', value: absenResult.data.is_terlambat?'Terlambat':'Tepat Waktu', badge: true, late: absenResult.data.is_terlambat },
+                              ...(absenResult.data.absensi ? [{ label:'Jam Masuk', value: absenResult.data.absensi.jam_masuk?.substring(0,5), mono: true }] : []),
+                              { label:'Metode', value: metodeLabel },
+                            ]
+                          })().map((item,i) => (
                             <div key={i}>
                               <p className={`text-[9px] uppercase font-black mb-0.5 tracking-widest ${isDark?'text-slate-600':'text-slate-400'}`}>{item.label}</p>
                               {item.badge

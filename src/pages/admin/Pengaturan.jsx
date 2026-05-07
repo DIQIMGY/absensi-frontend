@@ -91,6 +91,8 @@ export default function Pengaturan() {
   const [fpTestResult, setFpTestResult] = useState(null)
   const [fpSyncResult, setFpSyncResult] = useState(null)
   const [fpLastSync, setFpLastSync] = useState(null)
+  const [fpUsers, setFpUsers] = useState(null)
+  const [fpLoadingUsers, setFpLoadingUsers] = useState(false)
 
   const [formData, setFormData] = useState({
     jam_masuk: '07:15', jam_pulang: '15:00', jam_buka_absen: '06:00',
@@ -652,13 +654,16 @@ export default function Pengaturan() {
                       onClick={async () => {
                         setFpSyncing(true); setFpSyncResult(null)
                         try {
-                          const res = await adminApi.syncFingerprint({ today_only: true, force: true })
+                          const res = await adminApi.syncFingerprint({ today_only: true })
                           const d = res.data.data
                           setFpSyncResult(d)
                           setFpLastSync(new Date().toISOString())
-                          toast.success(`Sync selesai! ${d.berhasil} absensi berhasil disimpan.`)
+                          if (d.berhasil > 0) toast.success(`Sync selesai! ${d.berhasil} absensi berhasil disimpan.`)
+                          else if (d.sudah_absen > 0) toast(`Semua siswa sudah absen hari ini (${d.sudah_absen} data).`, { icon: 'ℹ️' })
+                          else toast(`Sync selesai. Tidak ada data baru.`, { icon: 'ℹ️' })
                         } catch (err) {
-                          toast.error(err.response?.data?.message || 'Sync gagal')
+                          const msg = err.response?.data?.message || 'Sync gagal'
+                          toast.error(msg)
                         } finally { setFpSyncing(false) }
                       }}
                       disabled={fpSyncing || !formData.fingerprint_enabled}
@@ -670,7 +675,7 @@ export default function Pengaturan() {
                       onClick={async () => {
                         setFpSyncing(true); setFpSyncResult(null)
                         try {
-                          const res = await adminApi.syncFingerprint({ today_only: false, force: true })
+                          const res = await adminApi.syncFingerprint({ today_only: false })
                           const d = res.data.data
                           setFpSyncResult(d)
                           setFpLastSync(new Date().toISOString())
@@ -737,6 +742,76 @@ export default function Pengaturan() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Daftar User di Mesin */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                      <User size={14} className="text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100">User di Mesin vs Sistem</p>
+                      <p className="text-[11px] text-slate-400">Cek apakah User ID mesin cocok dengan NIS siswa</p>
+                    </div>
+                  </div>
+                  <button type="button"
+                    onClick={async () => {
+                      setFpLoadingUsers(true)
+                      try {
+                        const res = await adminApi.getFingerprintUsers()
+                        setFpUsers(res.data.data)
+                      } catch (err) {
+                        toast.error('Gagal ambil user dari mesin: ' + (err.response?.data?.message || err.message))
+                      } finally { setFpLoadingUsers(false) }
+                    }}
+                    disabled={fpLoadingUsers}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-all">
+                    {fpLoadingUsers ? <RefreshCw size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                    Cek User
+                  </button>
+                </div>
+                {fpUsers && (
+                  <div className="p-4 space-y-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                      Total {fpUsers.total} user di mesin. <span className="text-emerald-600 font-semibold">Hijau</span> = terhubung ke siswa, <span className="text-rose-600 font-semibold">Merah</span> = belum terhubung (User ID belum sesuai NIS).
+                    </p>
+                    {fpUsers.users?.map((u, i) => (
+                      <div key={i} className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
+                        u.terhubung
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                          : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {u.terhubung
+                            ? <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />
+                            : <XCircle size={14} className="text-rose-500 flex-shrink-0" />}
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-slate-100">
+                              {u.nama_mesin} <span className="font-normal text-slate-400">(UID mesin: {u.uid_mesin})</span>
+                            </p>
+                            <p className="text-slate-500 dark:text-slate-400">
+                              User ID di mesin: <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded font-mono">{u.userid}</code>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {u.terhubung ? (
+                            <div>
+                              <p className="font-semibold text-emerald-700 dark:text-emerald-300">{u.siswa_db?.nama_lengkap}</p>
+                              <p className="text-emerald-600 dark:text-emerald-400">NIS: {u.siswa_db?.nis}</p>
+                            </div>
+                          ) : (
+                            <p className="text-rose-600 dark:text-rose-400 font-medium">
+                              ⚠ Ubah User ID di mesin<br/>menjadi NIS siswa
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Info Box */}
