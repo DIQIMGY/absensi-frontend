@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -40,11 +40,11 @@ const STATUS_CFG = {
 }
 
 const getStreakTier = (s) => {
-  if (s >= 75) return { accent:'#7c3aed', soft:'rgba(124,58,237,0.12)', label:'Legenda', emoji:'🔮', next:null }
-  if (s >= 50) return { accent:'#dc2626', soft:'rgba(220,38,38,0.10)',  label:'Membara', emoji:'🔴', next:`${75-s} hari ke Legenda` }
-  if (s >= 20) return { accent:'#ea580c', soft:'rgba(234,88,12,0.10)',  label:'Konsisten',emoji:'🔥', next:`${50-s} hari ke Membara` }
-  if (s >= 1)  return { accent:'#d97706', soft:'rgba(217,119,6,0.10)',  label:'Semangat',emoji:'⭐', next:`${20-s} hari ke Konsisten` }
-  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',   emoji:'·',  next:'Hadir hari ini untuk mulai' }
+  if (s >= 75) return { accent:'#7c3aed', soft:'rgba(124,58,237,0.12)', label:'Legenda', emoji:'??', next:null }
+  if (s >= 50) return { accent:'#dc2626', soft:'rgba(220,38,38,0.10)',  label:'Membara', emoji:'??', next:`${75-s} hari ke Legenda` }
+  if (s >= 20) return { accent:'#ea580c', soft:'rgba(234,88,12,0.10)',  label:'Konsisten',emoji:'??', next:`${50-s} hari ke Membara` }
+  if (s >= 1)  return { accent:'#d97706', soft:'rgba(217,119,6,0.10)',  label:'Semangat',emoji:'?', next:`${20-s} hari ke Konsisten` }
+  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',   emoji:'�',  next:'Hadir hari ini untuk mulai' }
 }
 
 const Avatar = ({ src, name, size = 32, className = '' }) => {
@@ -133,7 +133,7 @@ export default function SiswaDashboard() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // Auto-polling setiap 30 detik — supaya dashboard update otomatis setelah sync fingerprint
+  // Auto-polling setiap 30 detik � supaya dashboard update otomatis setelah sync fingerprint
   useEffect(() => {
     const poll = setInterval(() => fetchAll(true), 30000)
     return () => clearInterval(poll)
@@ -214,8 +214,8 @@ export default function SiswaDashboard() {
 
       <div className="pb-12">
 
-        {/* â•â• HERO BANNER â•â• */}
-        <div className="relative overflow-hidden mx-3 sm:mx-4 mt-4 rounded-2xl"
+        {/* ══ HERO BANNER ══ */}
+        <div className="relative mx-3 sm:mx-4 mt-4 rounded-2xl"
           style={{ background: statusHariIni==='hadir' ? 'linear-gradient(135deg,#064e3b 0%,#065f46 40%,#0f766e 100%)'
             : statusHariIni==='terlambat' ? 'linear-gradient(135deg,#78350f 0%,#92400e 40%,#b45309 100%)'
             : statusHariIni==='izin'      ? 'linear-gradient(135deg,#2e1065 0%,#4c1d95 40%,#5b21b6 100%)'
@@ -231,7 +231,7 @@ export default function SiswaDashboard() {
 
           <div className="relative z-10 p-4 sm:p-5">
 
-            {/* â”€â”€ ROW 1: Avatar + Info + Refresh â”€â”€ */}
+            {/* ── ROW 1: Avatar + Info + Refresh ── */}
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
@@ -254,13 +254,13 @@ export default function SiswaDashboard() {
                 <div className="flex items-center gap-1.5 mb-0.5">
                   {greeting.icon}
                   <span className="text-white/55 text-[11px]">Selamat {greeting.text}</span>
-                  <span className="text-white/25 text-[11px]">·</span>
+                  <span className="text-white/25 text-[11px]">�</span>
                   <span className="text-white/45 text-[11px] font-mono">{now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span>
                 </div>
                 <h1 className="text-base sm:text-lg font-black text-white leading-tight truncate">{data?.siswa?.nama||user?.name||'Siswa'}</h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-white/40 text-[10px] flex items-center gap-1"><Shield size={8}/>{data?.siswa?.nis||'-'}</span>
-                  <span className="text-white/25 text-[10px]">·</span>
+                  <span className="text-white/25 text-[10px]">�</span>
                   <span className="text-white/40 text-[10px] flex items-center gap-1"><GraduationCap size={8}/>{data?.siswa?.kelas||'-'}</span>
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function SiswaDashboard() {
               </div>
             </div>
 
-            {/* â”€â”€ ROW 2: Status + Absen button â”€â”€ */}
+            {/* ── ROW 2: Status + Absen button ── */}
             <div className="mt-3 flex items-center gap-2">
               <div className="flex-1 flex items-center gap-2 bg-black/20 rounded-xl px-3 py-2 border border-white/10">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
@@ -286,12 +286,12 @@ export default function SiswaDashboard() {
                   statusHariIni==='terlambat'?'bg-amber-400 shadow-[0_0_6px_#fbbf24]':
                   statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/40 animate-pulse'}`}/>
                 <div className="flex-1 min-w-0">
-                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status · </span>
+                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status � </span>
                   <span className="text-white font-black text-sm capitalize">
                     {statusHariIni==='belum'?'Belum Absen':cfgHariIni?.label||statusHariIni}
                   </span>
                   {absenHariIni?.jam_masuk && absenHariIni.jam_masuk!=='-' &&
-                    <span className="text-white/45 font-mono text-xs ml-1.5">· {absenHariIni.jam_masuk}</span>}
+                    <span className="text-white/45 font-mono text-xs ml-1.5">� {absenHariIni.jam_masuk}</span>}
                 </div>
               </div>
               {statusHariIni==='belum' && (
@@ -308,7 +308,7 @@ export default function SiswaDashboard() {
               )}
             </div>
 
-            {/* â”€â”€ ROW 3: 4 stat pills + kehadiran % â”€â”€ */}
+            {/* ── ROW 3: 4 stat pills + kehadiran % ── */}
             <div className="mt-2.5 flex items-center gap-2">
               {/* 4 stats */}
               <div className="flex-1 grid grid-cols-4 gap-1.5">
@@ -332,7 +332,7 @@ export default function SiswaDashboard() {
               </div>
             </div>
 
-            {/* â”€â”€ Progress bar â”€â”€ */}
+            {/* ── Progress bar ── */}
             <div className="mt-2.5 h-1 bg-black/20 rounded-full overflow-hidden">
               <motion.div initial={{width:0}} animate={{width:`${pctHadir}%`}}
                 transition={{duration:1.2,ease:'easeOut',delay:0.3}}
@@ -342,7 +342,7 @@ export default function SiswaDashboard() {
           </div>
         </div>
 
-        {/* â•â• MAIN CONTENT â•â• */}
+        {/* ══ MAIN CONTENT ══ */}
         <div className="px-3 sm:px-4 mt-3 space-y-3">
 
           {/* Alert hari tidak aktif */}
@@ -350,7 +350,7 @@ export default function SiswaDashboard() {
             {!isLibur() && !isHariAktif() && (
               <motion.div key="nonaktif" initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} exit={{opacity:0}}
                 className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
-                <span className="text-xl">😴</span>
+                <span className="text-xl">??</span>
                 <div>
                   <p className="font-bold text-slate-600 dark:text-slate-300 text-sm">Hari Tidak Aktif</p>
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Hari ini bukan hari sekolah.</p>
@@ -421,7 +421,7 @@ export default function SiswaDashboard() {
             </div>
           </div>
 
-          {/* â”€â”€ ROW 2: ABSENSI HARI INI + STREAK â”€â”€ */}
+          {/* ── ROW 2: ABSENSI HARI INI + STREAK ── */}
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
             {/* Absensi Hari Ini */}
             <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.1}}
@@ -485,13 +485,13 @@ export default function SiswaDashboard() {
                         'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                         <p className="text-[9px] text-slate-400 uppercase tracking-wide mb-0.5">Masuk</p>
                         <p className="text-sm font-black tabular-nums text-slate-800 dark:text-slate-100">
-                          {absenHariIni.jam_masuk && absenHariIni.jam_masuk!=='-' ? absenHariIni.jam_masuk : '—'}
+                          {absenHariIni.jam_masuk && absenHariIni.jam_masuk!=='-' ? absenHariIni.jam_masuk : '�'}
                         </p>
                       </div>
                       <div className="rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-800/50">
                         <p className="text-[9px] text-slate-400 uppercase tracking-wide mb-0.5">Pulang</p>
                         <p className="text-sm font-black tabular-nums text-slate-700 dark:text-slate-300">
-                          {pengaturan?.jam_pulang?.substring(0,5) || '—'}
+                          {pengaturan?.jam_pulang?.substring(0,5) || '�'}
                         </p>
                       </div>
                     </div>
@@ -505,9 +505,9 @@ export default function SiswaDashboard() {
                             ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                         }`}>
-                          {absenHariIni.metode === 'fingerprint' ? '🖐 Sidik Jari'
-                            : absenHariIni.metode === 'qr_code' ? '📷 QR Code'
-                            : absenHariIni.metode === 'manual' ? '✏️ Manual'
+                          {absenHariIni.metode === 'fingerprint' ? '?? Sidik Jari'
+                            : absenHariIni.metode === 'qr_code' ? '?? QR Code'
+                            : absenHariIni.metode === 'manual' ? '?? Manual'
                             : absenHariIni.metode}
                         </span>
                       </div>
@@ -570,10 +570,10 @@ export default function SiswaDashboard() {
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight">
                       {streak===0 ? 'Mulai streak-mu' : `${streak} hari berturut`}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">{tier.next || 'Level tertinggi ðŸ†'}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">{tier.next || 'Level tertinggi 🏆'}</p>
                   </div>
                   <div className="mt-3 flex items-center">
-                    {[{d:1,e:'⭐'},{d:20,e:'🔥'},{d:50,e:'🔴'},{d:75,e:'🔮'}].map((m,i,arr)=>{
+                    {[{d:1,e:'?'},{d:20,e:'??'},{d:50,e:'??'},{d:75,e:'??'}].map((m,i,arr)=>{
                       const done = streak >= m.d
                       const active = done && (i===arr.length-1 || streak < arr[i+1].d)
                       return (
@@ -603,7 +603,7 @@ export default function SiswaDashboard() {
             </motion.div>
           </div>
 
-          {/* â”€â”€ ROW 3: TREN + RINGKASAN â”€â”€ */}
+          {/* ── ROW 3: TREN + RINGKASAN ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5">
             <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden shadow-sm">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
@@ -697,7 +697,7 @@ export default function SiswaDashboard() {
             </div>
           </div>
 
-          {/* â”€â”€ ROW 4: MOTIVASI + TARGET â”€â”€ */}
+          {/* ── ROW 4: MOTIVASI + TARGET ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Motivasi */}
             <div className="relative overflow-hidden rounded-2xl p-4"
@@ -711,10 +711,10 @@ export default function SiswaDashboard() {
                   <span className="ml-auto text-white/40 text-[10px] font-bold">{pctHadir}%</span>
                 </div>
                 <p className="text-white/70 text-xs leading-relaxed mb-3">
-                  {pctHadir>=90?'"Konsistensimu luar biasa! Terus pertahankan." 🌟'
-                  :pctHadir>=75?'"Kamu di jalur yang benar! Sedikit lagi." 💪'
-                  :pctHadir>=60?'"Setiap hari hadir adalah investasi masa depan." ðŸ“š'
-                  :'"Mulai hari ini, jadikan kehadiran prioritas!" 🚀'}
+                  {pctHadir>=90?'"Konsistensimu luar biasa! Terus pertahankan." ??'
+                  :pctHadir>=75?'"Kamu di jalur yang benar! Sedikit lagi." ??'
+                  :pctHadir>=60?'"Setiap hari hadir adalah investasi masa depan." 📚'
+                  :'"Mulai hari ini, jadikan kehadiran prioritas!" ??'}
                 </p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-1 bg-white/15 rounded-full overflow-hidden">
@@ -738,7 +738,7 @@ export default function SiswaDashboard() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] text-slate-500 dark:text-slate-400">{t.label} ({t.target}%)</span>
                     <span className="text-[10px] font-bold" style={{color:pctHadir>=t.target?t.color:'#94a3b8'}}>
-                      {pctHadir>=t.target?'âœ“':`${t.target-pctHadir}% lagi`}
+                      {pctHadir>=t.target?'✓':`${t.target-pctHadir}% lagi`}
                     </span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -754,7 +754,7 @@ export default function SiswaDashboard() {
 
 
 
-          {/* â”€â”€ ROW 5: KALENDER 7 HARI â”€â”€ */}
+          {/* ── ROW 5: KALENDER 7 HARI ── */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden shadow-sm">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
               <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
@@ -773,7 +773,7 @@ export default function SiswaDashboard() {
                     terlambat: {bg:'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-700/50',tc:'text-amber-700 dark:text-amber-300',l:'T'},
                     izin:      {bg:'bg-violet-100 dark:bg-violet-900/40 border-violet-200 dark:border-violet-700/50',tc:'text-violet-700 dark:text-violet-300',l:'I'},
                     alpha:     {bg:'bg-rose-100 dark:bg-rose-900/40 border-rose-200 dark:border-rose-700/50',tc:'text-rose-700 dark:text-rose-300',l:'A'},
-                  }[r.status] || {bg:'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',tc:'text-slate-500',l:'·'}
+                  }[r.status] || {bg:'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',tc:'text-slate-500',l:'�'}
                   const day = r.tanggal ? r.tanggal.split(' ')[0] : `H${i+1}`
                   return (
                     <motion.div key={i} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}}
@@ -786,8 +786,8 @@ export default function SiswaDashboard() {
                 })}
                 {Array.from({length:Math.max(0,7-riwayat.length)}).map((_,i)=>(
                   <div key={`e${i}`} className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <span className="text-[7px] text-slate-300 dark:text-slate-600">—</span>
-                    <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
+                    <span className="text-[7px] text-slate-300 dark:text-slate-600">�</span>
+                    <span className="text-xs text-slate-300 dark:text-slate-600">�</span>
                   </div>
                 ))}
               </div>
@@ -802,7 +802,7 @@ export default function SiswaDashboard() {
             </div>
           </div>
 
-          {/* â”€â”€ ROW 6: RANKING + RIWAYAT â”€â”€ */}
+          {/* ── ROW 6: RANKING + RIWAYAT ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
             {ranking && (
               <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.3}}
@@ -841,7 +841,7 @@ export default function SiswaDashboard() {
                         <div className="space-y-1.5">
                           {activeRank.list.slice(0,5).map((s,i)=>{
                             const isMe = s.id===myId
-                            const medals = ['🥇','🥈','🥉']
+                            const medals = ['??','??','??']
                             const maxVal = activeRank.list[0]?.[activeRank.valKey]||1
                             const barW = Math.round((s[activeRank.valKey]/maxVal)*100)
                             return (
@@ -896,7 +896,7 @@ export default function SiswaDashboard() {
                           {label:'Alpha',pos:ranking.sekolah?.posisi_ranking?.alpha,color:'text-rose-600 dark:text-rose-400',bg:'bg-rose-50 dark:bg-rose-900/20',border:'border-rose-100 dark:border-rose-800/40'}].map((item,i)=>(
                           <div key={i} className={`rounded-xl px-2 py-1.5 ${item.bg} border ${item.border} text-center`}>
                             <p className="text-[8px] text-slate-400 mb-0.5">{item.label}</p>
-                            <p className={`text-sm font-black ${item.color}`}>{item.pos?`#${item.pos}`:'—'}</p>
+                            <p className={`text-sm font-black ${item.color}`}>{item.pos?`#${item.pos}`:'�'}</p>
                           </div>
                         ))}
                       </div>
@@ -948,7 +948,7 @@ export default function SiswaDashboard() {
             </motion.div>
           </div>
 
-          {/* â”€â”€ ROW 7: RIWAYAT IZIN â”€â”€ */}
+          {/* ── ROW 7: RIWAYAT IZIN ── */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden shadow-sm">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
               <div className="flex items-center gap-2">
@@ -1000,7 +1000,7 @@ export default function SiswaDashboard() {
           </div>
 
 
-          {/* Gacha Harian — floating di pojok kanan atas */}
+          {/* Gacha Harian � floating di pojok kanan atas */}
           <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
             setActiveBadge(newBadgeId)
             setOwnedBadges(newBadges || [])
@@ -1040,7 +1040,7 @@ export default function SiswaDashboard() {
               alamBg={pengaturan.alam_bg || null}
             />
           )}
-          {/* â”€â”€ ROW 8: MENU CEPAT â”€â”€ */}
+          {/* ── ROW 8: MENU CEPAT ── */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Zap size={11} className="text-slate-400"/>

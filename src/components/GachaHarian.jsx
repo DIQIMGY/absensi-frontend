@@ -152,28 +152,27 @@ function Confetti({ color, run }) {
 }
 
 // ─── BADGE OVERLAY ────────────────────────────────────────────
-// Menampilkan border foto (b1.png - b10.png) di atas foto profil.
+// Border foto PNG ditaruh TEPAT di atas foto profil (inset-0),
+// tidak keluar dari container — supaya tidak terpotong overflow-hidden parent.
 // Foto border harus PNG transparan, bagian tengah bolong supaya foto profil keliatan.
 export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
   // Selalu merge data dari response backend dengan BADGE_POOL frontend
-  // supaya borderImg selalu tersedia meski backend tidak kirim field itu
   const badgeFromResponse = badges.find(b => b.id === badgeId)
   const badgeFromPool     = BADGE_POOL.find(b => b.id === badgeId)
   const badge = badgeFromPool
-    ? { ...badgeFromPool, ...(badgeFromResponse || {}) }  // pool jadi base, response override
+    ? { ...badgeFromPool, ...(badgeFromResponse || {}) }
     : badgeFromResponse
 
-  // Tidak render kalau badge tidak ada atau tidak punya borderImg
   if (!badge || !badge.borderImg) return null
 
   const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
-  // Seberapa jauh border keluar dari tepi foto profil (px)
-  const outsetPx = {sm:5, md:7, lg:10}[size] ?? 7
+  // Seberapa jauh border keluar — negatif supaya sedikit lebih besar dari foto
+  const outsetPx = {sm:4, md:6, lg:9}[size] ?? 6
   const totalSize = `calc(100% + ${outsetPx * 2}px)`
 
   return (
     <>
-      {/* Foto border PNG — pakai top/left + width/height */}
+      {/* Border foto — keluar sedikit dari foto supaya kelihatan di luar rounded corner */}
       <motion.img
         src={badge.borderImg}
         alt={badge.name}
@@ -188,26 +187,27 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
         }}
         animate={{ filter: [
           `drop-shadow(0 0 6px ${cfg.glow2})`,
-          `drop-shadow(0 0 16px ${cfg.glow})`,
+          `drop-shadow(0 0 18px ${cfg.glow})`,
           `drop-shadow(0 0 6px ${cfg.glow2})`,
         ]}}
         transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
       />
-      {/* Label rarity kecil di pojok kanan bawah */}
+      {/* Label rarity emoji kecil di pojok kanan bawah */}
       <motion.div
         initial={{scale:0,rotate:-20}} animate={{scale:1,rotate:0}}
         transition={{type:'spring',stiffness:280,damping:14}}
         className="absolute pointer-events-none"
-        style={{
-          bottom: -outsetPx - 2,
-          right:  -outsetPx - 2,
-          zIndex: 30,
-        }}
+        style={{ bottom: -4, right: -4, zIndex: 30 }}
         title={`${badge.name} · ${cfg.label}`}>
-        <span className={`
-          ${size==='sm'?'text-[9px] px-1.5 py-0.5':size==='lg'?'text-[11px] px-2.5 py-1':'text-[10px] px-2 py-0.5'}
-          rounded-full font-black text-white shadow-lg leading-none block
-        `} style={{background:cfg.gradBtn, boxShadow:`0 2px 8px ${cfg.glow}`}}>
+        <span
+          className="rounded-full font-black text-white shadow-lg leading-none flex items-center justify-center"
+          style={{
+            background: cfg.gradBtn,
+            boxShadow: `0 2px 8px ${cfg.glow}`,
+            fontSize:   size==='lg' ? 13 : size==='sm' ? 9 : 11,
+            width:      size==='lg' ? 22 : size==='sm' ? 16 : 19,
+            height:     size==='lg' ? 22 : size==='sm' ? 16 : 19,
+          }}>
           {badge.emoji}
         </span>
       </motion.div>
