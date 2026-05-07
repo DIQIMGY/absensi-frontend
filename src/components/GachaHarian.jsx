@@ -72,44 +72,59 @@ export const RARITY_CFG = {
 }
 
 // ─── BADGE POOL ───────────────────────────────────────────────
-// HARUS SINKRON dengan GachaController.php di backend!
-// id harus sama persis dengan yang ada di backend.
-// borderImg = file foto border kamu (b1.png - b10.png) di /image/
-//
-// Urutan rarity & borderImg:
-//   Legendary : b1.png, b2.png, b3.png
-//   Epic       : b4.png, b5.png, b6.png
-//   Rare       : b7.png, b8.png, b9.png
-//   Common     : b10.png (+ sisanya pakai b10)
-//   Zonk       : tidak pakai border
+// glow  = warna aura luar (lebih terang, untuk drop-shadow kuat)
+// glow2 = warna aura dalam (lebih soft, untuk pulse)
 export const BADGE_POOL = [
   // ── LEGENDARY ──────────────────────────────────────────────
-  { id:'dragon_scholar', name:'Dragon Scholar',   emoji:'🐉', rarity:'legendary', borderImg:'/image/b1.png' },
-  { id:'galaxy_brain',   name:'Galaxy Brain',     emoji:'🌌', rarity:'legendary', borderImg:'/image/b2.png' },
-  { id:'phoenix_rise',   name:'Phoenix Rise',     emoji:'🔥', rarity:'legendary', borderImg:'/image/b3.png' },
+  // b1 = Emas/Gold
+  { id:'dragon_scholar', name:'Wayang Kulit',       emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png',
+    glow:'rgba(255,200,50,0.9)',  glow2:'rgba(212,160,20,0.5)'  },
+  // b2 = Merah Api / Orange
+  { id:'galaxy_brain',   name:'Phoenix Api Abadi',  emoji:'🔥', rarity:'legendary', borderImg:'/image/b2.png',
+    glow:'rgba(255,80,20,0.9)',   glow2:'rgba(220,60,10,0.5)'   },
+  // b3 = Biru Elektrik
+  { id:'phoenix_rise',   name:'Thor Petir & Kilat', emoji:'⚡', rarity:'legendary', borderImg:'/image/b3.png',
+    glow:'rgba(60,160,255,0.9)',  glow2:'rgba(30,120,240,0.5)'  },
 
   // ── EPIC ────────────────────────────────────────────────────
-  { id:'star_student',   name:'Star Student',     emoji:'⭐', rarity:'epic',      borderImg:'/image/b4.png' },
-  { id:'night_owl',      name:'Night Owl',        emoji:'🦉', rarity:'epic',      borderImg:'/image/b5.png' },
-  { id:'diamond_mind',   name:'Diamond Mind',     emoji:'💎', rarity:'epic',      borderImg:'/image/b6.png' },
+  // b4 = Coklat Emas / Bronze
+  { id:'star_student',   name:'Griffin Sang Singa', emoji:'🦁', rarity:'epic',      borderImg:'/image/b4.png',
+    glow:'rgba(180,130,60,0.85)', glow2:'rgba(150,100,40,0.45)' },
+  // b5 = Biru Es / Silver
+  { id:'night_owl',      name:'Fenrir Serigala Es', emoji:'🧊', rarity:'epic',      borderImg:'/image/b5.png',
+    glow:'rgba(160,210,255,0.85)',glow2:'rgba(120,180,240,0.45)'},
+  // b6 = Hitam Ungu / Dark Purple
+  { id:'diamond_mind',   name:'Ksatria Zirah Hitam',emoji:'⚔️', rarity:'epic',      borderImg:'/image/b6.png',
+    glow:'rgba(140,60,200,0.85)', glow2:'rgba(100,30,160,0.45)' },
 
   // ── RARE ────────────────────────────────────────────────────
-  { id:'early_bird',     name:'Early Bird',       emoji:'🐦', rarity:'rare',      borderImg:'/image/b7.png' },
-  { id:'bookworm',       name:'Bookworm',         emoji:'📚', rarity:'rare',      borderImg:'/image/b8.png' },
-  { id:'team_player',    name:'Team Player',      emoji:'🤝', rarity:'rare',      borderImg:'/image/b9.png' },
+  // b7 = Hijau Gelap
+  { id:'early_bird',     name:'Kalajengking Racun', emoji:'🦂', rarity:'rare',      borderImg:'/image/b7.png',
+    glow:'rgba(40,180,80,0.8)',   glow2:'rgba(20,140,50,0.4)'   },
+  // b8 = Biru Malam / Navy
+  { id:'bookworm',       name:'Bulan & Bintang',    emoji:'🌙', rarity:'rare',      borderImg:'/image/b8.png',
+    glow:'rgba(50,100,220,0.8)',  glow2:'rgba(30,70,180,0.4)'   },
+  // b9 = Merah Gelap / Dark Red
+  { id:'team_player',    name:'Oni Topeng Iblis',   emoji:'🌀', rarity:'rare',      borderImg:'/image/b9.png',
+    glow:'rgba(200,30,30,0.8)',   glow2:'rgba(160,20,20,0.4)'   },
 
   // ── COMMON ──────────────────────────────────────────────────
-  { id:'happy_face',     name:'Happy Face',       emoji:'😊', rarity:'common',    borderImg:'/image/b10.png' },
-  { id:'coffee_addict',  name:'Coffee Addict',    emoji:'☕', rarity:'common',    borderImg:'/image/b10.png' },
-  { id:'music_lover',    name:'Music Lover',      emoji:'🎵', rarity:'common',    borderImg:'/image/b10.png' },
-  { id:'gamer',          name:'Gamer',            emoji:'🎮', rarity:'common',    borderImg:'/image/b10.png' },
+  // b10 = Pink Sakura / Rose
+  { id:'happy_face',    name:'Harimau Putih Sakura',emoji:'🐅', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
+  { id:'coffee_addict', name:'Coffee Addict',       emoji:'☕', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
+  { id:'music_lover',   name:'Music Lover',         emoji:'🎵', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
+  { id:'gamer',         name:'Gamer',               emoji:'🎮', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
 
   // ── ZONK ────────────────────────────────────────────────────
-  { id:'zonk_rock',      name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk',   borderImg:null },
-  { id:'zonk_snail',     name:'Siput Pelan',        emoji:'🐌', rarity:'zonk',   borderImg:null },
-  { id:'zonk_cloud',     name:'Awan Kosong',         emoji:'☁️', rarity:'zonk',  borderImg:null },
-  { id:'zonk_leaf',      name:'Daun Kering',         emoji:'🍂', rarity:'zonk',  borderImg:null },
-  { id:'zonk_sock',      name:'Kaos Kaki Bolong',    emoji:'🧦', rarity:'zonk',  borderImg:null },
+  { id:'zonk_rock',  name:'Batu Keberuntungan',emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_snail', name:'Siput Pelan',       emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_cloud', name:'Awan Kosong',       emoji:'☁️', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_leaf',  name:'Daun Kering',       emoji:'🍂', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_sock',  name:'Kaos Kaki Bolong',  emoji:'🧦', rarity:'zonk', borderImg:null, glow:null, glow2:null },
 ]
 
 // ─── CONFETTI CANVAS ──────────────────────────────────────────
@@ -161,52 +176,33 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
 
   if (!badge || !badge.borderImg) return null
 
-  const cfg      = RARITY_CFG[badge.rarity] || RARITY_CFG.common
-  // Border 40% lebih besar dari foto profil supaya menonjol keluar
-  const scale    = { sm: 1.45, md: 1.45, lg: 1.45 }[size] ?? 1.45
+  const cfg   = RARITY_CFG[badge.rarity] || RARITY_CFG.common
+  // Pakai glow dari badge (warna border) — fallback ke rarity cfg
+  const glow  = badge.glow  || cfg.glow
+  const glow2 = badge.glow2 || cfg.glow2
+  const scale = { sm:1.45, md:1.45, lg:1.45 }[size] ?? 1.45
 
   return (
-    <>
-      {/* Border PNG — center tepat di tengah foto pakai transform */}
-      <motion.img
-        src={badge.borderImg}
-        alt={badge.name}
-        className="absolute pointer-events-none select-none"
-        style={{
-          top:       '50%',
-          left:      '50%',
-          transform: `translate(-50%, -50%) scale(${scale})`,
-          width:     '100%',
-          height:    '100%',
-          objectFit: 'contain',
-          zIndex:    20,
-        }}
-        animate={{ filter: [
-          `drop-shadow(0 0 8px ${cfg.glow2})`,
-          `drop-shadow(0 0 22px ${cfg.glow})`,
-          `drop-shadow(0 0 8px ${cfg.glow2})`,
-        ]}}
-        transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-      />
-      {/* Label emoji rarity — pojok kanan bawah */}
-      <motion.div
-        initial={{ scale:0, rotate:-20 }} animate={{ scale:1, rotate:0 }}
-        transition={{ type:'spring', stiffness:280, damping:14 }}
-        className="absolute pointer-events-none"
-        style={{ bottom: size==='lg'?-8:size==='sm'?-5:-6, right: size==='lg'?-8:size==='sm'?-5:-6, zIndex: 30 }}
-        title={`${badge.name} · ${cfg.label}`}>
-        <span className="rounded-full font-black text-white shadow-lg leading-none flex items-center justify-center"
-          style={{
-            background: cfg.gradBtn,
-            boxShadow:  `0 2px 10px ${cfg.glow}`,
-            width:  size==='lg' ? 22 : size==='sm' ? 14 : 18,
-            height: size==='lg' ? 22 : size==='sm' ? 14 : 18,
-            fontSize: size==='lg' ? 12 : size==='sm' ? 8 : 10,
-          }}>
-          {badge.emoji}
-        </span>
-      </motion.div>
-    </>
+    <motion.img
+      src={badge.borderImg}
+      alt={badge.name}
+      className="absolute pointer-events-none select-none"
+      style={{
+        top:       '50%',
+        left:      '50%',
+        transform: `translate(-50%, -50%) scale(${scale})`,
+        width:     '100%',
+        height:    '100%',
+        objectFit: 'contain',
+        zIndex:    20,
+      }}
+      animate={{ filter: [
+        `drop-shadow(0 0 6px ${glow2})`,
+        `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 8px ${glow2})`,
+        `drop-shadow(0 0 6px ${glow2})`,
+      ]}}
+      transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}
+    />
   )
 }
 
