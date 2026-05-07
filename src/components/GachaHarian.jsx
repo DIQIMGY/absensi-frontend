@@ -155,9 +155,17 @@ function Confetti({ color, run }) {
 // Menampilkan border foto (b1.png - b10.png) di atas foto profil.
 // Foto border harus PNG transparan, bagian tengah bolong supaya foto profil keliatan.
 export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
-  const badge = badges.find(b=>b.id===badgeId) || BADGE_POOL.find(b=>b.id===badgeId)
+  // Selalu merge data dari response backend dengan BADGE_POOL frontend
+  // supaya borderImg selalu tersedia meski backend tidak kirim field itu
+  const badgeFromResponse = badges.find(b => b.id === badgeId)
+  const badgeFromPool     = BADGE_POOL.find(b => b.id === badgeId)
+  const badge = badgeFromPool
+    ? { ...badgeFromPool, ...(badgeFromResponse || {}) }  // pool jadi base, response override
+    : badgeFromResponse
+
   // Tidak render kalau badge tidak ada atau tidak punya borderImg
   if (!badge || !badge.borderImg) return null
+
   const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
   // Seberapa jauh border keluar dari tepi foto profil (px)
   const outsetPx = {sm:5, md:7, lg:10}[size] ?? 7
@@ -165,7 +173,7 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
 
   return (
     <>
-      {/* Foto border PNG — pakai top/left + width/height, JANGAN campur right/bottom */}
+      {/* Foto border PNG — pakai top/left + width/height */}
       <motion.img
         src={badge.borderImg}
         alt={badge.name}
