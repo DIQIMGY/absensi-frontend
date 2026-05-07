@@ -72,19 +72,44 @@ export const RARITY_CFG = {
 }
 
 // ─── BADGE POOL ───────────────────────────────────────────────
+// HARUS SINKRON dengan GachaController.php di backend!
+// id harus sama persis dengan yang ada di backend.
 // borderImg = file foto border kamu (b1.png - b10.png) di /image/
-// Urutan: b1=Legendary, b2=Legendary, b3=Epic, b4=Epic, b5=Rare, b6=Rare, b7=Uncommon, b8=Uncommon, b9=Common, b10=Common
+//
+// Urutan rarity & borderImg:
+//   Legendary : b1.png, b2.png, b3.png
+//   Epic       : b4.png, b5.png, b6.png
+//   Rare       : b7.png, b8.png, b9.png
+//   Common     : b10.png (+ sisanya pakai b10)
+//   Zonk       : tidak pakai border
 export const BADGE_POOL = [
-  { id:'wayang',    name:'Wayang Kulit',          emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png'  },
-  { id:'phoenix',   name:'Phoenix Api Abadi',      emoji:'🔥', rarity:'legendary', borderImg:'/image/b2.png'  },
-  { id:'thor',      name:'Thor Petir & Kilat',     emoji:'⚡', rarity:'epic',      borderImg:'/image/b3.png'  },
-  { id:'griffin',   name:'Griffin Sang Singa',     emoji:'🦁', rarity:'epic',      borderImg:'/image/b4.png'  },
-  { id:'fenrir',    name:'Fenrir Serigala Es',     emoji:'🧊', rarity:'rare',      borderImg:'/image/b5.png'  },
-  { id:'ksatria',   name:'Ksatria Zirah Hitam',    emoji:'⚔️', rarity:'rare',      borderImg:'/image/b6.png'  },
-  { id:'kalajengking', name:'Kalajengking Racun',  emoji:'🦂', rarity:'uncommon',  borderImg:'/image/b7.png'  },
-  { id:'bulan',     name:'Bulan & Bintang',        emoji:'🌙', rarity:'uncommon',  borderImg:'/image/b8.png'  },
-  { id:'oni',       name:'Oni Topeng Iblis',       emoji:'🌀', rarity:'common',    borderImg:'/image/b9.png'  },
-  { id:'harimau',   name:'Harimau Putih Sakura',   emoji:'🐅', rarity:'common',    borderImg:'/image/b10.png' },
+  // ── LEGENDARY ──────────────────────────────────────────────
+  { id:'dragon_scholar', name:'Dragon Scholar',   emoji:'🐉', rarity:'legendary', borderImg:'/image/b1.png' },
+  { id:'galaxy_brain',   name:'Galaxy Brain',     emoji:'🌌', rarity:'legendary', borderImg:'/image/b2.png' },
+  { id:'phoenix_rise',   name:'Phoenix Rise',     emoji:'🔥', rarity:'legendary', borderImg:'/image/b3.png' },
+
+  // ── EPIC ────────────────────────────────────────────────────
+  { id:'star_student',   name:'Star Student',     emoji:'⭐', rarity:'epic',      borderImg:'/image/b4.png' },
+  { id:'night_owl',      name:'Night Owl',        emoji:'🦉', rarity:'epic',      borderImg:'/image/b5.png' },
+  { id:'diamond_mind',   name:'Diamond Mind',     emoji:'💎', rarity:'epic',      borderImg:'/image/b6.png' },
+
+  // ── RARE ────────────────────────────────────────────────────
+  { id:'early_bird',     name:'Early Bird',       emoji:'🐦', rarity:'rare',      borderImg:'/image/b7.png' },
+  { id:'bookworm',       name:'Bookworm',         emoji:'📚', rarity:'rare',      borderImg:'/image/b8.png' },
+  { id:'team_player',    name:'Team Player',      emoji:'🤝', rarity:'rare',      borderImg:'/image/b9.png' },
+
+  // ── COMMON ──────────────────────────────────────────────────
+  { id:'happy_face',     name:'Happy Face',       emoji:'😊', rarity:'common',    borderImg:'/image/b10.png' },
+  { id:'coffee_addict',  name:'Coffee Addict',    emoji:'☕', rarity:'common',    borderImg:'/image/b10.png' },
+  { id:'music_lover',    name:'Music Lover',      emoji:'🎵', rarity:'common',    borderImg:'/image/b10.png' },
+  { id:'gamer',          name:'Gamer',            emoji:'🎮', rarity:'common',    borderImg:'/image/b10.png' },
+
+  // ── ZONK ────────────────────────────────────────────────────
+  { id:'zonk_rock',      name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk',   borderImg:null },
+  { id:'zonk_snail',     name:'Siput Pelan',        emoji:'🐌', rarity:'zonk',   borderImg:null },
+  { id:'zonk_cloud',     name:'Awan Kosong',         emoji:'☁️', rarity:'zonk',  borderImg:null },
+  { id:'zonk_leaf',      name:'Daun Kering',         emoji:'🍂', rarity:'zonk',  borderImg:null },
+  { id:'zonk_sock',      name:'Kaos Kaki Bolong',    emoji:'🧦', rarity:'zonk',  borderImg:null },
 ]
 
 // ─── CONFETTI CANVAS ──────────────────────────────────────────
@@ -256,23 +281,23 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
 
         {/* Badge ATAS TENGAH */}
         <div className="absolute" style={{left:'50%',top:0,transform:'translateX(-50%)'}}>
-          <BadgeCircle borderImg="/image/b1.png" emoji="🎭" rarity="legendary" size={50} delay={0}/>
+          <BadgeCircle borderImg="/image/b1.png" emoji="🐉" rarity="legendary" size={50} delay={0}/>
         </div>
         {/* Badge KIRI ATAS */}
         <div className="absolute" style={{left:10,top:58}}>
-          <BadgeCircle borderImg="/image/b5.png" emoji="🧊" rarity="rare" size={44} delay={0.5}/>
+          <BadgeCircle borderImg="/image/b7.png" emoji="🐦" rarity="rare" size={44} delay={0.5}/>
         </div>
         {/* Badge KANAN ATAS */}
         <div className="absolute" style={{right:10,top:58}}>
-          <BadgeCircle borderImg="/image/b3.png" emoji="⚡" rarity="epic" size={44} delay={0.2}/>
+          <BadgeCircle borderImg="/image/b4.png" emoji="⭐" rarity="epic" size={44} delay={0.2}/>
         </div>
         {/* Badge KIRI BAWAH */}
         <div className="absolute" style={{left:18,bottom:18}}>
-          <BadgeCircle borderImg="/image/b9.png" emoji="🌀" rarity="common" size={38} delay={1.0}/>
+          <BadgeCircle borderImg="/image/b10.png" emoji="😊" rarity="common" size={38} delay={1.0}/>
         </div>
         {/* Badge KANAN BAWAH */}
         <div className="absolute" style={{right:18,bottom:18}}>
-          <BadgeCircle borderImg="/image/b7.png" emoji="🦂" rarity="uncommon" size={38} delay={0.7}/>
+          <BadgeCircle borderImg="/image/b5.png" emoji="🦉" rarity="epic" size={38} delay={0.7}/>
         </div>
 
         {/* KOTAK KADO — tengah */}
