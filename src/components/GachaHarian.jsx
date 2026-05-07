@@ -184,6 +184,7 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
           height: totalSize,
           objectFit: 'contain',
           zIndex: 20,
+          borderRadius: '50%',
         }}
         animate={{ filter: [
           `drop-shadow(0 0 6px ${cfg.glow2})`,

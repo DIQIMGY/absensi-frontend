@@ -44,7 +44,7 @@ const getStreakTier = (s) => {
   if (s >= 50) return { accent:'#dc2626', soft:'rgba(220,38,38,0.10)',  label:'Membara', emoji:'??', next:`${75-s} hari ke Legenda` }
   if (s >= 20) return { accent:'#ea580c', soft:'rgba(234,88,12,0.10)',  label:'Konsisten',emoji:'??', next:`${50-s} hari ke Membara` }
   if (s >= 1)  return { accent:'#d97706', soft:'rgba(217,119,6,0.10)',  label:'Semangat',emoji:'?', next:`${20-s} hari ke Konsisten` }
-  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',   emoji:'·',  next:'Hadir hari ini untuk mulai' }
+  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',   emoji:'ï¿½',  next:'Hadir hari ini untuk mulai' }
 }
 
 const Avatar = ({ src, name, size = 32, className = '' }) => {
@@ -133,7 +133,7 @@ export default function SiswaDashboard() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // Auto-polling setiap 30 detik — supaya dashboard update otomatis setelah sync fingerprint
+  // Auto-polling setiap 30 detik ï¿½ supaya dashboard update otomatis setelah sync fingerprint
   useEffect(() => {
     const poll = setInterval(() => fetchAll(true), 30000)
     return () => clearInterval(poll)
@@ -235,7 +235,11 @@ export default function SiswaDashboard() {
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/15">
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 overflow-hidden shadow-lg bg-white/15 ${
+                  activeBadge
+                    ? 'rounded-full ring-0'
+                    : 'rounded-2xl ring-2 ring-white/25'
+                }`}>
                   {data?.siswa?.foto
                     ? <img src={data.siswa.foto} alt="foto" className="w-full h-full object-cover"/>
                     : <div className="w-full h-full flex items-center justify-center text-xl font-black text-white/80">
@@ -254,13 +258,13 @@ export default function SiswaDashboard() {
                 <div className="flex items-center gap-1.5 mb-0.5">
                   {greeting.icon}
                   <span className="text-white/55 text-[11px]">Selamat {greeting.text}</span>
-                  <span className="text-white/25 text-[11px]">·</span>
+                  <span className="text-white/25 text-[11px]">ï¿½</span>
                   <span className="text-white/45 text-[11px] font-mono">{now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span>
                 </div>
                 <h1 className="text-base sm:text-lg font-black text-white leading-tight truncate">{data?.siswa?.nama||user?.name||'Siswa'}</h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-white/40 text-[10px] flex items-center gap-1"><Shield size={8}/>{data?.siswa?.nis||'-'}</span>
-                  <span className="text-white/25 text-[10px]">·</span>
+                  <span className="text-white/25 text-[10px]">ï¿½</span>
                   <span className="text-white/40 text-[10px] flex items-center gap-1"><GraduationCap size={8}/>{data?.siswa?.kelas||'-'}</span>
                 </div>
               </div>
@@ -286,12 +290,12 @@ export default function SiswaDashboard() {
                   statusHariIni==='terlambat'?'bg-amber-400 shadow-[0_0_6px_#fbbf24]':
                   statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/40 animate-pulse'}`}/>
                 <div className="flex-1 min-w-0">
-                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status · </span>
+                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status ï¿½ </span>
                   <span className="text-white font-black text-sm capitalize">
                     {statusHariIni==='belum'?'Belum Absen':cfgHariIni?.label||statusHariIni}
                   </span>
                   {absenHariIni?.jam_masuk && absenHariIni.jam_masuk!=='-' &&
-                    <span className="text-white/45 font-mono text-xs ml-1.5">· {absenHariIni.jam_masuk}</span>}
+                    <span className="text-white/45 font-mono text-xs ml-1.5">ï¿½ {absenHariIni.jam_masuk}</span>}
                 </div>
               </div>
               {statusHariIni==='belum' && (
@@ -485,13 +489,13 @@ export default function SiswaDashboard() {
                         'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                         <p className="text-[9px] text-slate-400 uppercase tracking-wide mb-0.5">Masuk</p>
                         <p className="text-sm font-black tabular-nums text-slate-800 dark:text-slate-100">
-                          {absenHariIni.jam_masuk && absenHariIni.jam_masuk!=='-' ? absenHariIni.jam_masuk : '—'}
+                          {absenHariIni.jam_masuk && absenHariIni.jam_masuk!=='-' ? absenHariIni.jam_masuk : 'ï¿½'}
                         </p>
                       </div>
                       <div className="rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-800/50">
                         <p className="text-[9px] text-slate-400 uppercase tracking-wide mb-0.5">Pulang</p>
                         <p className="text-sm font-black tabular-nums text-slate-700 dark:text-slate-300">
-                          {pengaturan?.jam_pulang?.substring(0,5) || '—'}
+                          {pengaturan?.jam_pulang?.substring(0,5) || 'ï¿½'}
                         </p>
                       </div>
                     </div>
@@ -773,7 +777,7 @@ export default function SiswaDashboard() {
                     terlambat: {bg:'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-700/50',tc:'text-amber-700 dark:text-amber-300',l:'T'},
                     izin:      {bg:'bg-violet-100 dark:bg-violet-900/40 border-violet-200 dark:border-violet-700/50',tc:'text-violet-700 dark:text-violet-300',l:'I'},
                     alpha:     {bg:'bg-rose-100 dark:bg-rose-900/40 border-rose-200 dark:border-rose-700/50',tc:'text-rose-700 dark:text-rose-300',l:'A'},
-                  }[r.status] || {bg:'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',tc:'text-slate-500',l:'·'}
+                  }[r.status] || {bg:'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',tc:'text-slate-500',l:'ï¿½'}
                   const day = r.tanggal ? r.tanggal.split(' ')[0] : `H${i+1}`
                   return (
                     <motion.div key={i} initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}}
@@ -786,8 +790,8 @@ export default function SiswaDashboard() {
                 })}
                 {Array.from({length:Math.max(0,7-riwayat.length)}).map((_,i)=>(
                   <div key={`e${i}`} className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <span className="text-[7px] text-slate-300 dark:text-slate-600">—</span>
-                    <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
+                    <span className="text-[7px] text-slate-300 dark:text-slate-600">ï¿½</span>
+                    <span className="text-xs text-slate-300 dark:text-slate-600">ï¿½</span>
                   </div>
                 ))}
               </div>
@@ -896,7 +900,7 @@ export default function SiswaDashboard() {
                           {label:'Alpha',pos:ranking.sekolah?.posisi_ranking?.alpha,color:'text-rose-600 dark:text-rose-400',bg:'bg-rose-50 dark:bg-rose-900/20',border:'border-rose-100 dark:border-rose-800/40'}].map((item,i)=>(
                           <div key={i} className={`rounded-xl px-2 py-1.5 ${item.bg} border ${item.border} text-center`}>
                             <p className="text-[8px] text-slate-400 mb-0.5">{item.label}</p>
-                            <p className={`text-sm font-black ${item.color}`}>{item.pos?`#${item.pos}`:'—'}</p>
+                            <p className={`text-sm font-black ${item.color}`}>{item.pos?`#${item.pos}`:'ï¿½'}</p>
                           </div>
                         ))}
                       </div>
@@ -1000,7 +1004,7 @@ export default function SiswaDashboard() {
           </div>
 
 
-          {/* Gacha Harian — floating di pojok kanan atas */}
+          {/* Gacha Harian ï¿½ floating di pojok kanan atas */}
           <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
             setActiveBadge(newBadgeId)
             setOwnedBadges(newBadges || [])
