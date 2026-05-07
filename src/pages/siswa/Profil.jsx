@@ -42,6 +42,7 @@ export default function SiswaProfil() {
   const [previewUrl, setPreviewUrl] = useState(null)
   const [coverFile, setCoverFile] = useState(null)
   const [coverPreview, setCoverPreview] = useState(null)
+  const [coverType, setCoverType] = useState('image') // 'image' | 'video'
   const [activeTab, setActiveTab] = useState('profil')
   const [activeBadge, setActiveBadge] = useState(null)
   const [ownedBadges, setOwnedBadges] = useState([])
@@ -103,10 +104,33 @@ export default function SiswaProfil() {
 
   const handleCoverChange = (e) => {
     const file = e.target.files[0]; if (!file) return
-    if (file.size > 5 * 1024 * 1024) { toast.error('Maks 5MB'); return }
-    if (!file.type.startsWith('image/')) { toast.error('Harus gambar'); return }
-    setCoverFile(file)
-    const r = new FileReader(); r.onloadend = () => setCoverPreview(r.result); r.readAsDataURL(file)
+    const isVideo = file.type.startsWith('video/')
+    const isImage = file.type.startsWith('image/')
+    if (!isVideo && !isImage) { toast.error('Harus foto atau video'); return }
+    if (isImage && file.size > 5 * 1024 * 1024) { toast.error('Foto maks 5MB'); return }
+    if (isVideo && file.size > 50 * 1024 * 1024) { toast.error('Video maks 50MB'); return }
+
+    if (isVideo) {
+      // Validasi durasi max 30 detik
+      const url = URL.createObjectURL(file)
+      const vid = document.createElement('video')
+      vid.preload = 'metadata'
+      vid.onloadedmetadata = () => {
+        URL.revokeObjectURL(url)
+        if (vid.duration > 31) {
+          toast.error('Video maksimal 30 detik')
+          return
+        }
+        setCoverFile(file)
+        setCoverPreview(URL.createObjectURL(file))
+        setCoverType('video')
+      }
+      vid.src = url
+    } else {
+      setCoverFile(file)
+      setCoverPreview(URL.createObjectURL(file))
+      setCoverType('image')
+    }
   }
 
   const handleViewQr = async () => {
@@ -175,9 +199,13 @@ export default function SiswaProfil() {
         {/* Cover photo - bisa di-upload */}
         <div className="relative w-full aspect-video overflow-hidden rounded-t-2xl group">
           {coverPreview ? (
-            <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
+            coverType === 'video'
+              ? <video src={coverPreview} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
+              : <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profil?.foto_cover_url ? (
-            <img src={profil.foto_cover_url} alt="cover" className="w-full h-full object-cover"/>
+            profil?.cover_type === 'video'
+              ? <video src={profil.foto_cover_url} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
+              : <img src={profil.foto_cover_url} alt="cover" className="w-full h-full object-cover"/>
           ) : (
             <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#3b0764 0%,#4c1d95 40%,#5b21b6 70%,#6d28d9 100%)' }}>
               <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'18px 18px' }}/>
@@ -188,10 +216,32 @@ export default function SiswaProfil() {
           {editMode && (
             <label className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer">
               <div className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-xl border border-white/20 text-white text-xs font-semibold">
-                <Camera size={14}/> Ubah Foto Cover
+                <Camera size={14}/> Ubah Cover (Foto/Video ≤30 detik)
               </div>
-              <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange}/>
+              <input type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/mov" onChange={handleCoverChange}/>
             </label>
+          )}
+          {/* Tombol hapus cover — muncul saat edit dan ada cover */}
+          {editMode && (coverPreview || profil?.foto_cover_url) && (
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.preventDefault()
+                if (coverPreview) {
+                  // Batal preview saja, belum tersimpan
+                  setCoverFile(null); setCoverPreview(null); setCoverType('image')
+                } else {
+                  // Hapus dari database
+                  try {
+                    await siswaApi.hapusFotoCover()
+                    toast.success('Cover dihapus')
+                    fetchProfil()
+                  } catch { toast.error('Gagal menghapus cover') }
+                }
+              }}
+              className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all border border-white/20 z-10">
+              <X size={14}/>
+            </button>
           )}
         </div>
 
@@ -229,7 +279,7 @@ export default function SiswaProfil() {
                 {saving ? <Loader size={13} className="animate-spin"/> : <Save size={13}/>}
                 {saving ? 'Simpan...' : 'Simpan'}
               </button>
-              <button onClick={() => { setEditMode(false); setSelectedFile(null); setPreviewUrl(null); setCoverFile(null); setCoverPreview(null) }} className="p-2 rounded-full border-2 border-slate-300 dark:border-slate-600 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all bg-white dark:bg-slate-900">
+              <button onClick={() => { setEditMode(false); setSelectedFile(null); setPreviewUrl(null); setCoverFile(null); setCoverPreview(null); setCoverType('image') }} className="p-2 rounded-full border-2 border-slate-300 dark:border-slate-600 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all bg-white dark:bg-slate-900">
                 <X size={14}/>
               </button>
             </>

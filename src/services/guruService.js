@@ -19,6 +19,7 @@ export const guruApi = {
   updateFotoCover: (data) => api.post('/guru/profil/foto-cover', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  hapusFotoCover: () => api.delete('/guru/profil/foto-cover'),
   getQrCode: () => api.get('/guru/profil/qr'),
   
   // Ranking & Statistik

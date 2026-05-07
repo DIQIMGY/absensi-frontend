@@ -25,6 +25,7 @@ export const siswaApi = {
   updateFotoCover: (data) => api.post('/siswa/profil/foto-cover', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  hapusFotoCover: () => api.delete('/siswa/profil/foto-cover'),
 
   // Kampus Impian
   getKampusImpian: () => api.get('/siswa/kampus-impian'),

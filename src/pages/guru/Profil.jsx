@@ -35,6 +35,7 @@ export default function GuruProfil() {
   const [fotoPreview, setFotoPreview] = useState(null)
   const [coverFile, setCoverFile] = useState(null)
   const [coverPreview, setCoverPreview] = useState(null)
+  const [coverType, setCoverType] = useState('image')
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('profil')
   const [downloading, setDownloading] = useState(false)
@@ -74,9 +75,29 @@ export default function GuruProfil() {
 
   const handleCoverChange = (e) => {
     const file = e.target.files[0]; if (!file) return
-    if (file.size > 5 * 1024 * 1024) { toast.error('Maks 5MB'); return }
-    if (!file.type.startsWith('image/')) { toast.error('Harus gambar'); return }
-    setCoverFile(file); setCoverPreview(URL.createObjectURL(file))
+    const isVideo = file.type.startsWith('video/')
+    const isImage = file.type.startsWith('image/')
+    if (!isVideo && !isImage) { toast.error('Harus foto atau video'); return }
+    if (isImage && file.size > 5 * 1024 * 1024) { toast.error('Foto maks 5MB'); return }
+    if (isVideo && file.size > 50 * 1024 * 1024) { toast.error('Video maks 50MB'); return }
+
+    if (isVideo) {
+      const url = URL.createObjectURL(file)
+      const vid = document.createElement('video')
+      vid.preload = 'metadata'
+      vid.onloadedmetadata = () => {
+        URL.revokeObjectURL(url)
+        if (vid.duration > 31) { toast.error('Video maksimal 30 detik'); return }
+        setCoverFile(file)
+        setCoverPreview(URL.createObjectURL(file))
+        setCoverType('video')
+      }
+      vid.src = url
+    } else {
+      setCoverFile(file)
+      setCoverPreview(URL.createObjectURL(file))
+      setCoverType('image')
+    }
   }
 
   const handleCancel = () => {
@@ -84,7 +105,7 @@ export default function GuruProfil() {
     setFormData({ nama_lengkap: profile.nama_lengkap||'', jenis_kelamin: profile.jenis_kelamin||'', tanggal_lahir: profile.tanggal_lahir||'', alamat: profile.alamat||'', no_hp: profile.no_hp||'' })
     if (fotoPreview?.startsWith('blob:')) URL.revokeObjectURL(fotoPreview)
     setFotoFile(null); setFotoPreview(profile.foto)
-    setCoverFile(null); setCoverPreview(null)
+    setCoverFile(null); setCoverPreview(null); setCoverType('image')
   }
 
   const handleSave = async () => {
@@ -102,7 +123,7 @@ export default function GuruProfil() {
       const d = res.data.data
       updateUser({ ...user, guru: d, foto: d.foto })
       toast.success('Profil berhasil diperbarui')
-      setIsEditing(false); setFotoFile(null); setCoverFile(null); setCoverPreview(null)
+      setIsEditing(false); setFotoFile(null); setCoverFile(null); setCoverPreview(null); setCoverType('image')
       fetchProfile()
     } catch (e) { toast.error(e.response?.data?.message || 'Gagal memperbarui profil') }
     finally { setSaving(false) }
@@ -195,9 +216,13 @@ export default function GuruProfil() {
         {/* Cover photo */}
         <div className="relative w-full aspect-video overflow-hidden rounded-t-2xl">
           {coverPreview ? (
-            <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
+            coverType === 'video'
+              ? <video src={coverPreview} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
+              : <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profile?.foto_cover ? (
-            <img src={profile.foto_cover} alt="cover" className="w-full h-full object-cover"/>
+            profile?.cover_type === 'video'
+              ? <video src={profile.foto_cover} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
+              : <img src={profile.foto_cover} alt="cover" className="w-full h-full object-cover"/>
           ) : (
             <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#064e3b 0%,#065f46 40%,#0f766e 70%,#0e7490 100%)' }}>
               <div className="absolute inset-0 opacity-[0.07]"
@@ -210,10 +235,30 @@ export default function GuruProfil() {
           {isEditing && (
             <label className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer">
               <div className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-xl border border-white/20 text-white text-xs font-semibold">
-                <Camera size={14}/> Ubah Foto Cover
+                <Camera size={14}/> Ubah Cover (Foto/Video ≤30 detik)
               </div>
-              <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange}/>
+              <input type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/mov" onChange={handleCoverChange}/>
             </label>
+          )}
+          {/* Tombol hapus cover */}
+          {isEditing && (coverPreview || profile?.foto_cover) && (
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.preventDefault()
+                if (coverPreview) {
+                  setCoverFile(null); setCoverPreview(null); setCoverType('image')
+                } else {
+                  try {
+                    await guruApi.hapusFotoCover()
+                    toast.success('Cover dihapus')
+                    fetchProfile()
+                  } catch { toast.error('Gagal menghapus cover') }
+                }
+              }}
+              className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all border border-white/20 z-10">
+              <X size={14}/>
+            </button>
           )}
         </div>
 
