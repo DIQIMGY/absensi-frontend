@@ -156,14 +156,16 @@ function Confetti({ color, run }) {
 // Foto border harus PNG transparan, bagian tengah bolong supaya foto profil keliatan.
 export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
   const badge = badges.find(b=>b.id===badgeId) || BADGE_POOL.find(b=>b.id===badgeId)
-  if (!badge) return null
+  // Tidak render kalau badge tidak ada atau tidak punya borderImg
+  if (!badge || !badge.borderImg) return null
   const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
   // Seberapa jauh border keluar dari tepi foto profil (px)
   const outsetPx = {sm:5, md:7, lg:10}[size] ?? 7
+  const totalSize = `calc(100% + ${outsetPx * 2}px)`
 
   return (
     <>
-      {/* Foto border PNG — posisi absolute keluar dari container foto */}
+      {/* Foto border PNG — pakai top/left + width/height, JANGAN campur right/bottom */}
       <motion.img
         src={badge.borderImg}
         alt={badge.name}
@@ -171,14 +173,11 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
         style={{
           top:    -outsetPx,
           left:   -outsetPx,
-          right:  -outsetPx,
-          bottom: -outsetPx,
-          width:  `calc(100% + ${outsetPx * 2}px)`,
-          height: `calc(100% + ${outsetPx * 2}px)`,
+          width:  totalSize,
+          height: totalSize,
           objectFit: 'fill',
           zIndex: 20,
           borderRadius: 'inherit',
-          filter: `drop-shadow(0 0 8px ${cfg.glow2})`,
         }}
         animate={{ filter: [
           `drop-shadow(0 0 6px ${cfg.glow2})`,
