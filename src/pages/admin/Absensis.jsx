@@ -314,11 +314,20 @@ export default function Absensis() {
     {
       header: 'Metode',
       accessor: 'metode',
-      cell: (row) => (
-        <span className="hidden xl:inline-block text-xs sm:text-sm text-slate-600 dark:text-slate-300 capitalize truncate px-2 py-1 bg-slate-100 dark:bg-[#1F3A44]/60 rounded-lg">
-          {row.metode === 'qr_code' ? 'QR Code' : row.metode}
-        </span>
-      ),
+      cell: (row) => {
+        const metodeConfig = {
+          manual:      { label: 'Manual',      bg: 'bg-slate-100 dark:bg-slate-800',           text: 'text-slate-600 dark:text-slate-300' },
+          qr_code:     { label: 'QR Code',     bg: 'bg-violet-100 dark:bg-violet-900/30',      text: 'text-violet-600 dark:text-violet-300' },
+          fingerprint: { label: '🖐 Sidik Jari', bg: 'bg-cyan-100 dark:bg-cyan-900/30',         text: 'text-cyan-700 dark:text-cyan-300' },
+          sistem:      { label: 'Sistem',      bg: 'bg-slate-100 dark:bg-slate-800',           text: 'text-slate-500 dark:text-slate-400' },
+        }
+        const cfg = metodeConfig[row.metode] || metodeConfig.manual
+        return (
+          <span className={`hidden xl:inline-block text-xs font-medium px-2 py-1 rounded-lg ${cfg.bg} ${cfg.text}`}>
+            {cfg.label}
+          </span>
+        )
+      },
     },
     {
       header: 'Tanggal',
@@ -857,11 +866,11 @@ export default function Absensis() {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Status', val: selectedAbsensi.status, badge: true },
-                    { label: 'Metode', val: selectedAbsensi.metode || '-' },
+                    { label: 'Metode', val: selectedAbsensi.metode || '-', metodeBadge: true },
                     { label: 'Jam Masuk', val: selectedAbsensi.jam_masuk ? selectedAbsensi.jam_masuk.substring(0,5) : '-' },
                     { label: 'Keterlambatan', val: selectedAbsensi.menit_terlambat ? `${selectedAbsensi.menit_terlambat} menit` : '-' },
                     { label: 'Keterangan', val: selectedAbsensi.keterangan || '-', full: true },
-                  ].map(({ label, val, badge, full }) => (
+                  ].map(({ label, val, badge, metodeBadge, full }) => (
                     <div key={label} className={`bg-slate-50 dark:bg-slate-800 rounded-xl p-3 ${full ? 'col-span-2' : ''}`}>
                       <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">{label}</p>
                       {badge ? (
@@ -872,6 +881,15 @@ export default function Absensis() {
                           val === 'sakit'     ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
                           'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
                         }`}>{val?.charAt(0).toUpperCase() + val?.slice(1)}</span>
+                      ) : metodeBadge ? (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold ${
+                          val === 'fingerprint' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300' :
+                          val === 'qr_code'     ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300' :
+                          val === 'manual'      ? 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300' :
+                          'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                        }`}>
+                          {val === 'fingerprint' ? '🖐 Sidik Jari' : val === 'qr_code' ? 'QR Code' : val?.charAt(0).toUpperCase() + val?.slice(1)}
+                        </span>
                       ) : (
                         <p className="text-sm font-medium text-slate-800 dark:text-white">{val}</p>
                       )}

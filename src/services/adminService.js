@@ -181,6 +181,14 @@ export const adminApi = {
     responseType: 'blob' 
   }),
 
+  // Fingerprint ZKTeco
+  getFingerprintStatus: () => api.get('/admin/fingerprint/status'),
+  testFingerprintConnection: () => api.get('/admin/fingerprint/test'),
+  getFingerprintUsers: () => api.get('/admin/fingerprint/users'),
+  getFingerprintLogs: () => api.get('/admin/fingerprint/logs'),
+  syncFingerprint: (params) => api.post('/admin/fingerprint/sync', params),
+  clearFingerprintLogs: () => api.delete('/admin/fingerprint/logs'),
+
   // Rekomendasi Tidak Naik Kelas dari Guru
   getRekomendasiNaikKelas: (params) => api.get('/admin/rekomendasi-naik-kelas', { params }),
   updateStatusRekomendasi: (id, data) => api.put(`/admin/rekomendasi-naik-kelas/${id}/status`, data),

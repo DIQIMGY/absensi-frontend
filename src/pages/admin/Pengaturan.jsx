@@ -6,6 +6,7 @@ import {
   AlertCircle, XCircle, Info, Shield,
   CheckCircle, Sunrise, Sunset, Timer,
   Image as ImageIcon, Palmtree, Sparkles, Plus, Trash2, CalendarDays, Globe, HelpCircle, Mountain, Award,
+  Fingerprint, Wifi, WifiOff, RefreshCw, Zap, Activity, Server,
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
@@ -27,6 +28,10 @@ const TABS = [
     grad: 'from-teal-500 to-cyan-500', light: 'bg-teal-50 dark:bg-teal-900/20',
     border: 'border-teal-200 dark:border-teal-800', ring: 'focus:ring-teal-500',
     text: 'text-teal-600 dark:text-teal-400' },
+  { id: 'fingerprint', label: 'Fingerprint', icon: Fingerprint, accent: 'cyan',
+    grad: 'from-cyan-500 to-blue-500', light: 'bg-cyan-50 dark:bg-cyan-900/20',
+    border: 'border-cyan-200 dark:border-cyan-800', ring: 'focus:ring-cyan-500',
+    text: 'text-cyan-600 dark:text-cyan-400' },
   { id: 'libur', label: 'Libur', icon: Palmtree, accent: 'amber',
     grad: 'from-amber-500 to-orange-500', light: 'bg-amber-50 dark:bg-amber-900/20',
     border: 'border-amber-200 dark:border-amber-800', ring: 'focus:ring-amber-500',
@@ -79,6 +84,14 @@ export default function Pengaturan() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('absensi')
   const { updatePengaturan } = usePengaturanStore()
+
+  // Fingerprint state
+  const [fpTesting, setFpTesting] = useState(false)
+  const [fpSyncing, setFpSyncing] = useState(false)
+  const [fpTestResult, setFpTestResult] = useState(null)
+  const [fpSyncResult, setFpSyncResult] = useState(null)
+  const [fpLastSync, setFpLastSync] = useState(null)
+
   const [formData, setFormData] = useState({
     jam_masuk: '07:15', jam_pulang: '15:00', jam_buka_absen: '06:00',
     batas_keterlambatan: 15,
@@ -111,6 +124,12 @@ export default function Pengaturan() {
     prestasi_judul: '',
     prestasi_deskripsi: '',
     prestasi_siswa: [],
+    // Fingerprint
+    fingerprint_ip: '',
+    fingerprint_port: 4370,
+    fingerprint_enabled: false,
+    fingerprint_auto_sync: false,
+    fingerprint_sync_interval: '5',
   })
   const [previewLogo, setPreviewLogo] = useState(null)
   const [previewVideoDashboard, setPreviewVideoDashboard] = useState(null)
@@ -162,7 +181,14 @@ export default function Pengaturan() {
         event_fotos: Array.isArray(d.event_fotos) ? d.event_fotos : [],
         hapus_foto_libur: '0', hapus_foto_libur_2: '0', hapus_foto_libur_3: '0',
         hapus_foto_libur_4: '0', hapus_foto_libur_bg: '0',
+        // Fingerprint
+        fingerprint_ip: d.fingerprint_ip || '',
+        fingerprint_port: d.fingerprint_port || 4370,
+        fingerprint_enabled: d.fingerprint_enabled || false,
+        fingerprint_auto_sync: d.fingerprint_auto_sync || false,
+        fingerprint_sync_interval: d.fingerprint_sync_interval || '5',
       })
+      setFpLastSync(d.fingerprint_last_sync || null)
       if (d.logo_sekolah) setPreviewLogo(d.logo_sekolah)
       if (d.video_dashboard) setPreviewVideoDashboard(d.video_dashboard)
       set('budaya_info', d.budaya_info || { judul:'', deskripsi:'', pertanyaan:'', jawaban_benar:0, pilihan:['','',''] })
@@ -203,6 +229,8 @@ export default function Pengaturan() {
         else if (['foto_libur','foto_libur_2','foto_libur_3','foto_libur_4','logo_sekolah','video_dashboard'].includes(k) && formData[k] instanceof File) fd.append(k, formData[k])
         else if (['foto_libur','foto_libur_2','foto_libur_3','foto_libur_4','logo_sekolah','video_dashboard'].includes(k)) { /* skip non-File */ }
         else if (k === 'status_libur') fd.append(k, formData[k] ? '1' : '0')
+        else if (k === 'fingerprint_enabled') fd.append(k, formData[k] ? '1' : '0')
+        else if (k === 'fingerprint_auto_sync') fd.append(k, formData[k] ? '1' : '0')
         else if (k === 'events') fd.append(k, JSON.stringify(formData[k] || []))
         else if (k === 'budaya_info') fd.append(k, JSON.stringify(formData[k] || {}))
         else if (k === 'budaya_video' && formData[k] instanceof File) fd.append(k, formData[k])
@@ -492,6 +520,250 @@ export default function Pengaturan() {
                   </div>
               </div>
             </div>
+            </motion.div>
+          )}
+
+          {/* ══ TAB: FINGERPRINT ══ */}
+          {activeTab === 'fingerprint' && (
+            <motion.div key="fingerprint" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }}
+              transition={{ duration:0.2 }} className="space-y-4">
+
+              {/* Enable Toggle */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all
+                        ${formData.fingerprint_enabled ? 'bg-cyan-100 dark:bg-cyan-900/40' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                        <Fingerprint size={20} className={formData.fingerprint_enabled ? 'text-cyan-500' : 'text-slate-400'} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Aktifkan Fingerprint</p>
+                        <p className="text-xs text-slate-400">
+                          {formData.fingerprint_enabled ? '✅ Absensi sidik jari aktif' : 'Fingerprint belum diaktifkan'}
+                        </p>
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => set('fingerprint_enabled', !formData.fingerprint_enabled)}
+                      className={`relative w-12 h-6 rounded-full transition-all flex-shrink-0
+                        ${formData.fingerprint_enabled ? 'bg-cyan-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all
+                        ${formData.fingerprint_enabled ? 'left-6' : 'left-0.5'}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Koneksi */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                  <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+                    <Server size={14} className="text-cyan-600 dark:text-cyan-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Koneksi Mesin</p>
+                    <p className="text-[11px] text-slate-400">ZKTeco MB2000 — LAN</p>
+                  </div>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                        <Wifi size={11} /> IP Address Mesin
+                      </label>
+                      <input type="text" value={formData.fingerprint_ip}
+                        onChange={e => set('fingerprint_ip', e.target.value)}
+                        placeholder="192.168.1.111"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all font-mono" />
+                      <p className="text-[11px] text-slate-400 mt-1">IP mesin fingerprint di jaringan LAN</p>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                        <Activity size={11} /> Port
+                      </label>
+                      <input type="number" value={formData.fingerprint_port}
+                        onChange={e => set('fingerprint_port', parseInt(e.target.value) || 4370)}
+                        placeholder="4370"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all font-mono" />
+                      <p className="text-[11px] text-slate-400 mt-1">Default: 4370</p>
+                    </div>
+                  </div>
+
+                  {/* Test Koneksi */}
+                  <div className="flex items-center gap-3">
+                    <button type="button"
+                      onClick={async () => {
+                        setFpTesting(true); setFpTestResult(null)
+                        try {
+                          const res = await adminApi.testFingerprintConnection()
+                          setFpTestResult({ success: true, data: res.data.data })
+                          toast.success('Koneksi ke mesin berhasil!')
+                        } catch (err) {
+                          setFpTestResult({ success: false, msg: err.response?.data?.message || 'Gagal terhubung' })
+                          toast.error('Gagal terhubung ke mesin fingerprint')
+                        } finally { setFpTesting(false) }
+                      }}
+                      disabled={fpTesting || !formData.fingerprint_ip}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                      {fpTesting ? <RefreshCw size={14} className="animate-spin" /> : <Wifi size={14} />}
+                      {fpTesting ? 'Menghubungkan...' : 'Test Koneksi'}
+                    </button>
+                    {fpTestResult && (
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
+                        fpTestResult.success
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                      }`}>
+                        {fpTestResult.success ? <CheckCircle size={13} /> : <XCircle size={13} />}
+                        {fpTestResult.success
+                          ? `✓ ${fpTestResult.data?.device_name || 'Terhubung'} — Serial: ${fpTestResult.data?.serial || '-'}`
+                          : fpTestResult.msg}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Auto Sync */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                  <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+                    <Zap size={14} className="text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Sinkronisasi</p>
+                    <p className="text-[11px] text-slate-400">Tarik data absensi dari mesin ke sistem</p>
+                  </div>
+                </div>
+                <div className="p-5 space-y-4">
+                  {/* Last sync info */}
+                  {fpLastSync && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl border border-cyan-100 dark:border-cyan-800">
+                      <CheckCircle size={13} className="text-cyan-500 flex-shrink-0" />
+                      <p className="text-xs text-cyan-700 dark:text-cyan-300">
+                        Sync terakhir: <span className="font-semibold">{new Date(fpLastSync).toLocaleString('id-ID')}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Manual Sync Button */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button type="button"
+                      onClick={async () => {
+                        setFpSyncing(true); setFpSyncResult(null)
+                        try {
+                          const res = await adminApi.syncFingerprint({ today_only: true, force: true })
+                          const d = res.data.data
+                          setFpSyncResult(d)
+                          setFpLastSync(new Date().toISOString())
+                          toast.success(`Sync selesai! ${d.berhasil} absensi berhasil disimpan.`)
+                        } catch (err) {
+                          toast.error(err.response?.data?.message || 'Sync gagal')
+                        } finally { setFpSyncing(false) }
+                      }}
+                      disabled={fpSyncing || !formData.fingerprint_enabled}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                      {fpSyncing ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                      {fpSyncing ? 'Menyinkronkan...' : 'Sync Sekarang (Hari Ini)'}
+                    </button>
+                    <button type="button"
+                      onClick={async () => {
+                        setFpSyncing(true); setFpSyncResult(null)
+                        try {
+                          const res = await adminApi.syncFingerprint({ today_only: false, force: true })
+                          const d = res.data.data
+                          setFpSyncResult(d)
+                          setFpLastSync(new Date().toISOString())
+                          toast.success(`Sync semua log selesai! ${d.berhasil} absensi berhasil disimpan.`)
+                        } catch (err) {
+                          toast.error(err.response?.data?.message || 'Sync gagal')
+                        } finally { setFpSyncing(false) }
+                      }}
+                      disabled={fpSyncing || !formData.fingerprint_enabled}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700">
+                      <RefreshCw size={14} />
+                      Sync Semua Log
+                    </button>
+                  </div>
+
+                  {/* Sync Result */}
+                  {fpSyncResult && (
+                    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                      className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                      {[
+                        { label: 'Berhasil', val: fpSyncResult.berhasil, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                        { label: 'Sudah Absen', val: fpSyncResult.sudah_absen, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+                        { label: 'Tdk Ditemukan', val: fpSyncResult.tidak_ditemukan, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/20' },
+                        { label: 'Gagal', val: fpSyncResult.gagal, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-slate-800' },
+                      ].map(item => (
+                        <div key={item.label} className={`${item.bg} rounded-xl p-3 text-center`}>
+                          <p className={`text-xl font-black ${item.color}`}>{item.val}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{item.label}</p>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+
+                  {/* Auto Sync Toggle */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Auto Sync (via Scheduler)</p>
+                      <p className="text-xs text-slate-400">Sync otomatis setiap beberapa menit (butuh cron job)</p>
+                    </div>
+                    <button type="button" onClick={() => set('fingerprint_auto_sync', !formData.fingerprint_auto_sync)}
+                      className={`relative w-12 h-6 rounded-full transition-all flex-shrink-0
+                        ${formData.fingerprint_auto_sync ? 'bg-violet-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all
+                        ${formData.fingerprint_auto_sync ? 'left-6' : 'left-0.5'}`} />
+                    </button>
+                  </div>
+                  {formData.fingerprint_auto_sync && (
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5 block">
+                        Interval Sync (menit)
+                      </label>
+                      <div className="flex gap-2">
+                        {['1','3','5','10','15','30'].map(v => (
+                          <button key={v} type="button"
+                            onClick={() => set('fingerprint_sync_interval', v)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all
+                              ${formData.fingerprint_sync_interval === v
+                                ? 'bg-violet-500 text-white shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600'}`}>
+                            {v}m
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-2xl border border-cyan-200 dark:border-cyan-800 p-4">
+                <div className="flex gap-3">
+                  <Info size={16} className="text-cyan-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1.5 text-xs text-cyan-700 dark:text-cyan-300">
+                    <p className="font-bold text-sm">Cara Kerja Fingerprint</p>
+                    <p>1. Daftarkan siswa ke mesin ZKTeco dengan <strong>User ID = NIS siswa</strong></p>
+                    <p>2. Siswa scan jari di mesin → log tersimpan di mesin</p>
+                    <p>3. Klik <strong>Sync Sekarang</strong> atau aktifkan Auto Sync untuk tarik data ke sistem</p>
+                    <p>4. Data absensi otomatis masuk dengan metode <strong>🖐 Sidik Jari</strong></p>
+                    <p className="pt-1 text-cyan-600 dark:text-cyan-400 font-medium">
+                      ⚡ Auto Sync butuh cron job: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded">* * * * * php artisan schedule:run</code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end">
+                <button type="submit" disabled={saving}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:opacity-60 text-white rounded-xl font-semibold text-sm shadow-lg transition-all">
+                  {saving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+                  {saving ? 'Menyimpan...' : 'Simpan Pengaturan Fingerprint'}
+                </button>
+              </div>
             </motion.div>
           )}
 
