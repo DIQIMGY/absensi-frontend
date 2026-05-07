@@ -247,7 +247,7 @@ export default function SiswaProfil() {
 
         {/* Avatar overlapping cover */}
         <div className="absolute left-4 sm:left-6 -bottom-10 sm:-bottom-12">
-          <div className="relative" style={{padding: 10}}>
+          <div className="relative">
             <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-xl bg-violet-700 ${
               activeBadge && !editMode
                 ? 'ring-0'

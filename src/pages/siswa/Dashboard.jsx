@@ -234,7 +234,7 @@ export default function SiswaDashboard() {
             {/* â”€â”€ ROW 1: Avatar + Info + Refresh â”€â”€ */}
             <div className="flex items-center gap-3">
               {/* Avatar */}
-              <div className="relative flex-shrink-0" style={{padding: 7}}>
+              <div className="relative flex-shrink-0">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden ring-2 ring-white/25 shadow-lg bg-white/15">
                   {data?.siswa?.foto
                     ? <img src={data.siswa.foto} alt="foto" className="w-full h-full object-cover"/>
