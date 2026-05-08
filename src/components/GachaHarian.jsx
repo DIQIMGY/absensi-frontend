@@ -105,12 +105,6 @@ export const BADGE_POOL = [
   // b10 — Lembah Baliem Papua: hijau hutan, coklat tanah, hitam arang, merah bara
   { id:'happy_face',     name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
     glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
-  { id:'coffee_addict',  name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
-  { id:'music_lover',    name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
-  { id:'gamer',          name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
   // b11 — Bromo: hitam, coklat, oranye, pink, ungu, putih asap
   { id:'bromo',          name:'Bromo Sang Penjaga',       emoji:'🌋', rarity:'epic',      borderImg:'/image/b11.png',
     glow:'rgba(220,100,30,0.88)',  glow2:'rgba(160,60,120,0.48)' },
