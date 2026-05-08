@@ -82,7 +82,6 @@ export default function SiswaProfil() {
       setBorderSisaDetik(res.data.border_sisa_detik || 0)
     } catch { /* silent */ }
   }
-
   // Countdown lokal sisa waktu border aktif
   useEffect(() => {
     if (!borderSisaDetik || borderSisaDetik <= 0) return
@@ -703,7 +702,15 @@ export default function SiswaProfil() {
                     const windowAktif    = borderWindow?.border_window_aktif
                     const sudahPilih     = borderWindow?.sudah_pilih
                     const bisaPilihBebas = windowAktif && !sudahPilih
-                    const canInteract    = owned || bisaPilihBebas
+                    // Border yang sudah dipilih via window & masih berlaku (bisa equip/unequip ulang)
+                    const isWindowBadge  = sudahPilih && borderSisaDetik > 0 && isActive
+                    // Bisa interact: punya dari gacha, bisa pilih bebas, atau ini border window aktif
+                    const windowBadgeOwned = sudahPilih && borderSisaDetik > 0 && (
+                      // Cek apakah border ini yang dipilih — kalau isActive atau pernah dipilih
+                      // Kita simpan di borderWindow.active_badge
+                      (borderWindow?.active_badge === border.id) || isActive
+                    )
+                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned
 
                     return (
                       <motion.button
@@ -712,12 +719,24 @@ export default function SiswaProfil() {
                         onClick={async () => {
                           if (!canInteract) return
                           try {
-                            if (bisaPilihBebas && !owned) {
+                            if (bisaPilihBebas && !owned && !windowBadgeOwned) {
+                              // Pilih border baru via window
                               await siswaApi.pilihBorderWindow(border.id)
                               setActiveBadge(border.id)
-                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
+                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true, active_badge: border.id }))
                               setBorderSisaDetik(86400)
                               toast.success(`${border.name} terpasang! Berlaku 1 hari.`)
+                            } else if (windowBadgeOwned || (owned && !bisaPilihBebas)) {
+                              // Equip/unequip border yang sudah dimiliki (gacha atau window)
+                              if (isActive) {
+                                await siswaApi.unequipBadge()
+                                setActiveBadge(null)
+                                toast.success('Border dilepas')
+                              } else {
+                                await siswaApi.equipBadge(border.id)
+                                setActiveBadge(border.id)
+                                toast.success(`${border.name} terpasang!`)
+                              }
                             } else if (owned) {
                               if (isActive) {
                                 await siswaApi.unequipBadge()
