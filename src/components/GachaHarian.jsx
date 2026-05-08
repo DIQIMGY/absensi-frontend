@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, Package, X } from 'lucide-react'
+import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, X } from 'lucide-react'
 import { siswaApi } from '../services/siswaService'
 import { useThemeStore } from '../stores/themeStore'
 import toast from 'react-hot-toast'
@@ -72,83 +72,75 @@ export const RARITY_CFG = {
 }
 
 // ─── BADGE POOL ───────────────────────────────────────────────
-// glow  = warna aura luar (lebih terang, untuk drop-shadow kuat)
-// glow2 = warna aura dalam (lebih soft, untuk pulse)
+// SINKRON dengan GachaController.php backend
+// glow/glow2 = warna aura sesuai tema border masing-masing
 export const BADGE_POOL = [
-  // ── LEGENDARY ──────────────────────────────────────────────
-  // b1 = Emas/Gold
-  { id:'dragon_scholar', name:'Wayang Kulit',       emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png',
-    glow:'rgba(255,200,50,0.9)',  glow2:'rgba(212,160,20,0.5)'  },
-  // b2 = Merah Api / Orange
-  { id:'galaxy_brain',   name:'Phoenix Api Abadi',  emoji:'🔥', rarity:'legendary', borderImg:'/image/b2.png',
-    glow:'rgba(255,80,20,0.9)',   glow2:'rgba(220,60,10,0.5)'   },
-  // b3 = Biru Elektrik
-  { id:'phoenix_rise',   name:'Thor Petir & Kilat', emoji:'⚡', rarity:'legendary', borderImg:'/image/b3.png',
-    glow:'rgba(60,160,255,0.9)',  glow2:'rgba(30,120,240,0.5)'  },
-
-  // ── EPIC ────────────────────────────────────────────────────
-  // b4 = Coklat Emas / Bronze
-  { id:'star_student',   name:'Griffin Sang Singa', emoji:'🦁', rarity:'epic',      borderImg:'/image/b4.png',
-    glow:'rgba(180,130,60,0.85)', glow2:'rgba(150,100,40,0.45)' },
-  // b5 = Biru Es / Silver
-  { id:'night_owl',      name:'Fenrir Serigala Es', emoji:'🧊', rarity:'epic',      borderImg:'/image/b5.png',
-    glow:'rgba(160,210,255,0.85)',glow2:'rgba(120,180,240,0.45)'},
-  // b6 = Hitam Ungu / Dark Purple
-  { id:'diamond_mind',   name:'Ksatria Zirah Hitam',emoji:'⚔️', rarity:'epic',      borderImg:'/image/b6.png',
-    glow:'rgba(140,60,200,0.85)', glow2:'rgba(100,30,160,0.45)' },
-
-  // ── RARE ────────────────────────────────────────────────────
-  // b7 = Hijau Gelap
-  { id:'early_bird',     name:'Kalajengking Racun', emoji:'🦂', rarity:'rare',      borderImg:'/image/b7.png',
-    glow:'rgba(40,180,80,0.8)',   glow2:'rgba(20,140,50,0.4)'   },
-  // b8 = Biru Malam / Navy
-  { id:'bookworm',       name:'Bulan & Bintang',    emoji:'🌙', rarity:'rare',      borderImg:'/image/b8.png',
-    glow:'rgba(50,100,220,0.8)',  glow2:'rgba(30,70,180,0.4)'   },
-  // b9 = Merah Gelap / Dark Red
-  { id:'team_player',    name:'Oni Topeng Iblis',   emoji:'🌀', rarity:'rare',      borderImg:'/image/b9.png',
-    glow:'rgba(200,30,30,0.8)',   glow2:'rgba(160,20,20,0.4)'   },
-
-  // ── COMMON ──────────────────────────────────────────────────
-  // b10 = Pink Sakura / Rose
-  { id:'happy_face',    name:'Harimau Putih Sakura',emoji:'🐅', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
-  { id:'coffee_addict', name:'Coffee Addict',       emoji:'☕', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
-  { id:'music_lover',   name:'Music Lover',         emoji:'🎵', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
-  { id:'gamer',         name:'Gamer',               emoji:'🎮', rarity:'common',    borderImg:'/image/b10.png',
-    glow:'rgba(240,140,170,0.75)',glow2:'rgba(210,100,140,0.4)' },
-
-  // ── ZONK ────────────────────────────────────────────────────
-  { id:'zonk_rock',  name:'Batu Keberuntungan',emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
-  { id:'zonk_snail', name:'Siput Pelan',       emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
-  { id:'zonk_cloud', name:'Awan Kosong',       emoji:'☁️', rarity:'zonk', borderImg:null, glow:null, glow2:null },
-  { id:'zonk_leaf',  name:'Daun Kering',       emoji:'🍂', rarity:'zonk', borderImg:null, glow:null, glow2:null },
-  { id:'zonk_sock',  name:'Kaos Kaki Bolong',  emoji:'🧦', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  // b1 — Wayang Kulit: emas, hitam, merah, coklat kayu jati
+  { id:'dragon_scholar', name:'Wayang Kulit',             emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png',
+    glow:'rgba(220,170,40,0.95)',  glow2:'rgba(160,90,20,0.55)'  },
+  // b2 — Candi Borobudur: batu abu, emas, hijau lumut, biru dini hari
+  { id:'galaxy_brain',   name:'Candi Borobudur',          emoji:'🏯', rarity:'legendary', borderImg:'/image/b2.png',
+    glow:'rgba(180,200,140,0.9)',  glow2:'rgba(80,120,80,0.5)'   },
+  // b3 — Garuda Wisnu Kencana: perunggu, emas, biru langit malam, putih mutiara
+  { id:'phoenix_rise',   name:'Garuda Wisnu Kencana',     emoji:'🗿', rarity:'legendary', borderImg:'/image/b3.png',
+    glow:'rgba(200,160,80,0.9)',   glow2:'rgba(60,100,180,0.5)'  },
+  // b4 — Batik Mega Mendung: biru tua, merah bata, emas, putih gading
+  { id:'star_student',   name:'Batik Mega Mendung',       emoji:'🎨', rarity:'epic',      borderImg:'/image/b4.png',
+    glow:'rgba(40,80,180,0.88)',   glow2:'rgba(160,60,30,0.48)'  },
+  // b5 — Barong Bali: merah menyala, emas, hitam, putih, hijau daun
+  { id:'night_owl',      name:'Barong Bali',              emoji:'🐉', rarity:'epic',      borderImg:'/image/b5.png',
+    glow:'rgba(220,40,30,0.88)',   glow2:'rgba(200,160,20,0.48)' },
+  // b6 — Keris Pusaka: perak, emas tua, hitam kayu, merah darah
+  { id:'diamond_mind',   name:'Keris Pusaka',             emoji:'🗡️', rarity:'epic',      borderImg:'/image/b6.png',
+    glow:'rgba(180,180,200,0.85)', glow2:'rgba(140,100,20,0.45)' },
+  // b7 — Topeng Malangan: putih, merah, hitam, emas, hijau toska
+  { id:'early_bird',     name:'Topeng Malangan',          emoji:'🎎', rarity:'rare',      borderImg:'/image/b7.png',
+    glow:'rgba(220,60,60,0.82)',   glow2:'rgba(30,160,140,0.42)' },
+  // b8 — Reog Ponorogo: merah menyala, emas, hitam, kuning, hijau neon
+  { id:'bookworm',       name:'Reog Ponorogo',            emoji:'🔥', rarity:'rare',      borderImg:'/image/b8.png',
+    glow:'rgba(230,50,20,0.82)',   glow2:'rgba(200,170,0,0.42)'  },
+  // b9 — Rumah Gadang Minangkabau: hitam, merah tua, emas, atap perak
+  { id:'team_player',    name:'Rumah Gadang Minangkabau', emoji:'🏺', rarity:'rare',      borderImg:'/image/b9.png',
+    glow:'rgba(180,30,30,0.82)',   glow2:'rgba(180,150,40,0.42)' },
+  // b10 — Lembah Baliem Papua: hijau hutan, coklat tanah, hitam arang, merah bara
+  { id:'happy_face',     name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
+  { id:'coffee_addict',  name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
+  { id:'music_lover',    name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
+  { id:'gamer',          name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
+    glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
+  // Zonk
+  { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_snail', name:'Siput Pelan',        emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_cloud', name:'Awan Kosong',        emoji:'☁️', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_leaf',  name:'Daun Kering',        emoji:'🍂', rarity:'zonk', borderImg:null, glow:null, glow2:null },
+  { id:'zonk_sock',  name:'Kaos Kaki Bolong',   emoji:'🧦', rarity:'zonk', borderImg:null, glow:null, glow2:null },
 ]
 
-// ─── CONFETTI CANVAS ──────────────────────────────────────────
+// ─── CONFETTI ─────────────────────────────────────────────────
 function Confetti({ color, run }) {
   const ref = useRef(null)
   useEffect(() => {
     if (!run) return
     const c = ref.current; if (!c) return
     const ctx = c.getContext('2d')
-    c.width = 480; c.height = 480
-    const pts = Array.from({ length: 90 }, () => ({
-      x:240, y:240,
-      vx:(Math.random()-0.5)*24, vy:(Math.random()-0.5)*24-6,
-      r:Math.random()*7+2, a:1, rot:Math.random()*6.28,
-      rv:(Math.random()-0.5)*0.25,
-      col:Math.random()>0.45?color:'#fff',
+    c.width = 500; c.height = 500
+    const pts = Array.from({ length: 80 }, () => ({
+      x:250, y:250,
+      vx:(Math.random()-0.5)*22, vy:(Math.random()-0.5)*22-5,
+      r:Math.random()*6+2, a:1, rot:Math.random()*6.28,
+      rv:(Math.random()-0.5)*0.2,
+      col:Math.random()>0.4?color:'#fff',
       shape:['circle','rect','tri'][Math.floor(Math.random()*3)],
     }))
     let raf
     const tick = () => {
-      ctx.clearRect(0,0,480,480)
+      ctx.clearRect(0,0,500,500)
       let alive=false
       pts.forEach(p => {
-        p.x+=p.vx; p.y+=p.vy; p.vy+=0.38; p.a-=0.015; p.rot+=p.rv
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.35; p.a-=0.013; p.rot+=p.rv
         if(p.a<=0) return; alive=true
         ctx.save(); ctx.globalAlpha=p.a; ctx.fillStyle=p.col
         ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.beginPath()
@@ -163,7 +155,7 @@ function Confetti({ color, run }) {
     return ()=>cancelAnimationFrame(raf)
   },[run,color])
   return <canvas ref={ref} className="absolute pointer-events-none"
-    style={{width:480,height:480,left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:2}}/>
+    style={{width:500,height:500,left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:2}}/>
 }
 
 // ─── BADGE OVERLAY ────────────────────────────────────────────
@@ -173,50 +165,42 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
   const badge = badgeFromPool
     ? { ...badgeFromPool, ...(badgeFromResponse || {}) }
     : badgeFromResponse
-
   if (!badge || !badge.borderImg) return null
-
   const cfg   = RARITY_CFG[badge.rarity] || RARITY_CFG.common
-  // Pakai glow dari badge (warna border) — fallback ke rarity cfg
   const glow  = badge.glow  || cfg.glow
   const glow2 = badge.glow2 || cfg.glow2
   const scale = { sm:1.45, md:1.45, lg:1.45 }[size] ?? 1.45
-
   return (
     <motion.img
       src={badge.borderImg}
       alt={badge.name}
       className="absolute pointer-events-none select-none"
       style={{
-        top:       '50%',
-        left:      '50%',
-        transform: `translate(-50%, -50%) scale(${scale})`,
-        width:     '100%',
-        height:    '100%',
-        objectFit: 'contain',
-        zIndex:    20,
+        top:'50%', left:'50%',
+        transform:`translate(-50%,-50%) scale(${scale})`,
+        width:'100%', height:'100%',
+        objectFit:'contain', zIndex:20,
       }}
-      animate={{ filter: [
+      animate={{ filter:[
         `drop-shadow(0 0 6px ${glow2})`,
         `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 8px ${glow2})`,
         `drop-shadow(0 0 6px ${glow2})`,
       ]}}
-      transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}
+      transition={{ repeat:Infinity, duration:2.6, ease:'easeInOut' }}
     />
   )
 }
 
-// ─── BADGE CIRCLE ─────────────────────────────────────────────
-// Preview border kecil mengambang di sekitar kotak kado
+// ─── BADGE CIRCLE (preview kecil di GiftBox) ──────────────────
 function BadgeCircle({ borderImg, emoji, rarity, size, delay }) {
   const cfg = RARITY_CFG[rarity]
   return (
     <motion.div
       className="relative flex items-center justify-center rounded-full select-none flex-shrink-0 overflow-hidden"
       style={{
-        width: size, height: size,
-        background: cfg.gradBtn,
-        boxShadow: `0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
+        width:size, height:size,
+        background:cfg.gradBtn,
+        boxShadow:`0 4px 14px ${cfg.glow2}, 0 0 0 2px ${cfg.particle}44`,
       }}
       animate={{
         y:[0,-7,0], scale:[1,1.07,1],
@@ -227,7 +211,6 @@ function BadgeCircle({ borderImg, emoji, rarity, size, delay }) {
         ],
       }}
       transition={{repeat:Infinity,duration:2.2,delay,ease:'easeInOut'}}>
-      {/* Foto border sebagai thumbnail */}
       {borderImg
         ? <img src={borderImg} alt={emoji} className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{borderRadius:'inherit'}}/>
         : <span style={{fontSize:size*0.44}}>{emoji}</span>
@@ -238,111 +221,82 @@ function BadgeCircle({ borderImg, emoji, rarity, size, delay }) {
 
 // ─── GIFT BOX ─────────────────────────────────────────────────
 function GiftBox({ canRoll, rolling, onClick, isDark }) {
-  const boxBg = canRoll
-    ? th(isDark,'linear-gradient(160deg,#3b0764,#5b21b6,#4c1d95)','linear-gradient(160deg,#ede9fe,#ddd6fe,#c4b5fd)')
-    : th(isDark,'linear-gradient(160deg,#1e293b,#334155,#1e293b)','linear-gradient(160deg,#e2e8f0,#cbd5e1,#e2e8f0)')
-  const lidBg = canRoll
-    ? th(isDark,'linear-gradient(160deg,#6d28d9,#7c3aed,#5b21b6)','linear-gradient(160deg,#c4b5fd,#a78bfa,#8b5cf6)')
-    : th(isDark,'linear-gradient(160deg,#334155,#475569,#334155)','linear-gradient(160deg,#cbd5e1,#94a3b8,#cbd5e1)')
-  const ribbonBg = canRoll
-    ? th(isDark,'rgba(196,181,253,0.2)','rgba(139,92,246,0.15)')
-    : th(isDark,'rgba(148,163,184,0.1)','rgba(148,163,184,0.18)')
-  const bowColor = canRoll ? th(isDark,'#c4b5fd','#7c3aed') : th(isDark,'#94a3b8','#94a3b8')
-  const bowBg = canRoll ? th(isDark,'rgba(124,58,237,0.4)','rgba(139,92,246,0.2)') : th(isDark,'rgba(100,116,139,0.2)','rgba(148,163,184,0.15)')
-
   return (
-    <div className="flex flex-col items-center gap-3 select-none w-full">
-      {/* Container 300x240 fixed */}
+    <div className="flex flex-col items-center gap-4 select-none w-full">
       <div className="relative mx-auto" style={{width:300,height:240}}>
-
-        {/* Glow bg */}
         {canRoll && (
-          <motion.div animate={{opacity:[0.08,0.18,0.08]}} transition={{repeat:Infinity,duration:3,ease:'easeInOut'}}
+          <motion.div animate={{opacity:[0.06,0.16,0.06]}} transition={{repeat:Infinity,duration:3.5,ease:'easeInOut'}}
             className="absolute inset-0 rounded-3xl pointer-events-none"
-            style={{background:'radial-gradient(ellipse at 50% 60%, rgba(124,58,237,0.4) 0%, transparent 70%)'}}/>
+            style={{background:'radial-gradient(ellipse at 50% 65%, rgba(180,140,60,0.35) 0%, transparent 70%)'}}/>
         )}
-
-        {/* Sparkle dots */}
         {canRoll && !rolling && [
-          {l:14,  t:30,  s:3,d:0  },{l:260,t:25,  s:4,d:0.7},
-          {l:8,   t:160, s:3,d:1.2},{l:278,t:155, s:3,d:0.4},
-          {l:140, t:8,   s:4,d:0.9},{l:50, t:210, s:3,d:1.5},
-          {l:240, t:205, s:3,d:0.2},{l:20, t:95,  s:2,d:1.8},
-          {l:272, t:90,  s:2,d:0.6},
+          {l:20,t:28,s:2,d:0},{l:265,t:22,s:3,d:0.8},
+          {l:10,t:155,s:2,d:1.3},{l:280,t:150,s:2,d:0.5},
+          {l:145,t:6,s:3,d:1.0},{l:55,t:208,s:2,d:1.6},
+          {l:238,t:202,s:2,d:0.3},{l:22,t:90,s:2,d:1.9},
+          {l:270,t:88,s:2,d:0.7},
         ].map((sp,i)=>(
           <motion.div key={i} className="absolute rounded-full pointer-events-none"
-            style={{width:sp.s,height:sp.s,left:sp.l,top:sp.t,background:i%2===0?'#a78bfa':'#818cf8'}}
-            animate={{opacity:[0,0.9,0],scale:[0.5,1.5,0.5]}}
-            transition={{repeat:Infinity,duration:1.8+i*0.15,delay:sp.d}}/>
+            style={{width:sp.s,height:sp.s,left:sp.l,top:sp.t,
+              background:i%3===0?'rgba(255,200,80,0.7)':i%3===1?'rgba(200,160,60,0.6)':'rgba(255,255,255,0.4)'}}
+            animate={{opacity:[0,0.8,0],scale:[0.5,1.4,0.5]}}
+            transition={{repeat:Infinity,duration:2+i*0.18,delay:sp.d}}/>
         ))}
-
-        {/* Badge ATAS TENGAH */}
         <div className="absolute" style={{left:'50%',top:0,transform:'translateX(-50%)'}}>
-          <BadgeCircle borderImg="/image/b1.png" emoji="🐉" rarity="legendary" size={50} delay={0}/>
+          <BadgeCircle borderImg="/image/b1.png" emoji="🐉" rarity="legendary" size={48} delay={0}/>
         </div>
-        {/* Badge KIRI ATAS */}
-        <div className="absolute" style={{left:10,top:58}}>
-          <BadgeCircle borderImg="/image/b7.png" emoji="🐦" rarity="rare" size={44} delay={0.5}/>
+        <div className="absolute" style={{left:8,top:55}}>
+          <BadgeCircle borderImg="/image/b7.png" emoji="🦂" rarity="rare" size={42} delay={0.5}/>
         </div>
-        {/* Badge KANAN ATAS */}
-        <div className="absolute" style={{right:10,top:58}}>
-          <BadgeCircle borderImg="/image/b4.png" emoji="⭐" rarity="epic" size={44} delay={0.2}/>
+        <div className="absolute" style={{right:8,top:55}}>
+          <BadgeCircle borderImg="/image/b4.png" emoji="🦁" rarity="epic" size={42} delay={0.2}/>
         </div>
-        {/* Badge KIRI BAWAH */}
-        <div className="absolute" style={{left:18,bottom:18}}>
-          <BadgeCircle borderImg="/image/b10.png" emoji="😊" rarity="common" size={38} delay={1.0}/>
+        <div className="absolute" style={{left:16,bottom:16}}>
+          <BadgeCircle borderImg="/image/b10.png" emoji="🐅" rarity="common" size={36} delay={1.0}/>
         </div>
-        {/* Badge KANAN BAWAH */}
-        <div className="absolute" style={{right:18,bottom:18}}>
-          <BadgeCircle borderImg="/image/b5.png" emoji="🦉" rarity="epic" size={38} delay={0.7}/>
+        <div className="absolute" style={{right:16,bottom:16}}>
+          <BadgeCircle borderImg="/image/b5.png" emoji="🧊" rarity="epic" size={36} delay={0.7}/>
         </div>
-
-        {/* KOTAK KADO — tengah */}
         <div className="absolute" style={{left:'50%',top:'50%',transform:'translate(-50%,-44%)'}}>
           {canRoll && (
-            <motion.div animate={{scaleX:[1,1.3,1],opacity:[0.2,0.5,0.2]}}
-              transition={{repeat:Infinity,duration:2.5,ease:'easeInOut'}}
+            <motion.div animate={{scaleX:[1,1.4,1],opacity:[0.15,0.4,0.15]}}
+              transition={{repeat:Infinity,duration:2.8,ease:'easeInOut'}}
               className="absolute pointer-events-none"
-              style={{bottom:-6,left:'50%',transform:'translateX(-50%)',
-                width:110,height:10,borderRadius:'50%',filter:'blur(6px)',
-                background:'rgba(124,58,237,0.5)'}}/>
+              style={{bottom:-4,left:'50%',transform:'translateX(-50%)',
+                width:100,height:8,borderRadius:'50%',filter:'blur(8px)',
+                background:'rgba(200,150,40,0.6)'}}/>
           )}
           <motion.button onClick={onClick} disabled={!canRoll||rolling}
             className="focus:outline-none block"
             style={{cursor:canRoll&&!rolling?'pointer':'not-allowed'}}
-            animate={canRoll&&!rolling?{y:[0,-8,0],rotate:[0,-1,1,-1,0]}:{y:0,rotate:0}}
-            transition={canRoll&&!rolling
-              ?{y:{repeat:Infinity,duration:2.6,ease:'easeInOut'},rotate:{repeat:Infinity,duration:2.6,ease:'easeInOut'}}
-              :{duration:0.2}}
-            whileTap={canRoll&&!rolling?{scale:0.88,rotate:-3}:{}}>
-            {/* Foto kotak kado — sebelum dibuka */}
+            animate={canRoll&&!rolling?{y:[0,-10,0]}:{y:0}}
+            transition={canRoll&&!rolling?{repeat:Infinity,duration:2.8,ease:'easeInOut'}:{duration:0.2}}
+            whileTap={canRoll&&!rolling?{scale:0.9}:{}}>
             <div className="relative" style={{width:120,height:130}}>
               {!rolling && canRoll && (
                 <img src="/image/kotak1.png" alt="kotak kado"
                   className="w-full h-full object-contain select-none pointer-events-none"
-                  style={{filter:'drop-shadow(0 12px 24px rgba(124,58,237,0.5))'}}/>
+                  style={{filter:'drop-shadow(0 8px 20px rgba(200,150,40,0.5)) drop-shadow(0 0 40px rgba(180,130,30,0.3))'}}/>
               )}
-              {/* ROLLING — kotak2 */}
-              {rolling&&(
+              {rolling && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div animate={{rotate:360,scale:[1,1.4,1]}}
-                    transition={{rotate:{repeat:Infinity,duration:0.45,ease:'linear'},scale:{repeat:Infinity,duration:0.9}}}
+                  <motion.div animate={{rotate:360,scale:[1,1.3,1]}}
+                    transition={{rotate:{repeat:Infinity,duration:0.4,ease:'linear'},scale:{repeat:Infinity,duration:0.8}}}
                     className="w-full h-full">
                     <img src="/image/kotak2.png" alt="kotak terbuka"
                       className="w-full h-full object-contain"
-                      style={{filter:'drop-shadow(0 0 20px rgba(124,58,237,0.8)) brightness(1.2)'}}/>
+                      style={{filter:'drop-shadow(0 0 24px rgba(255,200,60,0.9)) brightness(1.15)'}}/>
                   </motion.div>
                 </div>
               )}
-              {/* LOCKED */}
-              {!canRoll&&!rolling&&(
+              {!canRoll && !rolling && (
                 <div className="relative w-full h-full">
                   <img src="/image/kotak1.png" alt="kotak kado"
                     className="w-full h-full object-contain select-none"
-                    style={{filter:'grayscale(1) opacity(0.4)'}}/>
+                    style={{filter:'grayscale(1) opacity(0.3)'}}/>
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-                    <Lock size={18} className="text-slate-400"/>
-                    <span className="text-[9px] text-slate-500 font-semibold">Besok lagi</span>
+                    <Lock size={16} className="text-slate-500"/>
+                    <span className="text-[9px] text-slate-600 font-bold tracking-wider uppercase">Besok</span>
                   </div>
                 </div>
               )}
@@ -350,165 +304,170 @@ function GiftBox({ canRoll, rolling, onClick, isDark }) {
           </motion.button>
         </div>
       </div>
-
-      {/* CTA */}
       {canRoll ? (
-        <motion.div animate={{opacity:[0.65,1,0.65]}} transition={{repeat:Infinity,duration:1.8}}
-          className="flex items-center gap-2 text-sm font-bold text-violet-600 dark:text-violet-300">
-          <Zap size={14} fill="currentColor"/> Ketuk kotak untuk membuka!
+        <motion.div animate={{opacity:[0.5,1,0.5]}} transition={{repeat:Infinity,duration:2}}
+          className="flex items-center gap-2 text-xs font-black tracking-[0.2em] uppercase"
+          style={{color:'rgba(200,160,60,0.9)'}}>
+          <Zap size={12} fill="currentColor"/> Buka Sekarang
         </motion.div>
       ) : (
-        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Sudah dibuka hari ini</p>
+        <p className="text-[11px] text-slate-600 dark:text-slate-500 font-medium tracking-wider uppercase">
+          Sudah dibuka hari ini
+        </p>
       )}
     </div>
   )
 }
-
-// ─── REVEAL MODAL ─────────────────────────────────────────────
+// --- REVEAL MODAL ---------------------------------------------
 function RevealModal({ badge, onClose }) {
-  const cfg = RARITY_CFG[badge?.rarity] || RARITY_CFG.common
+  const cfg   = RARITY_CFG[badge?.rarity] || RARITY_CFG.common
+  const glow  = badge?.glow  || cfg.glow
+  const glow2 = badge?.glow2 || cfg.glow2
   const [phase, setPhase] = useState('box')
-  const [burst, setBurst] = useState(false)
+  const [burst, setBurst]  = useState(false)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('question'), 750)
-    const t2 = setTimeout(() => { setPhase('reveal'); setBurst(true) }, 1700)
+    const t1 = setTimeout(() => setPhase('question'), 700)
+    const t2 = setTimeout(() => { setPhase('reveal'); setBurst(true) }, 1600)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   return (
     <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
       className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-      style={{background:'rgba(2,2,10,0.96)',backdropFilter:'blur(20px)'}}>
-      <motion.div initial={{scale:0,opacity:0}} animate={{scale:6,opacity:phase==='reveal'?0.08:0.03}}
-        transition={{duration:2,ease:'easeOut'}}
-        className="absolute w-40 h-40 rounded-full pointer-events-none"
-        style={{background:cfg.particle}}/>
+      style={{background:'rgba(0,0,5,0.97)',backdropFilter:'blur(24px)'}}>
+
       <AnimatePresence>
-        {phase==='reveal'&&(
+        {phase==='reveal' && (
           <motion.div initial={{scaleY:0,opacity:0}} animate={{scaleY:1,opacity:1}} exit={{opacity:0}}
-            transition={{duration:0.6,ease:'easeOut'}}
+            transition={{duration:0.8,ease:'easeOut'}}
             className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-            style={{width:200,height:'55%',transformOrigin:'top center',
-              background:`linear-gradient(to bottom, ${cfg.beam} 0%, transparent 100%)`}}/>
+            style={{width:300,height:'60%',transformOrigin:'top center',
+              background:`linear-gradient(to bottom, ${glow}22 0%, transparent 100%)`}}/>
         )}
       </AnimatePresence>
+
       <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
-        <Confetti color={cfg.particle} run={burst}/>
+        <Confetti color={glow} run={burst}/>
       </div>
-      <motion.div initial={{scale:0.3,opacity:0,y:120}} animate={{scale:1,opacity:1,y:0}}
-        exit={{scale:0.9,opacity:0,y:-30}}
-        transition={{type:'spring',stiffness:140,damping:17,delay:0.06}}
-        className="relative w-full max-w-xs mx-auto overflow-hidden rounded-3xl"
+
+      <motion.div initial={{scale:0.4,opacity:0,y:60}} animate={{scale:1,opacity:1,y:0}}
+        exit={{scale:0.95,opacity:0,y:-20}}
+        transition={{type:'spring',stiffness:160,damping:18,delay:0.04}}
+        className="relative w-full max-w-[320px] mx-auto rounded-2xl overflow-hidden"
         onClick={e=>e.stopPropagation()}
-        style={{background:cfg.cardBg,
-          boxShadow:`0 0 0 1.5px ${cfg.particle}55, 0 0 80px ${cfg.glow2}, 0 32px 80px rgba(0,0,0,0.8)`}}>
-        {/* Banner */}
-        <div className="relative overflow-hidden py-4 text-center" style={{background:cfg.grad}}>
+        style={{
+          background:`linear-gradient(160deg, #020205 0%, #08080f 50%, #020205 100%)`,
+          boxShadow:`0 0 0 1px ${glow}44, 0 0 80px ${glow2}, 0 40px 80px rgba(0,0,0,0.95)`,
+        }}>
+
+        <div className="h-[2px]" style={{background:`linear-gradient(90deg,transparent,${glow},transparent)`}}/>
+
+        <div className="relative px-6 pt-5 pb-2 text-center overflow-hidden">
           <motion.div animate={{x:['-100%','220%']}}
-            transition={{repeat:Infinity,duration:2.4,ease:'linear',repeatDelay:1}}
-            className="absolute inset-0 w-1/2 skew-x-12 pointer-events-none"
-            style={{background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent)'}}/>
-          <div className="flex items-center justify-center gap-1 mb-1">
+            transition={{repeat:Infinity,duration:3.5,ease:'linear',repeatDelay:2.5}}
+            className="absolute inset-0 w-1/3 skew-x-12 pointer-events-none"
+            style={{background:`linear-gradient(90deg,transparent,${glow}18,transparent)`}}/>
+          <div className="flex items-center justify-center gap-1.5 mb-1.5">
             {Array.from({length:cfg.stars}).map((_,i)=>(
-              <motion.span key={i} initial={{scale:0,rotate:-30}} animate={{scale:1,rotate:0}}
-                transition={{delay:0.08*i,type:'spring',stiffness:350}}
-                className="text-white text-sm drop-shadow">★</motion.span>
+              <motion.span key={i} initial={{scale:0,y:10}} animate={{scale:1,y:0}}
+                transition={{delay:0.08*i,type:'spring',stiffness:400}}
+                className="text-sm" style={{color:glow,textShadow:`0 0 10px ${glow}`}}>?</motion.span>
             ))}
           </div>
-          <p className="text-[11px] font-black tracking-[0.35em] text-white/90 uppercase">{cfg.label}</p>
+          <p className="text-[10px] font-black tracking-[0.45em] uppercase"
+            style={{color:glow,textShadow:`0 0 16px ${glow2}`}}>{cfg.label}</p>
         </div>
-        {/* Emoji stage */}
-        <div className="relative flex items-center justify-center" style={{height:210}}>
-          <motion.div animate={{rotate:360}} transition={{repeat:Infinity,duration:6,ease:'linear'}}
-            className="absolute w-48 h-48 rounded-full pointer-events-none"
-            style={{background:`conic-gradient(${cfg.particle}33, transparent 55%, ${cfg.particle}33)`}}/>
-          <motion.div animate={{scale:[1,1.4,1],opacity:[0.2,0.5,0.2]}}
-            transition={{repeat:Infinity,duration:2.4,ease:'easeInOut'}}
-            className="absolute w-40 h-40 rounded-full pointer-events-none"
-            style={{background:`radial-gradient(circle, ${cfg.glow} 0%, transparent 70%)`}}/>
-          {phase==='box'&&(
-            <motion.div animate={{scale:[0.9,1.1,0.95,1.05,1],rotate:[0,-5,5,-3,0]}}
-              transition={{duration:0.75,ease:'easeOut'}}
-              className="relative z-10 select-none w-32 h-32">
-              <img src="/image/kotak2.png" alt="kotak terbuka"
+
+        <div className="relative flex items-center justify-center" style={{height:230}}>
+          <motion.div animate={{scale:[1,1.15,1],opacity:[0.12,0.28,0.12]}}
+            transition={{repeat:Infinity,duration:3,ease:'easeInOut'}}
+            className="absolute w-56 h-56 rounded-full pointer-events-none"
+            style={{background:`radial-gradient(circle, ${glow} 0%, transparent 70%)`}}/>
+
+          <motion.div animate={{rotate:360}} transition={{repeat:Infinity,duration:12,ease:'linear'}}
+            className="absolute w-52 h-52 rounded-full pointer-events-none"
+            style={{background:`conic-gradient(${glow}22, transparent 40%, ${glow}22 60%, transparent 100%)`}}/>
+
+          {phase==='box' && (
+            <motion.div animate={{scale:[0.95,1.05,0.98,1.02,1],rotate:[0,-4,4,-2,0]}}
+              transition={{duration:0.7,ease:'easeOut'}}
+              className="relative z-10 w-32 h-32">
+              <img src="/image/kotak2.png" alt="kotak"
                 className="w-full h-full object-contain"
-                style={{filter:'drop-shadow(0 0 30px rgba(139,92,246,0.7)) drop-shadow(0 0 60px rgba(124,58,237,0.4))'}}/>
+                style={{filter:`drop-shadow(0 0 20px ${glow}) brightness(1.1)`}}/>
             </motion.div>
           )}
-          {phase==='question'&&(
-            <motion.div initial={{scale:0,y:30}} animate={{scale:1,y:0}}
-              transition={{type:'spring',stiffness:260,damping:14}}
-              className="relative z-10 text-9xl select-none"
-              style={{filter:'drop-shadow(0 0 24px rgba(255,255,255,0.4))'}}>❓</motion.div>
+
+          {phase==='question' && (
+            <motion.div initial={{scale:0,y:20}} animate={{scale:1,y:0}}
+              transition={{type:'spring',stiffness:280,damping:14}}
+              className="relative z-10 select-none font-black text-white"
+              style={{fontSize:96,lineHeight:1,textShadow:`0 0 30px ${glow2}`}}>?</motion.div>
           )}
-          {phase==='reveal'&&(
-            <motion.div initial={{scale:0.2,y:80,opacity:0}} animate={{scale:1,y:0,opacity:1}}
+
+          {phase==='reveal' && (
+            <motion.div initial={{scale:0.1,opacity:0,rotate:-15}} animate={{scale:1,opacity:1,rotate:0}}
               transition={{type:'spring',stiffness:180,damping:13}}
-              className="relative z-10 select-none flex items-center justify-center"
-              style={{width:160,height:160}}>
-              {/* Preview border foto — lingkaran dengan border image */}
-              <div className="relative w-full h-full rounded-full overflow-hidden"
-                style={{background:'rgba(255,255,255,0.08)',boxShadow:`0 0 40px ${cfg.particle}, 0 0 20px ${cfg.particle}`}}>
-                {/* Foto profil dummy di tengah */}
-                <div className="absolute inset-4 rounded-full flex items-center justify-center text-5xl"
-                  style={{background:'rgba(255,255,255,0.12)'}}>
-                  {badge.emoji}
-                </div>
-                {/* Border foto */}
-                {badge.borderImg && (
-                  <img src={badge.borderImg} alt={badge.name}
-                    className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-10"
-                    style={{filter:`drop-shadow(0 0 12px ${cfg.particle})`}}/>
-                )}
-              </div>
+              className="relative z-10 flex items-center justify-center"
+              style={{width:175,height:175}}>
+              <div className="absolute inset-0 rounded-full"
+                style={{background:`radial-gradient(circle, ${glow}18 0%, transparent 70%)`}}/>
+              {badge.borderImg && (
+                <motion.img src={badge.borderImg} alt={badge.name}
+                  className="absolute pointer-events-none select-none"
+                  style={{top:'50%',left:'50%',transform:'translate(-50%,-50%) scale(1.45)',
+                    width:'100%',height:'100%',objectFit:'contain',zIndex:10}}
+                  animate={{filter:[
+                    `drop-shadow(0 0 10px ${glow2})`,
+                    `drop-shadow(0 0 28px ${glow}) drop-shadow(0 0 12px ${glow2})`,
+                    `drop-shadow(0 0 10px ${glow2})`,
+                  ]}}
+                  transition={{repeat:Infinity,duration:2.2,ease:'easeInOut'}}/>
+              )}
             </motion.div>
           )}
         </div>
-        {/* Info */}
+
         <AnimatePresence>
-          {phase==='reveal'&&(
-            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.3}}
+          {phase==='reveal' && (
+            <motion.div initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
               className="px-6 pb-2 text-center">
-              <p className="text-[22px] font-black text-white tracking-tight leading-tight">{badge.name}</p>
-              <div className="flex items-center justify-center gap-2 mt-2">
-                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black text-white"
-                  style={{background:cfg.gradBtn,boxShadow:`0 2px 16px ${cfg.glow2}`}}>
-                  <Star size={10} fill="white"/> {cfg.label}
-                </span>
-              </div>
-              <p className="text-[11px] mt-2.5 font-medium" style={{color:'rgba(255,255,255,0.3)'}}>
-                Ditambahkan ke koleksi badge kamu
+              <p className="text-xl font-black text-white tracking-tight">{badge.name}</p>
+              <p className="text-[11px] mt-1" style={{color:`${glow}88`}}>
+                Border baru aktif di profilmu
               </p>
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.div initial={{scale:0,rotate:-15}} animate={{scale:1,rotate:0}}
-          transition={{delay:1,type:'spring',stiffness:320}}
-          className="absolute top-14 right-3 px-2.5 py-1 rounded-full text-[9px] font-black tracking-widest text-white"
-          style={{background:'linear-gradient(135deg,#ef4444,#dc2626)',boxShadow:'0 2px 10px rgba(239,68,68,0.5)'}}>
-          NEW
-        </motion.div>
+
         <AnimatePresence>
-          {phase==='reveal'&&(
-            <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:0.5}}
-              className="px-5 py-5">
-              <motion.button whileTap={{scale:0.96}} onClick={onClose}
-                className="w-full py-3.5 rounded-2xl text-sm font-black text-white transition-all"
-                style={{background:cfg.gradBtn,boxShadow:`0 6px 28px ${cfg.glow2}`}}>
-                <SparklesIcon size={14} className="inline mr-1"/>Lihat Hadiah
+          {phase==='reveal' && (
+            <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.4}}
+              className="px-5 pt-2 pb-5">
+              <motion.button whileTap={{scale:0.97}} onClick={onClose}
+                className="w-full py-3 rounded-xl text-sm font-black text-white tracking-widest uppercase"
+                style={{
+                  background:`linear-gradient(135deg, ${glow}cc 0%, ${glow}66 100%)`,
+                  boxShadow:`0 4px 24px ${glow2}, 0 0 0 1px ${glow}44`,
+                }}>
+                Lihat Border
               </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
+
+        <div className="h-[1px]" style={{background:`linear-gradient(90deg,transparent,${glow2},transparent)`}}/>
       </motion.div>
     </motion.div>
   )
 }
 
-// ─── EQUIP DIALOG ─────────────────────────────────────────────
+// --- EQUIP DIALOG ---------------------------------------------
 function EquipDialog({ badge, onEquip, onSkip, onClose, isDark }) {
-  const cfg = RARITY_CFG[badge?.rarity] || RARITY_CFG.common
+  const cfg   = RARITY_CFG[badge?.rarity] || RARITY_CFG.common
+  const glow  = badge?.glow  || cfg.glow
+  const glow2 = badge?.glow2 || cfg.glow2
   const [loading, setLoading] = useState(false)
   const handleClose = onClose || onSkip
 
@@ -517,82 +476,73 @@ function EquipDialog({ badge, onEquip, onSkip, onClose, isDark }) {
     try {
       await siswaApi.equipBadge(badge.id)
       onEquip(badge.id)
-      toast.success(`${badge.name} terpasang di profil!`)
+      toast.success(`${badge.name} terpasang!`)
       handleClose()
-    } catch { toast.error('Gagal memasang badge') }
+    } catch { toast.error('Gagal memasang border') }
     finally { setLoading(false) }
   }
 
   return (
     <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6"
-      style={{background:'rgba(0,0,0,0.7)',backdropFilter:'blur(12px)'}}
+      style={{background:'rgba(0,0,0,0.8)',backdropFilter:'blur(16px)'}}
       onClick={handleClose}>
-      <motion.div initial={{y:80,opacity:0,scale:0.95}} animate={{y:0,opacity:1,scale:1}}
-        exit={{y:60,opacity:0,scale:0.95}}
-        transition={{type:'spring',stiffness:200,damping:22}}
-        className="w-full max-w-sm rounded-3xl overflow-hidden relative"
+      <motion.div initial={{y:60,opacity:0,scale:0.96}} animate={{y:0,opacity:1,scale:1}}
+        exit={{y:40,opacity:0}}
+        transition={{type:'spring',stiffness:220,damping:24}}
+        className="w-full max-w-sm rounded-2xl overflow-hidden relative"
         onClick={e=>e.stopPropagation()}
-        style={{background:th(isDark,'linear-gradient(160deg,#0f0a1e,#1a1035)','linear-gradient(160deg,#ffffff,#f5f3ff)'),
-          boxShadow:`0 0 0 1px ${cfg.particle}44, 0 24px 60px rgba(0,0,0,0.5)`}}>
-        {/* Tombol X */}
+        style={{
+          background:'linear-gradient(160deg,#060608,#0e0c14)',
+          boxShadow:`0 0 0 1px ${glow}33, 0 20px 60px rgba(0,0,0,0.7), 0 0 50px ${glow2}`,
+        }}>
+        <div className="h-[2px]" style={{background:`linear-gradient(90deg,transparent,${glow},transparent)`}}/>
         <button onClick={handleClose}
-          className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-          style={{background:th(isDark,'rgba(255,255,255,0.1)','rgba(0,0,0,0.08)'),color:th(isDark,'rgba(255,255,255,0.5)','rgba(0,0,0,0.4)')}}>
-          <X size={13}/>
+          className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full flex items-center justify-center"
+          style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.35)'}}>
+          <X size={12}/>
         </button>
-        <div className="h-1 w-full" style={{background:cfg.gradBtn}}/>
-        <div className="p-6">
+        <div className="p-5">
           <div className="flex items-center gap-4 mb-5">
-            <div className="relative flex-shrink-0">
-              {/* Preview border foto di EquipDialog */}
-              <div className="w-16 h-16 rounded-2xl overflow-hidden relative"
-                style={{background:cfg.gradBtn,boxShadow:`0 8px 24px ${cfg.glow2}`}}>
-                {/* Emoji di tengah sebagai "foto profil" dummy */}
-                <div className="absolute inset-2 rounded-xl flex items-center justify-center text-2xl"
-                  style={{background:'rgba(255,255,255,0.15)'}}>
-                  {badge.emoji}
-                </div>
-                {/* Border foto */}
-                {badge.borderImg && (
-                  <img src={badge.borderImg} alt={badge.name}
-                    className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-10"/>
-                )}
-              </div>
-              <motion.div animate={{scale:[1,1.3,1],opacity:[0.5,0,0.5]}}
-                transition={{repeat:Infinity,duration:2,ease:'easeInOut'}}
-                className="absolute inset-0 rounded-2xl pointer-events-none"
-                style={{border:`2px solid ${cfg.particle}`}}/>
+            <div className="relative flex-shrink-0" style={{width:68,height:68}}>
+              <div className="w-full h-full rounded-full"
+                style={{background:`radial-gradient(circle, ${glow}18 0%, transparent 70%)`,border:`1px solid ${glow}22`}}/>
+              {badge.borderImg && (
+                <motion.img src={badge.borderImg} alt={badge.name}
+                  className="absolute pointer-events-none select-none"
+                  style={{top:'50%',left:'50%',transform:'translate(-50%,-50%) scale(1.45)',
+                    width:'100%',height:'100%',objectFit:'contain',zIndex:10}}
+                  animate={{filter:[`drop-shadow(0 0 6px ${glow2})`,`drop-shadow(0 0 16px ${glow})`,`drop-shadow(0 0 6px ${glow2})`]}}
+                  transition={{repeat:Infinity,duration:2.4,ease:'easeInOut'}}/>
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full text-white"
-                  style={{background:cfg.gradBtn}}>{cfg.label}</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                  style={{background:th(isDark,'rgba(239,68,68,0.2)','rgba(239,68,68,0.1)'),color:'#ef4444',
-                    border:'1px solid rgba(239,68,68,0.3)'}}>NEW</span>
+              <p className="text-[10px] font-black tracking-[0.35em] uppercase mb-1"
+                style={{color:glow}}>{cfg.label}</p>
+              <p className="text-base font-black text-white leading-tight">{badge.name}</p>
+              <div className="flex gap-0.5 mt-1">
+                {Array.from({length:cfg.stars}).map((_,i)=>(
+                  <span key={i} className="text-[10px]" style={{color:glow}}>?</span>
+                ))}
               </div>
-              <p className={`text-lg font-black leading-tight ${th(isDark,'text-white','text-slate-800')}`}>{badge.name}</p>
-              <p className="text-xs mt-0.5" style={{color:th(isDark,'rgba(255,255,255,0.35)','rgba(0,0,0,0.4)')}}>
-                {Array.from({length:cfg.stars}).map(()=>'★').join('')}
-              </p>
             </div>
           </div>
-          <div className="h-px mb-4" style={{background:th(isDark,'rgba(255,255,255,0.06)','rgba(0,0,0,0.06)')}}/>
-          <p className={`text-sm font-semibold mb-4 text-center ${th(isDark,'text-white/60','text-slate-500')}`}>
-            Pasang badge ini ke foto profilmu?
+          <div className="h-px mb-4" style={{background:`${glow}18`}}/>
+          <p className="text-xs font-medium mb-4 text-center" style={{color:'rgba(255,255,255,0.35)'}}>
+            Pasang border ini ke foto profilmu?
           </p>
-          <div className="flex gap-3">
-            <motion.button whileTap={{scale:0.96}} onClick={handleEquip} disabled={loading}
-              className="flex-1 py-3.5 rounded-2xl text-sm font-black text-white transition-all disabled:opacity-60"
-              style={{background:cfg.gradBtn,boxShadow:`0 4px 20px ${cfg.glow2}`}}>
-              {loading ? '...' : `Pasang ${badge.emoji}`}
+          <div className="flex gap-2">
+            <motion.button whileTap={{scale:0.97}} onClick={handleEquip} disabled={loading}
+              className="flex-1 py-3 rounded-xl text-sm font-black text-white tracking-widest uppercase disabled:opacity-50"
+              style={{
+                background:`linear-gradient(135deg, ${glow}cc 0%, ${glow}66 100%)`,
+                boxShadow:`0 4px 20px ${glow2}, 0 0 0 1px ${glow}44`,
+              }}>
+              {loading ? '...' : 'Pasang'}
             </motion.button>
-            <motion.button whileTap={{scale:0.96}} onClick={handleClose}
-              className="px-5 py-3.5 rounded-2xl text-sm font-semibold transition-all"
-              style={{background:th(isDark,'rgba(255,255,255,0.06)','rgba(0,0,0,0.05)'),
-                color:th(isDark,'rgba(255,255,255,0.4)','rgba(0,0,0,0.4)'),
-                border:`1px solid ${th(isDark,'rgba(255,255,255,0.1)','rgba(0,0,0,0.08)')}`}}>
+            <motion.button whileTap={{scale:0.97}} onClick={handleClose}
+              className="px-5 py-3 rounded-xl text-sm font-semibold"
+              style={{background:'rgba(255,255,255,0.05)',color:'rgba(255,255,255,0.3)',border:'1px solid rgba(255,255,255,0.07)'}}>
               Lewati
             </motion.button>
           </div>
@@ -602,70 +552,68 @@ function EquipDialog({ badge, onEquip, onSkip, onClose, isDark }) {
   )
 }
 
-// ─── GACHA HARIAN (main) ──────────────────────────────────────
-// ─── INLINE PANEL (used in floating mode) ─────────────────────
+// --- GACHA INLINE PANEL ---------------------------------------
 function GachaInlinePanel({ canRoll, badges, activeId, rolling, nextLabel, isDark, onRoll, onToggle }) {
   return (
     <div className="relative rounded-2xl overflow-hidden"
       style={{
-        background: canRoll
-          ? th(isDark,'linear-gradient(160deg,#0d0820,#160d35,#0d0820)','linear-gradient(160deg,#f5f3ff,#ede9fe,#f5f3ff)')
+        background:canRoll
+          ? th(isDark,'linear-gradient(160deg,#06050a,#0e0c18,#06050a)','linear-gradient(160deg,#f5f3ff,#ede9fe,#f5f3ff)')
           : th(isDark,'linear-gradient(160deg,#0c1018,#141c28,#0c1018)','linear-gradient(160deg,#f8fafc,#f1f5f9,#f8fafc)'),
-        boxShadow: canRoll
-          ? th(isDark,'0 0 0 1px rgba(124,58,237,0.25), 0 20px 60px rgba(109,40,217,0.2)','0 0 0 1px rgba(139,92,246,0.2), 0 20px 60px rgba(109,40,217,0.1)')
+        boxShadow:canRoll
+          ? th(isDark,'0 0 0 1px rgba(200,160,60,0.2), 0 20px 60px rgba(0,0,0,0.5)','0 0 0 1px rgba(200,160,60,0.15), 0 20px 60px rgba(0,0,0,0.08)')
           : th(isDark,'0 0 0 1px rgba(71,85,105,0.2), 0 8px 32px rgba(0,0,0,0.3)','0 0 0 1px rgba(203,213,225,0.8), 0 8px 32px rgba(0,0,0,0.06)'),
       }}>
-      <motion.div animate={canRoll?{opacity:[0.4,1,0.4]}:{opacity:0.2}} transition={{repeat:Infinity,duration:2.5}}
+      <motion.div animate={canRoll?{opacity:[0.3,1,0.3]}:{opacity:0.15}} transition={{repeat:Infinity,duration:2.5}}
         className="absolute top-0 inset-x-0 h-px pointer-events-none"
-        style={{background:canRoll?'linear-gradient(90deg,transparent,rgba(139,92,246,0.9),transparent)':'linear-gradient(90deg,transparent,rgba(71,85,105,0.5),transparent)'}}/>
+        style={{background:canRoll?'linear-gradient(90deg,transparent,rgba(200,160,60,0.8),transparent)':'linear-gradient(90deg,transparent,rgba(71,85,105,0.4),transparent)'}}/>
       <div className="flex items-center gap-3 px-5 pt-5 pb-3">
         <div className="relative">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{background:canRoll?th(isDark,'rgba(124,58,237,0.2)','rgba(124,58,237,0.1)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
-              border:`1px solid ${canRoll?th(isDark,'rgba(139,92,246,0.4)','rgba(139,92,246,0.3)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
-            {canRoll ? <Gift size={18} className="text-violet-500"/> : <Lock size={18} className="text-slate-400"/>}
+            style={{background:canRoll?th(isDark,'rgba(200,160,60,0.12)','rgba(200,160,60,0.08)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
+              border:`1px solid ${canRoll?th(isDark,'rgba(200,160,60,0.3)','rgba(200,160,60,0.2)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
+            {canRoll ? <Gift size={18} style={{color:'rgba(200,160,60,0.9)'}}/> : <Lock size={18} className="text-slate-400"/>}
           </div>
-          {canRoll&&<motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
-            className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500"
-            style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}/>}
+          {canRoll && <motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
+            className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500"
+            style={{border:`2px solid ${th(isDark,'#06050a','#f5f3ff')}`}}/>}
         </div>
         <div>
           <p className={`text-sm font-black ${th(isDark,'text-white','text-slate-800')}`}>Gacha Harian</p>
           <p className="text-[10px] font-medium"
-            style={{color:canRoll?th(isDark,'rgba(167,139,250,0.85)','rgba(109,40,217,0.8)'):th(isDark,'rgba(100,116,139,0.7)','rgba(100,116,139,0.8)')}}>
-            {canRoll?'✨ Hadiahmu menunggu hari ini!':`Tersedia lagi pukul ${nextLabel}`}
+            style={{color:canRoll?th(isDark,'rgba(200,160,60,0.8)','rgba(160,120,30,0.9)'):th(isDark,'rgba(100,116,139,0.7)','rgba(100,116,139,0.8)')}}>
+            {canRoll ? '? Hadiahmu menunggu hari ini!' : `Tersedia lagi pukul ${nextLabel}`}
           </p>
         </div>
       </div>
       <div className="flex justify-center px-5 py-4">
         <GiftBox canRoll={canRoll} rolling={rolling} onClick={onRoll} isDark={isDark}/>
       </div>
-      {badges.length>0&&(
+      {badges.length > 0 && (
         <div className="px-5 pb-5">
           <div className="flex flex-wrap gap-2">
-            {badges.map(badge=>{
-              const cfg=RARITY_CFG[badge.rarity]||RARITY_CFG.common
-              const isActive=activeId===badge.id
+            {badges.map(badge => {
+              const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
+              const pool = BADGE_POOL.find(b => b.id === badge.id)
+              const glow = pool?.glow || cfg.glow
+              const isActive = activeId === badge.id
               return (
                 <motion.button key={badge.id} whileTap={{scale:0.88}}
-                  onClick={()=>onToggle(badge)}
-                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-                  style={isActive?{background:cfg.gradBtn,border:`1px solid ${cfg.particle}`,color:'#fff'}
-                    :{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
-                      border:`1px solid ${th(isDark,'rgba(255,255,255,0.09)','rgba(0,0,0,0.1)')}`,
-                      color:th(isDark,'rgba(255,255,255,0.45)','rgba(0,0,0,0.5)')}}>
-                  {/* Thumbnail border kecil */}
-                  <div className="relative w-6 h-6 rounded-lg overflow-hidden flex-shrink-0"
+                  onClick={() => onToggle(badge)}
+                  className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold"
+                  style={isActive
+                    ? {background:`linear-gradient(135deg,${glow}cc,${glow}66)`,border:`1px solid ${glow}66`,color:'#fff',boxShadow:`0 0 16px ${glow}44`}
+                    : {background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
+                       border:`1px solid ${th(isDark,'rgba(255,255,255,0.08)','rgba(0,0,0,0.08)')}`,
+                       color:th(isDark,'rgba(255,255,255,0.4)','rgba(0,0,0,0.45)')}}>
+                  <div className="relative w-5 h-5 rounded-md overflow-hidden flex-shrink-0"
                     style={{background:cfg.gradBtn}}>
-                    {badge.borderImg
-                      ? <img src={badge.borderImg} alt={badge.name} className="absolute inset-0 w-full h-full object-cover"/>
-                      : <span className="text-base leading-none flex items-center justify-center w-full h-full">{badge.emoji}</span>
-                    }
+                    {badge.borderImg && <img src={badge.borderImg} alt="" className="absolute inset-0 w-full h-full object-cover"/>}
                   </div>
                   <span>{badge.name}</span>
-                  {isActive&&<span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
-                    style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}>
-                    <span className="text-[8px] text-white font-black">✓</span>
+                  {isActive && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
+                    style={{border:`2px solid ${th(isDark,'#06050a','#f5f3ff')}`}}>
+                    <span className="text-[8px] text-white font-black">?</span>
                   </span>}
                 </motion.button>
               )
@@ -677,13 +625,14 @@ function GachaInlinePanel({ canRoll, badges, activeId, rolling, nextLabel, isDar
   )
 }
 
+// --- MAIN COMPONENT -------------------------------------------
 export default function GachaHarian({ onBadgeChange, floating = false }) {
-  const [status, setStatus]       = useState(null)
-  const [rolling, setRolling]     = useState(false)
-  const [result, setResult]       = useState(null)
+  const [status, setStatus]           = useState(null)
+  const [rolling, setRolling]         = useState(false)
+  const [result, setResult]           = useState(null)
   const [equipDialog, setEquipDialog] = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [showPanel, setShowPanel] = useState(false)
+  const [loading, setLoading]         = useState(true)
+  const [showPanel, setShowPanel]     = useState(false)
   const { isDark } = useThemeStore()
 
   useEffect(() => { fetchStatus() }, [])
@@ -692,7 +641,7 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
     try {
       const res = await siswaApi.getGachaStatus()
       setStatus(res.data)
-      onBadgeChange?.(res.data.active_badge??null, res.data.badges??[])
+      onBadgeChange?.(res.data.active_badge ?? null, res.data.badges ?? [])
     } catch { /* silent */ }
     finally { setLoading(false) }
   }
@@ -703,21 +652,16 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
     try {
       const res = await siswaApi.rollGacha()
       const d = res.data
-      // Backend return: result (bukan badge), is_zonk, badges, active_badge
       const badge = d.result ?? null
       const isZonk = d.is_zonk ?? false
-
       setStatus(prev => ({...prev, can_roll:false,
         badges: d.badges ?? prev?.badges ?? [],
         active_badge: d.active_badge ?? prev?.active_badge ?? null}))
       onBadgeChange?.(d.active_badge ?? null, d.badges ?? [])
-
       if (badge && !isZonk) {
-        // Dapat badge — tampilkan reveal modal
         setResult(badge)
       } else if (badge && isZonk) {
-        // Zonk — langsung toast, tidak perlu modal
-        toast(`${badge.emoji} ${badge.name} — ${badge.desc || 'Coba lagi besok!'}`, { icon: badge.emoji })
+        toast(`${badge.emoji} ${badge.name} � ${badge.desc || 'Coba lagi besok!'}`, { icon: badge.emoji })
       }
     } catch (e) {
       toast.error(e.response?.data?.message || 'Gagal membuka kotak')
@@ -726,7 +670,7 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
 
   const handleEquipFromModal = (badgeId) => {
     setStatus(prev => ({...prev, active_badge:badgeId}))
-    onBadgeChange?.(badgeId, status?.badges??[])
+    onBadgeChange?.(badgeId, status?.badges ?? [])
   }
 
   const handleToggleBadge = async (badge) => {
@@ -735,13 +679,13 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
       if (isActive) {
         await siswaApi.unequipBadge()
         setStatus(prev => ({...prev, active_badge:null}))
-        onBadgeChange?.(null, status?.badges??[])
-        toast.success('Badge dilepas')
+        onBadgeChange?.(null, status?.badges ?? [])
+        toast.success('Border dilepas')
       } else {
         await siswaApi.equipBadge(badge.id)
         setStatus(prev => ({...prev, active_badge:badge.id}))
-        onBadgeChange?.(badge.id, status?.badges??[])
-        toast.success(`${badge.emoji} ${badge.name} terpasang!`)
+        onBadgeChange?.(badge.id, status?.badges ?? [])
+        toast.success(`${badge.name} terpasang!`)
       }
     } catch { toast.error('Gagal') }
   }
@@ -749,8 +693,8 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
   if (loading) return null
 
   const canRoll  = !!status?.can_roll
-  const badges   = status?.badges??[]
-  const activeId = status?.active_badge??null
+  const badges   = status?.badges ?? []
+  const activeId = status?.active_badge ?? null
 
   let nextLabel = 'besok'
   if (!canRoll && status?.next_roll_at) {
@@ -758,71 +702,33 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
     catch { /**/ }
   }
 
-  // ── FLOATING MODE ──
+  // -- FLOATING MODE --
   if (floating) {
     return (
       <>
         <AnimatePresence>
           {canRoll && !showPanel && (
-            <motion.button
-              key="float-btn"
-              initial={{ scale: 0, opacity: 0, y: 20 }}
-              animate={{
-                scale: 1, opacity: 1, y: 0,
-              }}
-              exit={{ scale: 0, opacity: 0, y: 20, transition: { duration: 0.3, ease: 'backIn' } }}
-              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+            <motion.button key="float-btn"
+              initial={{scale:0,opacity:0,y:20}} animate={{scale:1,opacity:1,y:0}}
+              exit={{scale:0,opacity:0,y:20,transition:{duration:0.3}}}
+              transition={{type:'spring',stiffness:260,damping:18}}
               onClick={() => setShowPanel(true)}
               className="fixed top-20 right-4 z-50 cursor-pointer select-none"
               title="Gacha Harian tersedia!">
-
-              {/* Floating bounce wrapper */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}>
-
-                {/* Gift box — foto kotak.png */}
+              <motion.div animate={{y:[0,-8,0]}} transition={{repeat:Infinity,duration:2,ease:'easeInOut'}}>
                 <div className="relative w-16 h-16">
-                  {/* Glow ring */}
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.2, 0.6] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
+                  <motion.div animate={{scale:[1,1.3,1],opacity:[0.6,0.2,0.6]}} transition={{repeat:Infinity,duration:2}}
                     className="absolute inset-0 rounded-2xl"
-                    style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.6) 0%, transparent 70%)' }}/>
-
+                    style={{background:'radial-gradient(circle, rgba(200,150,40,0.6) 0%, transparent 70%)'}}/>
                   <img src="/image/kotak.png" alt="kotak kado"
                     className="relative z-10 w-full h-full object-contain select-none pointer-events-none"
-                    style={{ filter: 'drop-shadow(0 8px 16px rgba(220,38,38,0.6)) drop-shadow(0 0 20px rgba(124,58,237,0.4))' }}/>
-
-                  {/* Ping dot */}
-                  <motion.span
-                    animate={{ scale: [1, 2, 1], opacity: [1, 0, 1] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-400 border-2 border-white shadow-lg"/>
-
-                  {/* Particle icons */}
-                  {[
-                    { icon: Star, top: '-10px', left: '50%', delay: 0 },
-                    { icon: SparklesIcon, top: '50%', left: '-14px', delay: 0.6 },
-                    { icon: Gift, bottom: '-10px', left: '50%', delay: 1.2 },
-                  ].map(({ icon: Icon, top, left, bottom, delay }, i) => (
-                    <motion.div key={i}
-                      className="absolute pointer-events-none"
-                      style={{ top, left, bottom, transform: 'translateX(-50%)' }}
-                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.1, 0.5], y: [0, -5, 0] }}
-                      transition={{ repeat: Infinity, duration: 2, delay }}>
-                      <Icon size={10} className="text-amber-400" fill="currentColor"/>
-                    </motion.div>
-                  ))}
+                    style={{filter:'drop-shadow(0 8px 16px rgba(200,150,40,0.6))'}}/>
+                  <motion.span animate={{scale:[1,2,1],opacity:[1,0,1]}} transition={{repeat:Infinity,duration:1.5}}
+                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-lg"/>
                 </div>
-
-                {/* Label */}
-                <motion.div
-                  animate={{ opacity: [0.8, 1, 0.8] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="mt-1 text-center">
+                <motion.div animate={{opacity:[0.8,1,0.8]}} transition={{repeat:Infinity,duration:2}} className="mt-1 text-center">
                   <span className="text-[10px] font-black text-white px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1"
-                    style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 2px 8px rgba(220,38,38,0.5)' }}>
+                    style={{background:'linear-gradient(135deg,#b45309,#92400e)',boxShadow:'0 2px 8px rgba(180,83,9,0.5)'}}>
                     <Gift size={9}/> BUKA!
                   </span>
                 </motion.div>
@@ -833,26 +739,19 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
 
         <AnimatePresence>
           {showPanel && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.2}}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowPanel(false)}>
-              <motion.div
-                initial={{ scale: 0.85, y: 30, opacity: 0 }}
-                animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={{ scale: 0.85, y: 30, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+              <motion.div initial={{scale:0.85,y:30,opacity:0}} animate={{scale:1,y:0,opacity:1}}
+                exit={{scale:0.85,y:30,opacity:0}}
+                transition={{type:'spring',stiffness:280,damping:22}}
                 onClick={e => e.stopPropagation()}
                 className="w-full max-w-sm relative">
                 <button onClick={() => setShowPanel(false)}
-                  className="absolute -top-3 -right-3 z-10 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-800 text-sm font-bold">
-                  ✕
+                  className="absolute -top-3 -right-3 z-10 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-500 text-sm font-bold">
+                  ?
                 </button>
-                <GachaInlinePanel
-                  canRoll={canRoll} badges={badges} activeId={activeId}
+                <GachaInlinePanel canRoll={canRoll} badges={badges} activeId={activeId}
                   rolling={rolling} nextLabel={nextLabel} isDark={isDark}
                   onRoll={handleRoll} onToggle={handleToggleBadge}/>
               </motion.div>
@@ -860,7 +759,6 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
           )}
         </AnimatePresence>
 
-        {/* Modals */}
         <AnimatePresence>
           {result && <RevealModal badge={result} isDark={isDark}
             onClose={() => { setResult(null); setEquipDialog(result) }}/>}
@@ -873,93 +771,87 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
     )
   }
 
+  // -- INLINE MODE --
   return (
     <>
       <div className="relative rounded-2xl overflow-hidden"
         style={{
-          background: canRoll
-            ? th(isDark,'linear-gradient(160deg,#0d0820,#160d35,#0d0820)','linear-gradient(160deg,#f5f3ff,#ede9fe,#f5f3ff)')
+          background:canRoll
+            ? th(isDark,'linear-gradient(160deg,#06050a,#0e0c18,#06050a)','linear-gradient(160deg,#f5f3ff,#ede9fe,#f5f3ff)')
             : th(isDark,'linear-gradient(160deg,#0c1018,#141c28,#0c1018)','linear-gradient(160deg,#f8fafc,#f1f5f9,#f8fafc)'),
-          boxShadow: canRoll
-            ? th(isDark,'0 0 0 1px rgba(124,58,237,0.25), 0 20px 60px rgba(109,40,217,0.2)','0 0 0 1px rgba(139,92,246,0.2), 0 20px 60px rgba(109,40,217,0.1)')
+          boxShadow:canRoll
+            ? th(isDark,'0 0 0 1px rgba(200,160,60,0.2), 0 20px 60px rgba(0,0,0,0.5)','0 0 0 1px rgba(200,160,60,0.15), 0 20px 60px rgba(0,0,0,0.08)')
             : th(isDark,'0 0 0 1px rgba(71,85,105,0.2), 0 8px 32px rgba(0,0,0,0.3)','0 0 0 1px rgba(203,213,225,0.8), 0 8px 32px rgba(0,0,0,0.06)'),
         }}>
-        {/* Top line */}
-        <motion.div animate={canRoll?{opacity:[0.4,1,0.4]}:{opacity:0.2}} transition={{repeat:Infinity,duration:2.5}}
+        <motion.div animate={canRoll?{opacity:[0.3,1,0.3]}:{opacity:0.15}} transition={{repeat:Infinity,duration:2.5}}
           className="absolute top-0 inset-x-0 h-px pointer-events-none"
-          style={{background:canRoll
-            ?'linear-gradient(90deg,transparent,rgba(139,92,246,0.9),transparent)'
-            :'linear-gradient(90deg,transparent,rgba(71,85,105,0.5),transparent)'}}/>
+          style={{background:canRoll?'linear-gradient(90deg,transparent,rgba(200,160,60,0.8),transparent)':'linear-gradient(90deg,transparent,rgba(71,85,105,0.4),transparent)'}}/>
 
-        {/* Header */}
         <div className="flex items-center gap-3 px-5 pt-5 pb-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{background:canRoll?th(isDark,'rgba(124,58,237,0.2)','rgba(124,58,237,0.1)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
-                border:`1px solid ${canRoll?th(isDark,'rgba(139,92,246,0.4)','rgba(139,92,246,0.3)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
-              {canRoll ? <Gift size={18} className="text-violet-500"/> : <Lock size={18} className="text-slate-400"/>}
+              style={{background:canRoll?th(isDark,'rgba(200,160,60,0.12)','rgba(200,160,60,0.08)'):th(isDark,'rgba(71,85,105,0.15)','rgba(203,213,225,0.5)'),
+                border:`1px solid ${canRoll?th(isDark,'rgba(200,160,60,0.3)','rgba(200,160,60,0.2)'):th(isDark,'rgba(71,85,105,0.25)','rgba(203,213,225,0.8)')}`}}>
+              {canRoll ? <Gift size={18} style={{color:'rgba(200,160,60,0.9)'}}/> : <Lock size={18} className="text-slate-400"/>}
             </div>
-            {canRoll&&(
-              <motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
-                className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500"
-                style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}/>
-            )}
+            {canRoll && <motion.span animate={{scale:[1,1.4,1],opacity:[0.7,1,0.7]}} transition={{repeat:Infinity,duration:1.1}}
+              className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500"
+              style={{border:`2px solid ${th(isDark,'#06050a','#f5f3ff')}`}}/>}
           </div>
           <div>
             <p className={`text-sm font-black ${th(isDark,'text-white','text-slate-800')}`}>Gacha Harian</p>
             <p className="text-[10px] font-medium"
-              style={{color:canRoll?th(isDark,'rgba(167,139,250,0.85)','rgba(109,40,217,0.8)'):th(isDark,'rgba(100,116,139,0.7)','rgba(100,116,139,0.8)')}}>
-              {canRoll?'✨ Hadiahmu menunggu hari ini!':`Tersedia lagi pukul ${nextLabel}`}
+              style={{color:canRoll?th(isDark,'rgba(200,160,60,0.8)','rgba(160,120,30,0.9)'):th(isDark,'rgba(100,116,139,0.7)','rgba(100,116,139,0.8)')}}>
+              {canRoll ? '? Hadiahmu menunggu hari ini!' : `Tersedia lagi pukul ${nextLabel}`}
             </p>
           </div>
           <div className="ml-auto px-2.5 py-1 rounded-full"
             style={{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
               border:`1px solid ${th(isDark,'rgba(255,255,255,0.07)','rgba(0,0,0,0.08)')}`}}>
-            <span className="text-[10px] font-bold" style={{color:th(isDark,'rgba(255,255,255,0.25)','rgba(0,0,0,0.3)')}}> 1× / hari</span>
+            <span className="text-[10px] font-bold" style={{color:th(isDark,'rgba(255,255,255,0.2)','rgba(0,0,0,0.25)')}}> 1� / hari</span>
           </div>
         </div>
 
-        {/* Gift box */}
         <div className="flex justify-center px-5 py-4">
           <GiftBox canRoll={canRoll} rolling={rolling} onClick={handleRoll} isDark={isDark}/>
         </div>
 
-        {/* Badge collection */}
-        {badges.length>0&&(
+        {badges.length > 0 && (
           <div className="px-5 pb-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="h-px flex-1" style={{background:th(isDark,'rgba(255,255,255,0.05)','rgba(0,0,0,0.06)')}}/>
               <span className="text-[10px] font-bold uppercase tracking-widest"
-                style={{color:th(isDark,'rgba(255,255,255,0.18)','rgba(0,0,0,0.3)')}}>Koleksi Badge</span>
+                style={{color:th(isDark,'rgba(255,255,255,0.15)','rgba(0,0,0,0.25)')}}>Koleksi Border</span>
               <div className="h-px flex-1" style={{background:th(isDark,'rgba(255,255,255,0.05)','rgba(0,0,0,0.06)')}}/>
             </div>
             <div className="flex flex-wrap gap-2">
-              {badges.map(badge=>{
-                const cfg=RARITY_CFG[badge.rarity]||RARITY_CFG.common
-                const isActive=activeId===badge.id
+              {badges.map(badge => {
+                const cfg  = RARITY_CFG[badge.rarity] || RARITY_CFG.common
+                const pool = BADGE_POOL.find(b => b.id === badge.id)
+                const glow = pool?.glow || cfg.glow
+                const isActive = activeId === badge.id
                 return (
                   <motion.button key={badge.id} whileTap={{scale:0.88}}
-                    onClick={()=>handleToggleBadge(badge)}
-                    title={`${badge.name} · ${cfg.label}${isActive?' (aktif)':''}`}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-                    style={isActive?{background:cfg.gradBtn,border:`1px solid ${cfg.particle}`,color:'#fff',boxShadow:`0 0 18px ${cfg.glow2}`}
-                      :{background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
-                        border:`1px solid ${th(isDark,'rgba(255,255,255,0.09)','rgba(0,0,0,0.1)')}`,
-                        color:th(isDark,'rgba(255,255,255,0.45)','rgba(0,0,0,0.5)')}}>
-                    {/* Thumbnail border kecil */}
-                    <div className="relative w-6 h-6 rounded-lg overflow-hidden flex-shrink-0"
+                    onClick={() => handleToggleBadge(badge)}
+                    title={`${badge.name} � ${cfg.label}${isActive?' (aktif)':''}`}
+                    className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                    style={isActive
+                      ? {background:`linear-gradient(135deg,${glow}cc,${glow}66)`,border:`1px solid ${glow}66`,color:'#fff',boxShadow:`0 0 18px ${glow}44`}
+                      : {background:th(isDark,'rgba(255,255,255,0.04)','rgba(0,0,0,0.04)'),
+                         border:`1px solid ${th(isDark,'rgba(255,255,255,0.08)','rgba(0,0,0,0.08)')}`,
+                         color:th(isDark,'rgba(255,255,255,0.4)','rgba(0,0,0,0.45)')}}>
+                    <div className="relative w-5 h-5 rounded-md overflow-hidden flex-shrink-0"
                       style={{background:cfg.gradBtn}}>
-                      {badge.borderImg
-                        ? <img src={badge.borderImg} alt={badge.name} className="absolute inset-0 w-full h-full object-cover"/>
-                        : <span className="text-base leading-none flex items-center justify-center w-full h-full">{badge.emoji}</span>
-                      }
+                      {(pool?.borderImg || badge.borderImg) && (
+                        <img src={pool?.borderImg || badge.borderImg} alt="" className="absolute inset-0 w-full h-full object-cover"/>
+                      )}
                     </div>
                     <span className="hidden sm:inline">{badge.name}</span>
-                    <span className={`text-[9px] font-black ${isActive?'text-white/75':cfg.text}`}>{cfg.short}</span>
-                    {isActive&&(
+                    <span className={`text-[9px] font-black ${isActive?'text-white/70':cfg.text}`}>{cfg.short}</span>
+                    {isActive && (
                       <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
-                        style={{border:`2px solid ${th(isDark,'#0d0820','#f5f3ff')}`}}>
-                        <span className="text-[8px] text-white font-black">✓</span>
+                        style={{border:`2px solid ${th(isDark,'#06050a','#f5f3ff')}`}}>
+                        <span className="text-[8px] text-white font-black">?</span>
                       </span>
                     )}
                   </motion.button>
@@ -970,25 +862,23 @@ export default function GachaHarian({ onBadgeChange, floating = false }) {
         )}
 
         <div className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
-          style={{background:'linear-gradient(90deg,transparent,rgba(99,102,241,0.35),transparent)'}}/>
+          style={{background:'linear-gradient(90deg,transparent,rgba(200,160,60,0.2),transparent)'}}/>
       </div>
 
-      {/* Reveal Modal */}
       <AnimatePresence>
-        {result&&(
-          <RevealModal badge={result} onClose={()=>{
-            const b=result; setResult(null)
-            setTimeout(()=>setEquipDialog(b),50)
+        {result && (
+          <RevealModal badge={result} onClose={() => {
+            const b = result; setResult(null)
+            setTimeout(() => setEquipDialog(b), 50)
           }}/>
         )}
       </AnimatePresence>
 
-      {/* Equip Dialog */}
       <AnimatePresence>
-        {equipDialog&&(
+        {equipDialog && (
           <EquipDialog badge={equipDialog} isDark={isDark}
-            onEquip={badgeId=>{handleEquipFromModal(badgeId);setEquipDialog(null)}}
-            onSkip={()=>setEquipDialog(null)}/>
+            onEquip={badgeId => { handleEquipFromModal(badgeId); setEquipDialog(null) }}
+            onSkip={() => setEquipDialog(null)}/>
         )}
       </AnimatePresence>
     </>
