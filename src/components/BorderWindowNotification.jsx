@@ -15,6 +15,8 @@ export default function BorderWindowNotification() {
   const [status, setStatus]       = useState(null)
   const [sisaDetik, setSisaDetik] = useState(0)
   const [dismissed, setDismissed] = useState(false)
+  const [autoHide, setAutoHide]   = useState(false)
+  const [shownWindowId, setShownWindowId] = useState(null) // track window yg sudah pernah ditampilkan
   const navigate = useNavigate()
 
   // Poll status setiap 30 detik
@@ -44,14 +46,27 @@ export default function BorderWindowNotification() {
     return () => clearInterval(t)
   }, [status?.border_window_aktif, sisaDetik, fetchStatus])
 
-  // Reset dismissed saat window baru dibuka
+  // Saat window baru dibuka (windowId berubah = mulai baru), reset dismissed
   useEffect(() => {
-    if (status?.border_window_aktif) setDismissed(false)
-  }, [status?.border_window_aktif])
+    if (!status?.border_window_aktif) return
+    const windowId = status?.border_window_selesai // pakai selesai sebagai ID unik window
+    if (windowId && windowId !== shownWindowId) {
+      setShownWindowId(windowId)
+      setDismissed(false)
+      setAutoHide(false)
+    }
+  }, [status?.border_window_aktif, status?.border_window_selesai])
+
+  // Auto-hide setelah 5 detik
+  useEffect(() => {
+    if (!status?.border_window_aktif || dismissed || autoHide) return
+    const t = setTimeout(() => setAutoHide(true), 5000)
+    return () => clearTimeout(t)
+  }, [status?.border_window_aktif, dismissed, autoHide])
 
   const aktif      = status?.border_window_aktif
   const sudahPilih = status?.sudah_pilih
-  const show       = aktif && !dismissed
+  const show       = aktif && !dismissed && !autoHide
 
   // Warna berdasarkan sisa waktu
   const urgent = sisaDetik <= 300 // < 5 menit

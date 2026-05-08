@@ -125,8 +125,19 @@ export default function SiswaDashboard() {
       // Gacha status (silent)
       try {
         const gRes = await siswaApi.getGachaStatus()
-        setActiveBadge(gRes.data.active_badge)
-        setOwnedBadges(gRes.data.badges || [])
+        // Cek juga border window — border window override gacha jika aktif
+        let activeBadgeId = gRes.data.active_badge
+        let badges = gRes.data.badges || []
+        try {
+          const bwRes = await siswaApi.getBorderWindowStatus()
+          // Border window override HANYA kalau ada active_badge (tidak null)
+          // dan border_expires_at masih valid (border_sisa_detik > 0)
+          if (bwRes.data.active_badge && bwRes.data.border_sisa_detik > 0) {
+            activeBadgeId = bwRes.data.active_badge
+          }
+        } catch { /* ignore */ }
+        setActiveBadge(activeBadgeId)
+        setOwnedBadges(badges)
       } catch { /* ignore */ }
     } catch { toast.error('Gagal memuat data') }
     finally { setLoading(false); setRefreshing(false) }
