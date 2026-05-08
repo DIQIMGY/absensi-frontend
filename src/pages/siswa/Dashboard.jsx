@@ -303,12 +303,12 @@ export default function SiswaDashboard() {
                   statusHariIni==='terlambat'?'bg-amber-400 shadow-[0_0_6px_#fbbf24]':
                   statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/40 animate-pulse'}`}/>
                 <div className="flex-1 min-w-0">
-                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status � </span>
+                  <span className="text-white/45 text-[9px] uppercase tracking-widest font-semibold">Status </span>
                   <span className="text-white font-black text-sm capitalize">
                     {statusHariIni==='belum'?'Belum Absen':cfgHariIni?.label||statusHariIni}
                   </span>
                   {absenHariIni?.jam_masuk && absenHariIni.jam_masuk!=='-' &&
-                    <span className="text-white/45 font-mono text-xs ml-1.5">� {absenHariIni.jam_masuk}</span>}
+                    <span className="text-white/45 font-mono text-xs ml-1.5">⏰ {absenHariIni.jam_masuk}</span>}
                 </div>
               </div>
               {statusHariIni==='belum' && (
@@ -367,7 +367,7 @@ export default function SiswaDashboard() {
             {!isLibur() && !isHariAktif() && (
               <motion.div key="nonaktif" initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} exit={{opacity:0}}
                 className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
-                <span className="text-xl">??</span>
+                <span className="text-xl">🏖️</span>
                 <div>
                   <p className="font-bold text-slate-600 dark:text-slate-300 text-sm">Hari Tidak Aktif</p>
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Hari ini bukan hari sekolah.</p>
@@ -522,9 +522,9 @@ export default function SiswaDashboard() {
                             ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                         }`}>
-                          {absenHariIni.metode === 'fingerprint' ? '?? Sidik Jari'
-                            : absenHariIni.metode === 'qr_code' ? '?? QR Code'
-                            : absenHariIni.metode === 'manual' ? '?? Manual'
+                          {absenHariIni.metode === 'fingerprint' ? '👆 Sidik Jari'
+                            : absenHariIni.metode === 'qr_code' ? '📷 QR Code'
+                            : absenHariIni.metode === 'manual' ? '✍️ Manual'
                             : absenHariIni.metode}
                         </span>
                       </div>
@@ -590,7 +590,7 @@ export default function SiswaDashboard() {
                     <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">{tier.next || 'Level tertinggi 🏆'}</p>
                   </div>
                   <div className="mt-3 flex items-center">
-                    {[{d:1,e:'?'},{d:20,e:'??'},{d:50,e:'??'},{d:75,e:'??'}].map((m,i,arr)=>{
+                    {[{d:1,e:'🌟'},{d:20,e:'⚡'},{d:50,e:'🔥'},{d:75,e:'🔮'}].map((m,i,arr)=>{
                       const done = streak >= m.d
                       const active = done && (i===arr.length-1 || streak < arr[i+1].d)
                       return (
@@ -858,7 +858,7 @@ export default function SiswaDashboard() {
                         <div className="space-y-1.5">
                           {activeRank.list.slice(0,5).map((s,i)=>{
                             const isMe = s.id===myId
-                            const medals = ['??','??','??']
+                            const medals = ['🥇','🥈','🥉']
                             const maxVal = activeRank.list[0]?.[activeRank.valKey]||1
                             const barW = Math.round((s[activeRank.valKey]/maxVal)*100)
                             return (
