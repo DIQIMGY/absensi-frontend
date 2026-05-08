@@ -6,12 +6,171 @@ import {
   AlertCircle, XCircle, Info, Shield,
   CheckCircle, Sunrise, Sunset, Timer,
   Image as ImageIcon, Palmtree, Sparkles, Plus, Trash2, CalendarDays, Globe, HelpCircle, Mountain, Award,
-  Fingerprint, Wifi, WifiOff, RefreshCw, Zap, Activity, Server,
+  Fingerprint, Wifi, WifiOff, RefreshCw, Zap, Activity, Server, Unlock, Lock,
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 import Select from 'react-select'
 import { usePengaturanStore } from '../../stores/pengaturanStore'
+import { useState as useLocalState, useEffect as useLocalEffect } from 'react'
+
+// ─── BORDER WINDOW PANEL ──────────────────────────────────────
+function BorderWindowPanel() {
+  const [status, setStatus]   = useLocalState(null)
+  const [durasi, setDurasi]   = useLocalState(60)
+  const [loading, setLoading] = useLocalState(false)
+  const [sisaDetik, setSisaDetik] = useLocalState(0)
+
+  const fetchStatus = async () => {
+    try {
+      const res = await adminApi.getBorderWindowStatus()
+      setStatus(res.data)
+      setSisaDetik(res.data.sisa_detik || 0)
+    } catch { /* silent */ }
+  }
+
+  useLocalEffect(() => {
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Countdown lokal
+  useLocalEffect(() => {
+    if (!status?.border_window_aktif || sisaDetik <= 0) return
+    const t = setInterval(() => setSisaDetik(p => Math.max(0, p - 1)), 1000)
+    return () => clearInterval(t)
+  }, [status?.border_window_aktif, sisaDetik])
+
+  const handleBuka = async () => {
+    setLoading(true)
+    try {
+      await adminApi.bukaBorderWindow(durasi)
+      toast.success(`Window border dibuka ${durasi} menit!`)
+      fetchStatus()
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal') }
+    finally { setLoading(false) }
+  }
+
+  const handleTutup = async () => {
+    setLoading(true)
+    try {
+      await adminApi.tutupBorderWindow()
+      toast.success('Window border ditutup')
+      fetchStatus()
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal') }
+    finally { setLoading(false) }
+  }
+
+  const formatSisa = (s) => {
+    if (s <= 0) return '00:00'
+    return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+  }
+
+  const aktif  = status?.border_window_aktif
+  const urgent = sisaDetik <= 300
+  const danger = sisaDetik <= 60
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+        <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+          <Sparkles size={14} className="text-violet-600 dark:text-violet-400"/>
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Window Pilih Border Bebas</p>
+          <p className="text-[11px] text-slate-400">Aktifkan agar siswa bisa memilih border apapun selama waktu yang ditentukan</p>
+        </div>
+        {/* Status badge */}
+        <div className={`px-2.5 py-1 rounded-full text-[10px] font-black ${
+          aktif ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+        }`}>
+          {aktif ? '● AKTIF' : '○ NONAKTIF'}
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+        {/* Status aktif */}
+        {aktif && (
+          <div className={`p-4 rounded-xl border ${
+            danger ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40'
+            : urgent ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40'
+            : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/40'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm font-black ${danger ? 'text-red-600 dark:text-red-400' : urgent ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  Window sedang aktif
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Siswa bisa memilih border bebas
+                </p>
+              </div>
+              <div className="text-right">
+                <p className={`text-2xl font-black tabular-nums ${danger ? 'text-red-600 dark:text-red-400' : urgent ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  {formatSisa(sisaDetik)}
+                </p>
+                <p className="text-[10px] text-slate-400">sisa waktu</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Form buka window */}
+        {!aktif && (
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                Durasi Window (menit)
+              </label>
+              <input
+                type="number" min={5} max={1440} value={durasi}
+                onChange={e => setDurasi(Number(e.target.value))}
+                className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+            <div className="flex gap-2">
+              {[15,30,60].map(d => (
+                <button key={d} onClick={() => setDurasi(d)}
+                  className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    durasi === d
+                      ? 'bg-violet-500 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
+                  }`}>
+                  {d}m
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tombol aksi */}
+        <div className="flex gap-2">
+          {!aktif ? (
+            <button onClick={handleBuka} disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black text-white transition-all disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 4px 16px rgba(124,58,237,0.3)' }}>
+              <Unlock size={14}/>
+              {loading ? 'Membuka...' : `Buka Window (${durasi} menit)`}
+            </button>
+          ) : (
+            <button onClick={handleTutup} disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black text-white transition-all disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 4px 16px rgba(220,38,38,0.3)' }}>
+              <Lock size={14}/>
+              {loading ? 'Menutup...' : 'Tutup Window Sekarang'}
+            </button>
+          )}
+        </div>
+
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-start gap-1.5">
+          <AlertCircle size={11} className="flex-shrink-0 mt-0.5"/>
+          Setelah siswa memilih 1 border, mereka tidak bisa memilih lagi sampai window berikutnya dibuka. Border berlaku 1 hari.
+        </p>
+      </div>
+    </div>
+  )
+}
 
 const HARI_OPTIONS = [
   { value: 'Senin', label: 'Senin' },
@@ -1215,6 +1374,9 @@ export default function Pengaturan() {
           {activeTab === 'budaya' && (
             <motion.div key="budaya" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }}
               transition={{ duration:0.2 }} className="space-y-4">
+
+              {/* ── BORDER WINDOW ── */}
+              <BorderWindowPanel/>
 
               {/* Info Budaya */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">

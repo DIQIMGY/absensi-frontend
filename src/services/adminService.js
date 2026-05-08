@@ -124,6 +124,11 @@ export const adminApi = {
   updatePengaturan: (data) => api.post('/admin/pengaturan', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+
+  // Border Window
+  getBorderWindowStatus: () => api.get('/admin/border-window'),
+  bukaBorderWindow: (durasi) => api.post('/admin/border-window/buka', { durasi }),
+  tutupBorderWindow: () => api.post('/admin/border-window/tutup'),
   
   // Laporan
   getLaporanHarian: (params) => api.get('/admin/laporan/harian', { params }),

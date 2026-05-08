@@ -5,7 +5,7 @@ import {
   Camera, Save, QrCode, Loader, Download,
   X, Eye, AlertCircle, GraduationCap,
   UserCircle, Home, Award, BookOpen,
-  CheckCircle, Shield, Sparkles,
+  CheckCircle, Shield, Sparkles, Lock,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
@@ -22,9 +22,9 @@ const cv = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { stagge
 const inputCls = 'w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all'
 
 const TABS = [
-  { id: 'profil', label: 'Profil', icon: User },
+  { id: 'profil',   label: 'Profil',   icon: User },
   { id: 'akademik', label: 'Akademik', icon: GraduationCap },
-  { id: 'qr', label: 'QR Code', icon: QrCode },
+  { id: 'qr',       label: 'QR Code',  icon: QrCode },
 ]
 
 export default function SiswaProfil() {
@@ -46,6 +46,8 @@ export default function SiswaProfil() {
   const [activeTab, setActiveTab] = useState('profil')
   const [activeBadge, setActiveBadge] = useState(null)
   const [ownedBadges, setOwnedBadges] = useState([])
+  const [showBorderModal, setShowBorderModal] = useState(false)
+  const [borderWindow, setBorderWindow] = useState(null)
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -58,6 +60,19 @@ export default function SiswaProfil() {
       setOwnedBadges(res.data.badges || [])
     } catch { /* silent */ }
   }
+
+  const fetchBorderWindow = async () => {
+    try {
+      const res = await siswaApi.getBorderWindowStatus()
+      setBorderWindow(res.data)
+    } catch { /* silent */ }
+  }
+
+  useEffect(() => {
+    fetchBorderWindow()
+    const interval = setInterval(fetchBorderWindow, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchProfil = async () => {
     try {
@@ -354,6 +369,59 @@ export default function SiswaProfil() {
             </div>
           </div>
         )}
+
+        {/* Button Border Tersedia */}
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowBorderModal(true)}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all group"
+            style={{
+              background: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
+                ? 'linear-gradient(135deg, rgba(120,60,200,0.15) 0%, rgba(60,100,220,0.12) 100%)'
+                : 'linear-gradient(135deg, rgba(120,60,200,0.08) 0%, rgba(60,100,220,0.08) 100%)',
+              border: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
+                ? '1px solid rgba(160,100,255,0.35)'
+                : '1px solid rgba(120,60,200,0.15)',
+            }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center relative"
+                style={{ background: 'linear-gradient(135deg, rgba(120,60,200,0.15), rgba(60,100,220,0.15))' }}>
+                <Sparkles size={16} className="text-violet-500 dark:text-violet-400"/>
+                {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih && (
+                  <motion.span animate={{ scale:[1,1.4,1], opacity:[1,0.5,1] }} transition={{ repeat:Infinity, duration:1.2 }}
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-violet-500 border-2 border-white dark:border-slate-900"/>
+                )}
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-slate-800 dark:text-white">Border Tersedia</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                  {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
+                    ? '✨ Window aktif — pilih border bebas sekarang!'
+                    : `${ownedBadges.length} dimiliki · ${BADGE_POOL.filter(b => b.borderImg).length} total`
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {ownedBadges.length > 0 && (
+                <div className="flex -space-x-1.5">
+                  {ownedBadges.slice(0,3).map(b => {
+                    const pool = BADGE_POOL.find(p => p.id === b.id)
+                    return pool?.borderImg ? (
+                      <div key={b.id} className="w-6 h-6 rounded-full overflow-hidden border-2 border-white dark:border-slate-900 bg-slate-200">
+                        <img src={pool.borderImg} alt="" className="w-full h-full object-cover"/>
+                      </div>
+                    ) : null
+                  })}
+                </div>
+              )}
+              <svg className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </motion.button>
+        </div>
       </div>
 
       {/* TABS */}
@@ -522,6 +590,240 @@ export default function SiswaProfil() {
           )}
         </div>
       </Modal>
+
+      {/* ── MODAL BORDER TERSEDIA ── */}
+      <AnimatePresence>
+        {showBorderModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(16px)' }}
+            onClick={() => setShowBorderModal(false)}>
+            <motion.div
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(160deg, #07060d 0%, #0f0d1a 100%)',
+                boxShadow: '0 -8px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)',
+                maxHeight: '90vh',
+              }}>
+
+              {/* Handle bar mobile */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-white/20"/>
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                <div>
+                  <h2 className="text-base font-black text-white">Border Tersedia</h2>
+                  <p className="text-[11px] text-white/40 mt-0.5">
+                    {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
+                      ? '✨ Window aktif — pilih 1 border bebas!'
+                      : `${ownedBadges.length} dimiliki · ${BADGE_POOL.filter(b => b.borderImg).length} total · Gacha harian untuk membuka`
+                    }
+                  </p>
+                </div>
+                <button onClick={() => setShowBorderModal(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>
+                  <X size={14}/>
+                </button>
+              </div>
+
+              {/* Banner window aktif */}
+              {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih && (
+                <motion.div
+                  animate={{ opacity: [0.85, 1, 0.85] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(120,60,200,0.25), rgba(60,100,220,0.2))',
+                    border: '1px solid rgba(160,100,255,0.3)',
+                  }}>
+                  <Sparkles size={13} className="text-violet-400 flex-shrink-0"/>
+                  <p className="text-[11px] text-violet-300 font-bold flex-1">
+                    Pilih 1 border apapun — gratis! Hanya bisa 1x per window.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Banner sudah pilih */}
+              {borderWindow?.border_window_aktif && borderWindow?.sudah_pilih && (
+                <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2"
+                  style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                  <CheckCircle size={13} className="text-emerald-400 flex-shrink-0"/>
+                  <p className="text-[11px] text-emerald-300 font-bold">
+                    Kamu sudah memilih border di window ini. Tunggu window berikutnya!
+                  </p>
+                </div>
+              )}
+
+              {/* Garis */}
+              <div className="h-px mx-5" style={{ background: 'rgba(255,255,255,0.06)' }}/>
+
+              {/* Grid border */}
+              <div className="overflow-y-auto px-4 py-4" style={{ maxHeight: 'calc(90vh - 160px)' }}>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {BADGE_POOL.filter(b => b.borderImg).map(border => {
+                    const cfg      = RARITY_CFG[border.rarity] || RARITY_CFG.common
+                    const glow     = border.glow  || cfg.glow
+                    const glow2    = border.glow2 || cfg.glow2
+                    const owned    = ownedBadges.some(b => b.id === border.id)
+                    const isActive = activeBadge === border.id
+                    // Bisa dipilih bebas saat window aktif dan belum pilih
+                    const windowAktif   = borderWindow?.border_window_aktif
+                    const sudahPilih    = borderWindow?.sudah_pilih
+                    const bisaPilihBebas = windowAktif && !sudahPilih
+                    const canInteract   = owned || bisaPilihBebas
+
+                    return (
+                      <motion.button
+                        key={border.id}
+                        whileTap={canInteract ? { scale: 0.95 } : {}}
+                        onClick={async () => {
+                          if (!canInteract) return
+                          try {
+                            if (bisaPilihBebas && !owned) {
+                              // Pilih via border window
+                              await siswaApi.pilihBorderWindow(border.id)
+                              setActiveBadge(border.id)
+                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
+                              toast.success(`${border.name} terpasang!`)
+                            } else if (owned) {
+                              if (isActive) {
+                                await siswaApi.unequipBadge()
+                                setActiveBadge(null)
+                                toast.success('Border dilepas')
+                              } else {
+                                await siswaApi.equipBadge(border.id)
+                                setActiveBadge(border.id)
+                                toast.success(`${border.name} terpasang!`)
+                              }
+                            }
+                          } catch (e) {
+                            toast.error(e.response?.data?.message || 'Gagal')
+                          }
+                        }}
+                        className="relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
+                        style={{
+                          background: isActive
+                            ? `linear-gradient(160deg, ${glow}22, ${glow2}18)`
+                            : bisaPilihBebas && !owned
+                            ? 'rgba(120,60,200,0.08)'
+                            : owned
+                            ? 'rgba(255,255,255,0.04)'
+                            : 'rgba(255,255,255,0.02)',
+                          border: isActive
+                            ? `1px solid ${glow}55`
+                            : bisaPilihBebas && !owned
+                            ? '1px solid rgba(160,100,255,0.2)'
+                            : owned
+                            ? '1px solid rgba(255,255,255,0.08)'
+                            : '1px solid rgba(255,255,255,0.04)',
+                          cursor: canInteract ? 'pointer' : 'default',
+                        }}>
+
+                        {/* Preview border */}
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+                          <div className="absolute inset-0 rounded-full"
+                            style={{ background: canInteract ? `radial-gradient(circle, ${glow}18 0%, transparent 70%)` : 'rgba(255,255,255,0.03)' }}/>
+
+                          {canInteract ? (
+                            <motion.img
+                              src={border.borderImg}
+                              alt={border.name}
+                              className="absolute pointer-events-none select-none"
+                              style={{
+                                top: '50%', left: '50%',
+                                transform: 'translate(-50%,-50%) scale(1.35)',
+                                width: '100%', height: '100%',
+                                objectFit: 'contain', zIndex: 10,
+                              }}
+                              animate={{ filter: isActive ? [
+                                `drop-shadow(0 0 6px ${glow2})`,
+                                `drop-shadow(0 0 16px ${glow})`,
+                                `drop-shadow(0 0 6px ${glow2})`,
+                              ] : [`drop-shadow(0 0 4px ${glow2})`]}}
+                              transition={{ repeat: isActive ? Infinity : 0, duration: 2.4, ease: 'easeInOut' }}
+                            />
+                          ) : (
+                            <>
+                              <img
+                                src={border.borderImg}
+                                alt={border.name}
+                                className="absolute pointer-events-none select-none"
+                                style={{
+                                  top: '50%', left: '50%',
+                                  transform: 'translate(-50%,-50%) scale(1.35)',
+                                  width: '100%', height: '100%',
+                                  objectFit: 'contain', zIndex: 10,
+                                  filter: 'grayscale(1) brightness(0.3) blur(1px)',
+                                }}
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center z-20">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center"
+                                  style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                  <Lock size={12} className="text-white/50"/>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* Badge "FREE" saat window aktif dan belum punya */}
+                          {bisaPilihBebas && !owned && (
+                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
+                              style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)' }}>
+                              FREE
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Nama & rarity */}
+                        <div className="text-center w-full">
+                          <p className="text-[10px] font-black leading-tight truncate"
+                            style={{ color: canInteract ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)' }}>
+                            {border.name}
+                          </p>
+                          <p className="text-[9px] font-bold mt-0.5"
+                            style={{ color: canInteract ? glow : 'rgba(255,255,255,0.15)' }}>
+                            {cfg.label}
+                          </p>
+                        </div>
+
+                        {/* Badge aktif */}
+                        {isActive && (
+                          <motion.div
+                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
+                            style={{ border: '2px solid #07060d' }}>
+                            <CheckCircle size={10} className="text-white"/>
+                          </motion.div>
+                        )}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+
+                {/* Info */}
+                <div className="mt-4 p-3 rounded-2xl flex items-center gap-3"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <Sparkles size={14} className="text-amber-400 flex-shrink-0"/>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Border terkunci bisa dibuka lewat <span className="text-amber-400 font-bold">Gacha Harian</span> atau saat admin mengaktifkan <span className="text-violet-400 font-bold">Window Pilih Bebas</span>.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

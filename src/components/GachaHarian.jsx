@@ -111,6 +111,30 @@ export const BADGE_POOL = [
     glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
   { id:'gamer',          name:'Lembah Baliem Papua',      emoji:'🌊', rarity:'common',    borderImg:'/image/b10.png',
     glow:'rgba(40,140,60,0.78)',   glow2:'rgba(120,70,20,0.42)'  },
+  // b11 — Bromo: hitam, coklat, oranye, pink, ungu, putih asap
+  { id:'bromo',          name:'Bromo Sang Penjaga',       emoji:'🌋', rarity:'epic',      borderImg:'/image/b11.png',
+    glow:'rgba(220,100,30,0.88)',  glow2:'rgba(160,60,120,0.48)' },
+  // b12 — Toba: biru tua, hijau, coklat kayu, merah-putih-hitam ulos
+  { id:'toba',           name:'Danau Toba',               emoji:'🏞️', rarity:'rare',      borderImg:'/image/b12.png',
+    glow:'rgba(30,80,180,0.85)',   glow2:'rgba(40,120,60,0.45)'  },
+  // b13 — Prambanan: abu-abu, emas senja, oranye, ungu, hijau lumut
+  { id:'prambanan',      name:'Prambanan Senja',          emoji:'🛕', rarity:'epic',      borderImg:'/image/b13.png',
+    glow:'rgba(220,130,40,0.88)',  glow2:'rgba(120,60,180,0.48)' },
+  // b14 — Barongan Jawa: merah darah, putih, hitam, emas, kuning-hijau mata
+  { id:'barongan',       name:'Barongan Jawa',            emoji:'🦁', rarity:'legendary', borderImg:'/image/b14.png',
+    glow:'rgba(200,20,20,0.92)',   glow2:'rgba(200,160,20,0.52)' },
+  // b15 — Jaranan: putih kuda, emas, merah, hitam surai, coklat bambu
+  { id:'jaranan',        name:'Jaranan Kepang',           emoji:'🐴', rarity:'rare',      borderImg:'/image/b15.png',
+    glow:'rgba(220,200,120,0.85)', glow2:'rgba(180,60,40,0.45)'  },
+  // b16 — Tari Legong: emas, merah, putih, biru, hijau, oranye
+  { id:'legong',         name:'Tari Legong',              emoji:'💃', rarity:'epic',      borderImg:'/image/b16.png',
+    glow:'rgba(220,160,30,0.88)',  glow2:'rgba(180,30,30,0.48)'  },
+  // b17 — Dayak Ngaju: hitam, merah darah, putih tulang, emas, hijau, perak
+  { id:'dayak',          name:'Dayak Ngaju',              emoji:'🗡️', rarity:'legendary', borderImg:'/image/b17.png',
+    glow:'rgba(200,20,20,0.92)',   glow2:'rgba(180,180,180,0.45)'},
+  // b18 — Gandrung: emas antik, merah beludru, hitam pekat, coklat kayu, putih melati
+  { id:'gandrung',       name:'Gandrung',                 emoji:'🎶', rarity:'epic',      borderImg:'/image/b18.png',
+    glow:'rgba(201,162,39,0.9)',   glow2:'rgba(139,0,0,0.5)'     },
   // Zonk
   { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
   { id:'zonk_snail', name:'Siput Pelan',        emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },

@@ -46,4 +46,8 @@ export const siswaApi = {
   rollGacha: () => api.post('/siswa/gacha/roll'),
   equipBadge: (badge_id) => api.post('/siswa/gacha/equip', { badge_id }),
   unequipBadge: () => api.post('/siswa/gacha/unequip'),
+
+  // Border Window
+  getBorderWindowStatus: () => api.get('/siswa/border-window'),
+  pilihBorderWindow: (badge_id) => api.post('/siswa/border-window/pilih', { badge_id }),
 }

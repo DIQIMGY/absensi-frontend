@@ -30,6 +30,7 @@ import KampusImpian from '../../components/KampusImpian'
 import TopKampus from '../../components/TopKampus'
 import SiswaBerprestasi from '../../components/SiswaBerprestasi'
 import GachaHarian, { BadgeOverlay } from '../../components/GachaHarian'
+import BorderWindowNotification from '../../components/BorderWindowNotification'
 import toast from 'react-hot-toast'
 
 const STATUS_CFG = {
@@ -210,6 +211,7 @@ export default function SiswaDashboard() {
       <RankingNotification show={showRankingNotif} ranking={ranking} onClose={() => setShowRankingNotif(false)}/>
       <PulangNotification/>
       <SantaiDirumahNotification/>
+      <BorderWindowNotification/>
       {absenHariIni && <SelamatPulangNotification statusKehadiran={absenHariIni.status} dataAbsensi={absenHariIni}/>}
 
       <div className="pb-12">
