@@ -60,6 +60,7 @@ export default function SiswaProfil() {
   const [showBorderModal, setShowBorderModal] = useState(false)
   const [borderWindow, setBorderWindow] = useState(null)
   const [borderSisaDetik, setBorderSisaDetik] = useState(0)
+  const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null) // badge yg dipilih via window, persist selama expires_at valid
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -80,6 +81,12 @@ export default function SiswaProfil() {
       // Sync active_badge dari border window (bisa auto-expire di backend)
       if (res.data.active_badge !== undefined) setActiveBadge(res.data.active_badge)
       setBorderSisaDetik(res.data.border_sisa_detik || 0)
+      // Simpan badge yang dipilih via window — tidak berubah saat equip/unequip
+      if (res.data.border_sisa_detik > 0 && res.data.active_badge) {
+        setWindowPickedBadgeId(res.data.active_badge)
+      } else if (!res.data.border_sisa_detik || res.data.border_sisa_detik <= 0) {
+        setWindowPickedBadgeId(null)
+      }
     } catch { /* silent */ }
   }
   // Countdown lokal sisa waktu border aktif
@@ -702,14 +709,8 @@ export default function SiswaProfil() {
                     const windowAktif    = borderWindow?.border_window_aktif
                     const sudahPilih     = borderWindow?.sudah_pilih
                     const bisaPilihBebas = windowAktif && !sudahPilih
-                    // Border yang sudah dipilih via window & masih berlaku (bisa equip/unequip ulang)
-                    const isWindowBadge  = sudahPilih && borderSisaDetik > 0 && isActive
-                    // Bisa interact: punya dari gacha, bisa pilih bebas, atau ini border window aktif
-                    const windowBadgeOwned = sudahPilih && borderSisaDetik > 0 && (
-                      // Cek apakah border ini yang dipilih — kalau isActive atau pernah dipilih
-                      // Kita simpan di borderWindow.active_badge
-                      (borderWindow?.active_badge === border.id) || isActive
-                    )
+                    // Border ini yang dipilih via window & masih berlaku — bisa equip/unequip berulang
+                    const windowBadgeOwned = borderSisaDetik > 0 && windowPickedBadgeId === border.id
                     const canInteract    = owned || bisaPilihBebas || windowBadgeOwned
 
                     return (
@@ -720,24 +721,15 @@ export default function SiswaProfil() {
                           if (!canInteract) return
                           try {
                             if (bisaPilihBebas && !owned && !windowBadgeOwned) {
-                              // Pilih border baru via window
+                              // Pilih border baru via window (1x per window)
                               await siswaApi.pilihBorderWindow(border.id)
                               setActiveBadge(border.id)
-                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true, active_badge: border.id }))
+                              setWindowPickedBadgeId(border.id)
+                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
                               setBorderSisaDetik(86400)
                               toast.success(`${border.name} terpasang! Berlaku 1 hari.`)
-                            } else if (windowBadgeOwned || (owned && !bisaPilihBebas)) {
-                              // Equip/unequip border yang sudah dimiliki (gacha atau window)
-                              if (isActive) {
-                                await siswaApi.unequipBadge()
-                                setActiveBadge(null)
-                                toast.success('Border dilepas')
-                              } else {
-                                await siswaApi.equipBadge(border.id)
-                                setActiveBadge(border.id)
-                                toast.success(`${border.name} terpasang!`)
-                              }
-                            } else if (owned) {
+                            } else {
+                              // Equip / unequip — bisa berulang kali
                               if (isActive) {
                                 await siswaApi.unequipBadge()
                                 setActiveBadge(null)
