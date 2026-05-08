@@ -41,11 +41,11 @@ const STATUS_CFG = {
 }
 
 const getStreakTier = (s) => {
-  if (s >= 75) return { accent:'#7c3aed', soft:'rgba(124,58,237,0.12)', label:'Legenda', emoji:'??', next:null }
-  if (s >= 50) return { accent:'#dc2626', soft:'rgba(220,38,38,0.10)',  label:'Membara', emoji:'??', next:`${75-s} hari ke Legenda` }
-  if (s >= 20) return { accent:'#ea580c', soft:'rgba(234,88,12,0.10)',  label:'Konsisten',emoji:'??', next:`${50-s} hari ke Membara` }
-  if (s >= 1)  return { accent:'#d97706', soft:'rgba(217,119,6,0.10)',  label:'Semangat',emoji:'?', next:`${20-s} hari ke Konsisten` }
-  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',   emoji:'�',  next:'Hadir hari ini untuk mulai' }
+  if (s >= 75) return { accent:'#7c3aed', soft:'rgba(124,58,237,0.12)', label:'Legenda',   emoji:'🔮', next:null }
+  if (s >= 50) return { accent:'#dc2626', soft:'rgba(220,38,38,0.10)',  label:'Membara',   emoji:'🔥', next:`${75-s} hari ke Legenda` }
+  if (s >= 20) return { accent:'#ea580c', soft:'rgba(234,88,12,0.10)',  label:'Konsisten', emoji:'⚡',    next:`${50-s} hari ke Membara` }
+  if (s >= 1)  return { accent:'#d97706', soft:'rgba(217,119,6,0.10)',  label:'Semangat',  emoji:'🌟', next:`${20-s} hari ke Konsisten` }
+  return         { accent:'#6366f1', soft:'rgba(99,102,241,0.08)',  label:'Mulai',     emoji:'🚀', next:'Hadir hari ini untuk mulai' }
 }
 
 const Avatar = ({ src, name, size = 32, className = '' }) => {
@@ -728,10 +728,10 @@ export default function SiswaDashboard() {
                   <span className="ml-auto text-white/40 text-[10px] font-bold">{pctHadir}%</span>
                 </div>
                 <p className="text-white/70 text-xs leading-relaxed mb-3">
-                  {pctHadir>=90?'"Konsistensimu luar biasa! Terus pertahankan." ??'
-                  :pctHadir>=75?'"Kamu di jalur yang benar! Sedikit lagi." ??'
+                  {pctHadir>=90?'"Konsistensimu luar biasa! Terus pertahankan." 🌟'
+                  :pctHadir>=75?'"Kamu di jalur yang benar! Sedikit lagi." 💪'
                   :pctHadir>=60?'"Setiap hari hadir adalah investasi masa depan." 📚'
-                  :'"Mulai hari ini, jadikan kehadiran prioritas!" ??'}
+                  :'"Mulai hari ini, jadikan kehadiran prioritas!" 🚀'}
                 </p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-1 bg-white/15 rounded-full overflow-hidden">
