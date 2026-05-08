@@ -177,7 +177,7 @@ export const BADGE_POOL = [
     glow:'rgba(160,140,80,0.82)',  glow2:'rgba(60,80,40,0.42)'   },
   { id:'megalitik',      name:'Batu Megalitikum',         emoji:'🗿', rarity:'rare',      borderImg:'/image/b28.png',
     glow:'rgba(120,120,100,0.82)', glow2:'rgba(40,80,40,0.42)'   },
-  { id:'bookworm',       name:'Reog Ponorogo',            emoji:'🔥', rarity:'rare',      borderImg:'/image/b8.png',
+  { id:'bookworm',       name:'Reog Ponorogo',            emoji:'🔥', rarity:'legendary',      borderImg:'/image/b8.png',
     glow:'rgba(230,50,20,0.82)',   glow2:'rgba(200,170,0,0.42)'  },
   // ── ZONK ──────────────────────────────────────────────────────
   { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
