@@ -165,6 +165,12 @@ export const BADGE_POOL = [
   // b30 — Api Abadi Mrapen: biru api, oranye, kuning, putih, hitam tanah, hijau rumput
   { id:'mrapen',         name:'Api Abadi Mrapen',         emoji:'🔥', rarity:'legendary', borderImg:'/image/b30.png',
     glow:'rgba(40,120,255,0.92)',  glow2:'rgba(220,120,20,0.55)' },
+  // b31 — Tari Seblang Olehsari: merah, hijau daun, emas, putih, kuning, biru tua, coklat
+  { id:'seblang',        name:'Seblang Olehsari',         emoji:'🌿', rarity:'epic',      borderImg:'/image/b31.png',
+    glow:'rgba(180,30,30,0.88)',   glow2:'rgba(40,120,40,0.48)'  },
+  // b32 — Tari Seblang Bakungan: merah tua kusam, hijau layu, emas pudar, maroon, ungu tua, indigo, coklat tua, hitam
+  { id:'seblang_tua',    name:'Seblang Bakungan',         emoji:'🌑', rarity:'legendary', borderImg:'/image/b32.png',
+    glow:'rgba(100,20,60,0.92)',   glow2:'rgba(40,20,80,0.55)'   },
   // Zonk
   { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
   { id:'zonk_snail', name:'Siput Pelan',        emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
