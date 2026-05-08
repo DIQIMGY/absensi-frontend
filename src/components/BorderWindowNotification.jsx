@@ -128,7 +128,7 @@ export default function BorderWindowNotification() {
                   <>
                     <p className="text-xs font-black text-white leading-tight">Border sudah dipilih ✓</p>
                     <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      Window tutup dalam <span className="font-black" style={{ color: danger ? 'rgba(255,80,80,0.9)' : urgent ? 'rgba(255,160,60,0.9)' : 'rgba(180,120,255,0.9)' }}>{formatSisa(sisaDetik)}</span>
+                      Berlaku 1 hari · Window tutup dalam <span className="font-black" style={{ color: danger ? 'rgba(255,80,80,0.9)' : urgent ? 'rgba(255,160,60,0.9)' : 'rgba(180,120,255,0.9)' }}>{formatSisa(sisaDetik)}</span>
                     </p>
                   </>
                 ) : (

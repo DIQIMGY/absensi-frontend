@@ -21,6 +21,17 @@ const cv = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { stagge
 
 const inputCls = 'w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all'
 
+// Format detik → "23j 59m" atau "59m 30d"
+function formatSisaBorder(detik) {
+  if (!detik || detik <= 0) return null
+  const h = Math.floor(detik / 3600)
+  const m = Math.floor((detik % 3600) / 60)
+  const s = detik % 60
+  if (h > 0) return `${h}j ${m}m lagi`
+  if (m > 0) return `${m}m ${s}d lagi`
+  return `${s}d lagi`
+}
+
 const TABS = [
   { id: 'profil',   label: 'Profil',   icon: User },
   { id: 'akademik', label: 'Akademik', icon: GraduationCap },
@@ -48,6 +59,7 @@ export default function SiswaProfil() {
   const [ownedBadges, setOwnedBadges] = useState([])
   const [showBorderModal, setShowBorderModal] = useState(false)
   const [borderWindow, setBorderWindow] = useState(null)
+  const [borderSisaDetik, setBorderSisaDetik] = useState(0)
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -65,8 +77,23 @@ export default function SiswaProfil() {
     try {
       const res = await siswaApi.getBorderWindowStatus()
       setBorderWindow(res.data)
+      // Sync active_badge dari border window (bisa auto-expire di backend)
+      if (res.data.active_badge !== undefined) setActiveBadge(res.data.active_badge)
+      setBorderSisaDetik(res.data.border_sisa_detik || 0)
     } catch { /* silent */ }
   }
+
+  // Countdown lokal sisa waktu border aktif
+  useEffect(() => {
+    if (!borderSisaDetik || borderSisaDetik <= 0) return
+    const t = setInterval(() => {
+      setBorderSisaDetik(prev => {
+        if (prev <= 1) { fetchBorderWindow(); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(t)
+  }, [borderSisaDetik > 0])
 
   useEffect(() => {
     fetchBorderWindow()
@@ -398,6 +425,8 @@ export default function SiswaProfil() {
                 <p className="text-[10px] text-slate-400 dark:text-slate-500">
                   {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
                     ? '✨ Window aktif — pilih border bebas sekarang!'
+                    : borderSisaDetik > 0
+                    ? `🕐 Border aktif · ${formatSisaBorder(borderSisaDetik)}`
                     : `${ownedBadges.length} dimiliki · ${BADGE_POOL.filter(b => b.borderImg).length} total`
                   }
                 </p>
@@ -653,7 +682,8 @@ export default function SiswaProfil() {
                 <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/25">
                   <CheckCircle size={13} className="text-emerald-500 dark:text-emerald-400 flex-shrink-0"/>
                   <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold">
-                    Kamu sudah memilih border di window ini. Tunggu window berikutnya!
+                    Border terpasang · berlaku 1 hari
+                    {borderSisaDetik > 0 && <span className="font-normal opacity-75"> ({formatSisaBorder(borderSisaDetik)})</span>}
                   </p>
                 </div>
               )}
@@ -686,7 +716,8 @@ export default function SiswaProfil() {
                               await siswaApi.pilihBorderWindow(border.id)
                               setActiveBadge(border.id)
                               setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
-                              toast.success(`${border.name} terpasang!`)
+                              setBorderSisaDetik(86400)
+                              toast.success(`${border.name} terpasang! Berlaku 1 hari.`)
                             } else if (owned) {
                               if (isActive) {
                                 await siswaApi.unequipBadge()
@@ -808,7 +839,7 @@ export default function SiswaProfil() {
                 <div className="mt-4 p-3 rounded-2xl flex items-center gap-3 bg-amber-50 dark:bg-white/[0.03] border border-amber-100 dark:border-white/[0.05]">
                   <Sparkles size={14} className="text-amber-500 dark:text-amber-400 flex-shrink-0"/>
                   <p className="text-[11px] text-slate-500 dark:text-white/35">
-                    Border terkunci bisa dibuka lewat <span className="text-amber-600 dark:text-amber-400 font-bold">Gacha Harian</span> atau saat admin mengaktifkan <span className="text-violet-600 dark:text-violet-400 font-bold">Window Pilih Bebas</span>.
+                    Saat admin buka window, kamu punya <span className="text-violet-600 dark:text-violet-400 font-bold">1 jam</span> untuk pilih border. Border yang dipilih berlaku <span className="text-amber-600 dark:text-amber-400 font-bold">1 hari</span>, lalu otomatis lepas.
                   </p>
                 </div>
 

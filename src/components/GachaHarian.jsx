@@ -129,6 +129,42 @@ export const BADGE_POOL = [
   // b18 — Gandrung: emas antik, merah beludru, hitam pekat, coklat kayu, putih melati
   { id:'gandrung',       name:'Gandrung',                 emoji:'🎶', rarity:'epic',      borderImg:'/image/b18.png',
     glow:'rgba(201,162,39,0.9)',   glow2:'rgba(139,0,0,0.5)'     },
+  // b19 — Candi Sukuh: batu abu, hitam, emas, hijau lumut, coklat tanah
+  { id:'sukuh',          name:'Candi Sukuh',              emoji:'🏯', rarity:'epic',      borderImg:'/image/b19.png',
+    glow:'rgba(160,140,80,0.88)',  glow2:'rgba(60,80,40,0.48)'   },
+  // b20 — Ma'nene Toraja: hitam, putih tulang, emas, merah darah, coklat kayu
+  { id:'manene',         name:"Ma'nene Toraja",           emoji:'☠️', rarity:'legendary', borderImg:'/image/b20.png',
+    glow:'rgba(200,180,100,0.92)', glow2:'rgba(160,20,20,0.52)'  },
+  // b21 — Layang-layang Bebean: biru laut, merah, putih, hitam, kuning, hijau, oranye
+  { id:'bebean',         name:'Layang Bebean',            emoji:'🪁', rarity:'rare',      borderImg:'/image/b21.png',
+    glow:'rgba(30,120,200,0.85)',  glow2:'rgba(220,80,20,0.45)'  },
+  // b22 — Gamelan Jawa: perunggu, emas, hitam kayu, merah velvet, kuningan
+  { id:'gamelan',        name:'Gamelan Jawa',             emoji:'🔔', rarity:'epic',      borderImg:'/image/b22.png',
+    glow:'rgba(180,130,40,0.88)',  glow2:'rgba(120,20,20,0.48)'  },
+  // b23 — Bambu Runcing: hijau bambu, coklat, hitam ujung, merah, putih
+  { id:'bambu',          name:'Bambu Runcing',            emoji:'🎋', rarity:'rare',      borderImg:'/image/b23.png',
+    glow:'rgba(60,140,40,0.85)',   glow2:'rgba(160,20,20,0.45)'  },
+  // b24 — Harimau Jawa: oranye, hitam loreng, putih, kuning mata, hijau hutan
+  { id:'harimau',        name:'Harimau Jawa',             emoji:'🐅', rarity:'legendary', borderImg:'/image/b24.png',
+    glow:'rgba(220,100,20,0.92)',  glow2:'rgba(20,80,20,0.52)'   },
+  // b25 — Gajah Sumatera: abu-abu, coklat, gading putih, hijau daun, hitam
+  { id:'gajah',          name:'Gajah Sumatera',           emoji:'🐘', rarity:'epic',      borderImg:'/image/b25.png',
+    glow:'rgba(140,120,100,0.88)', glow2:'rgba(40,100,40,0.48)'  },
+  // b26 — Anggrek Hitam: hitam pekat, ungu tua, putih, hijau daun, kuning serbuk
+  { id:'anggrek',        name:'Anggrek Hitam',            emoji:'🌸', rarity:'legendary', borderImg:'/image/b26.png',
+    glow:'rgba(120,40,180,0.92)',  glow2:'rgba(20,80,20,0.52)'   },
+  // b27 — Perahu Phinisi: coklat kayu jati, putih layar, biru laut, emas, hitam
+  { id:'phinisi',        name:'Perahu Phinisi',           emoji:'🚤', rarity:'epic',      borderImg:'/image/b27.png',
+    glow:'rgba(140,90,40,0.88)',   glow2:'rgba(20,80,160,0.48)'  },
+  // b28 — Megalitikum: abu-abu batu, hijau lumut, hitam, coklat tanah, putih mineral
+  { id:'megalitik',      name:'Batu Megalitikum',         emoji:'🗿', rarity:'rare',      borderImg:'/image/b28.png',
+    glow:'rgba(120,120,100,0.85)', glow2:'rgba(40,80,40,0.45)'   },
+  // b29 — Boneka Wejang: coklat kayu, merah, hitam, putih, emas, biru baju
+  { id:'wejang',         name:'Boneka Wejang',            emoji:'🎎', rarity:'rare',      borderImg:'/image/b29.png',
+    glow:'rgba(160,100,40,0.85)',  glow2:'rgba(20,60,160,0.45)'  },
+  // b30 — Api Abadi Mrapen: biru api, oranye, kuning, putih, hitam tanah, hijau rumput
+  { id:'mrapen',         name:'Api Abadi Mrapen',         emoji:'🔥', rarity:'legendary', borderImg:'/image/b30.png',
+    glow:'rgba(40,120,255,0.92)',  glow2:'rgba(220,120,20,0.55)' },
   // Zonk
   { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
   { id:'zonk_snail', name:'Siput Pelan',        emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
