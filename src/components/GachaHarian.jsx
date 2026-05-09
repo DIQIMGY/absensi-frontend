@@ -93,6 +93,30 @@ export const BADGE_POOL = [
   // b60 — Sakura Jepang: merah muda, putih, coklat, hijau, emas, merah
   { id:'sakura',         name:'Sakura Jepang',            emoji:'🌸', rarity:'limited',   borderImg:'/image/b60.png',
     glow:'rgba(255,160,200,0.95)', glow2:'rgba(200,80,120,0.55)'  },
+  // b61 — BTS: ungu, perak, hitam, emas, pink, biru
+  { id:'bts',            name:'BTS',                      emoji:'🌟', rarity:'limited',   borderImg:'/image/b61.png',
+    glow:'rgba(120,60,220,0.95)',  glow2:'rgba(180,180,255,0.6)'  },
+  // b62 — BABYMONSTER: hitam, teal, hijau neon, emas, putih
+  { id:'babymonster',    name:'BABYMONSTER',              emoji:'👾', rarity:'limited',   borderImg:'/image/b62.png',
+    glow:'rgba(20,200,180,0.95)',  glow2:'rgba(100,255,100,0.55)' },
+  // b63 — aespa: pink neon, biru neon, perak, hitam, hijau neon
+  { id:'aespa',          name:'aespa',                    emoji:'🤖', rarity:'limited',   borderImg:'/image/b63.png',
+    glow:'rgba(255,60,200,0.95)',  glow2:'rgba(60,200,255,0.55)'  },
+  // b64 — SEVENTEEN: rose quartz, serenity blue, perak, emas, pink
+  { id:'seventeen',      name:'SEVENTEEN',                emoji:'💎', rarity:'limited',   borderImg:'/image/b64.png',
+    glow:'rgba(200,160,200,0.95)', glow2:'rgba(100,160,220,0.55)' },
+  // b65 — NCT: hijau neon, perak, hitam, emas, biru
+  { id:'nct',            name:'NCT',                      emoji:'🌐', rarity:'limited',   borderImg:'/image/b65.png',
+    glow:'rgba(60,220,60,0.95)',   glow2:'rgba(180,180,255,0.55)' },
+  // b66 — Mingyu SEVENTEEN: rose quartz, serenity blue, perak, emas
+  { id:'mingyu',         name:'Mingyu (SEVENTEEN)',       emoji:'🐶', rarity:'limited',   borderImg:'/image/b66.png',
+    glow:'rgba(200,160,200,0.95)', glow2:'rgba(200,160,60,0.55)'  },
+  // b67 — Lisa BLACKPINK: hitam, pink neon, emas, perak, oranye, biru
+  { id:'lisa',           name:'Lisa (BLACKPINK)',         emoji:'🐯', rarity:'limited',   borderImg:'/image/b67.png',
+    glow:'rgba(255,45,120,0.95)',  glow2:'rgba(200,140,20,0.55)'  },
+  // b68 — Karina aespa: pink neon, biru neon, perak, hitam
+  { id:'karina',         name:'Karina (aespa)',           emoji:'🐱', rarity:'limited',   borderImg:'/image/b68.png',
+    glow:'rgba(255,60,200,0.95)',  glow2:'rgba(60,200,255,0.55)'  },
   // ── LEGENDARY ────────────────────────────────────────────────
   // b57 — JFC: merah, emas, putih, biru, hijau, ungu, oranye, neon
   { id:'jfc',            name:'Jember Fashion Carnaval',  emoji:'🎭', rarity:'legendary', borderImg:'/image/b57.png',

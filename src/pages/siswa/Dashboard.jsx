@@ -125,15 +125,16 @@ export default function SiswaDashboard() {
       // Gacha status (silent)
       try {
         const gRes = await siswaApi.getGachaStatus()
-        // Cek juga border window — border window override gacha jika aktif
         let activeBadgeId = gRes.data.active_badge
         let badges = gRes.data.badges || []
         try {
           const bwRes = await siswaApi.getBorderWindowStatus()
-          // Border window override HANYA kalau ada active_badge (tidak null)
-          // dan border_expires_at masih valid (border_sisa_detik > 0)
-          if (bwRes.data.active_badge && bwRes.data.border_sisa_detik > 0) {
-            activeBadgeId = bwRes.data.active_badge
+          // Kedua badge bisa aktif — window_badge dan gacha_badge
+          // active_badge di DB sudah mencerminkan yang terakhir dipasang
+          // Kalau window badge masih valid, gunakan itu sebagai prioritas tampilan
+          if (bwRes.data.window_badge && bwRes.data.border_sisa_detik > 0) {
+            // Ada window badge valid — pakai active_badge dari DB (bisa window atau gacha)
+            if (bwRes.data.active_badge) activeBadgeId = bwRes.data.active_badge
           }
         } catch { /* ignore */ }
         setActiveBadge(activeBadgeId)

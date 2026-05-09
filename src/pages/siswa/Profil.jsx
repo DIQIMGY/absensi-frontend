@@ -73,17 +73,16 @@ export default function SiswaProfil() {
       setOwnedBadges(res.data.badges || [])
     } catch { /* silent */ }
   }
-
   const fetchBorderWindow = async () => {
     try {
       const res = await siswaApi.getBorderWindowStatus()
       setBorderWindow(res.data)
-      // Sync active_badge dari border window (bisa auto-expire di backend)
+      // Sync active_badge
       if (res.data.active_badge !== undefined) setActiveBadge(res.data.active_badge)
       setBorderSisaDetik(res.data.border_sisa_detik || 0)
-      // Simpan badge yang dipilih via window — tidak berubah saat equip/unequip
-      if (res.data.border_sisa_detik > 0 && res.data.active_badge) {
-        setWindowPickedBadgeId(res.data.active_badge)
+      // window_badge = badge yang dipilih via window, persist selama expires_at valid
+      if (res.data.border_sisa_detik > 0 && res.data.window_badge) {
+        setWindowPickedBadgeId(res.data.window_badge)
       } else if (!res.data.border_sisa_detik || res.data.border_sisa_detik <= 0) {
         setWindowPickedBadgeId(null)
       }
