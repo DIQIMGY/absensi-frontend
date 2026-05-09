@@ -127,7 +127,7 @@ export const adminApi = {
 
   // Border Window
   getBorderWindowStatus: () => api.get('/admin/border-window'),
-  bukaBorderWindow: (durasi) => api.post('/admin/border-window/buka', { durasi }),
+  bukaBorderWindow: (durasi, limitedBadges = []) => api.post('/admin/border-window/buka', { durasi, limited_badges: limitedBadges }),
   tutupBorderWindow: () => api.post('/admin/border-window/tutup'),
   
   // Laporan

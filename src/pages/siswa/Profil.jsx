@@ -58,6 +58,18 @@ export default function SiswaProfil() {
   const [activeBadge, setActiveBadge] = useState(null)
   const [ownedBadges, setOwnedBadges] = useState([])
   const [showBorderModal, setShowBorderModal] = useState(false)
+
+  // Preload gambar border yang dimiliki + aktif saat modal dibuka
+  const handleOpenBorderModal = () => {
+    setShowBorderModal(true)
+    // Preload border yang dimiliki dan window badges
+    const toPreload = [
+      ...ownedBadges.map(b => BADGE_POOL.find(p => p.id === b.id)?.borderImg).filter(Boolean),
+      ...windowBadgeIds.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
+      activeBadge ? BADGE_POOL.find(p => p.id === activeBadge)?.borderImg : null,
+    ].filter(Boolean)
+    toPreload.forEach(src => { const img = new Image(); img.src = src })
+  }
   const [borderWindow, setBorderWindow] = useState(null)
   const [borderSisaDetik, setBorderSisaDetik] = useState(0)
   const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null)
@@ -88,8 +100,7 @@ export default function SiswaProfil() {
         setWindowPickedBadgeId(res.data.window_badge || wBadges[0]?.id || null)
       } else {
         setWindowPickedBadgeId(null)
-      }
-    } catch { /* silent */ }
+      }    } catch { /* silent */ }
   }
   // Countdown lokal sisa waktu border aktif
   useEffect(() => {
@@ -412,7 +423,7 @@ export default function SiswaProfil() {
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => setShowBorderModal(true)}
+            onClick={() => handleOpenBorderModal()}
             className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all group"
             style={{
               background: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
@@ -714,10 +725,12 @@ export default function SiswaProfil() {
                     const windowAktif    = borderWindow?.border_window_aktif
                     const sudahPilih     = borderWindow?.sudah_pilih
                     const isLimited      = border.rarity === 'limited'
+                    const windowLimited  = borderWindow?.limited_badges || []
+                    const isLimitedAvail = isLimited && windowAktif && !sudahPilih && windowLimited.includes(border.id)
                     const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited
                     // Border ini ada di window_badges aktif — bisa equip/unequip berulang
-                    const windowBadgeOwned = windowBadgeIds.includes(border.id) && !isLimited
-                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned
+                    const windowBadgeOwned = windowBadgeIds.includes(border.id)
+                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned || isLimitedAvail
 
                     return (
                       <motion.button
@@ -726,7 +739,7 @@ export default function SiswaProfil() {
                         onClick={async () => {
                           if (!canInteract) return
                           try {
-                            if (bisaPilihBebas && !owned && !windowBadgeOwned) {
+                            if ((bisaPilihBebas || isLimitedAvail) && !owned && !windowBadgeOwned) {
                               // Pilih border baru via window (1x per window)
                               await siswaApi.pilihBorderWindow(border.id)
                               setActiveBadge(border.id)
@@ -779,6 +792,7 @@ export default function SiswaProfil() {
                             <motion.img
                               src={border.borderImg}
                               alt={border.name}
+                              loading="lazy"
                               className="absolute pointer-events-none select-none"
                               style={{
                                 top: '50%', left: '50%',
@@ -798,6 +812,7 @@ export default function SiswaProfil() {
                               <img
                                 src={border.borderImg}
                                 alt={border.name}
+                                loading="lazy"
                                 className="absolute pointer-events-none select-none"
                                 style={{
                                   top: '50%', left: '50%',
@@ -816,10 +831,17 @@ export default function SiswaProfil() {
                           )}
 
                           {/* Badge FREE */}
-                          {bisaPilihBebas && !owned && (
+                          {bisaPilihBebas && !owned && !windowBadgeOwned && (
                             <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
                               style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)' }}>
                               FREE
+                            </div>
+                          )}
+                          {/* Badge LTD FREE untuk limited yang tersedia di window */}
+                          {isLimitedAvail && !owned && !windowBadgeOwned && (
+                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
+                              style={{ background: 'linear-gradient(135deg,#be0058,#ff2d78)' }}>
+                              LTD✨
                             </div>
                           )}
                           {/* Badge LIMITED */}

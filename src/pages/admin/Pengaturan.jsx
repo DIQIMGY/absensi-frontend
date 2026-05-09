@@ -15,11 +15,25 @@ import { usePengaturanStore } from '../../stores/pengaturanStore'
 import { useState as useLocalState, useEffect as useLocalEffect } from 'react'
 
 // ─── BORDER WINDOW PANEL ──────────────────────────────────────
+const LIMITED_OPTIONS = [
+  { id:'blackpink',   name:'BLACKPINK',           emoji:'🎤' },
+  { id:'sakura',      name:'Sakura Jepang',        emoji:'🌸' },
+  { id:'bts',         name:'BTS',                  emoji:'🌟' },
+  { id:'babymonster', name:'BABYMONSTER',          emoji:'👾' },
+  { id:'aespa',       name:'aespa',                emoji:'🤖' },
+  { id:'seventeen',   name:'SEVENTEEN',            emoji:'💎' },
+  { id:'nct',         name:'NCT',                  emoji:'🌐' },
+  { id:'mingyu',      name:'Mingyu (SEVENTEEN)',   emoji:'🐶' },
+  { id:'lisa',        name:'Lisa (BLACKPINK)',     emoji:'🐯' },
+  { id:'karina',      name:'Karina (aespa)',       emoji:'🐱' },
+]
+
 function BorderWindowPanel() {
-  const [status, setStatus]   = useLocalState(null)
-  const [durasi, setDurasi]   = useLocalState(60)
-  const [loading, setLoading] = useLocalState(false)
-  const [sisaDetik, setSisaDetik] = useLocalState(0)
+  const [status, setStatus]           = useLocalState(null)
+  const [durasi, setDurasi]           = useLocalState(60)
+  const [loading, setLoading]         = useLocalState(false)
+  const [sisaDetik, setSisaDetik]     = useLocalState(0)
+  const [selectedLimited, setSelectedLimited] = useLocalState([])
 
   const fetchStatus = async () => {
     try {
@@ -45,8 +59,8 @@ function BorderWindowPanel() {
   const handleBuka = async () => {
     setLoading(true)
     try {
-      await adminApi.bukaBorderWindow(durasi)
-      toast.success(`Window border dibuka ${durasi} menit!`)
+      await adminApi.bukaBorderWindow(durasi, selectedLimited)
+      toast.success(`Window border dibuka ${durasi} menit!${selectedLimited.length > 0 ? ` (${selectedLimited.length} Limited tersedia)` : ''}`)
       fetchStatus()
     } catch (e) { toast.error(e.response?.data?.message || 'Gagal') }
     finally { setLoading(false) }
@@ -119,27 +133,67 @@ function BorderWindowPanel() {
 
         {/* Form buka window */}
         {!aktif && (
-          <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                Durasi Window (menit)
-              </label>
-              <input
-                type="number" min={5} max={1440} value={durasi}
-                onChange={e => setDurasi(Number(e.target.value))}
-                className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+          <div className="space-y-3">
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                  Durasi Window (menit)
+                </label>
+                <input
+                  type="number" min={5} max={1440} value={durasi}
+                  onChange={e => setDurasi(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+              </div>
+              <div className="flex gap-2">
+                {[15,30,60].map(d => (
+                  <button key={d} onClick={() => setDurasi(d)}
+                    className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      durasi === d
+                        ? 'bg-violet-500 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
+                    }`}>
+                    {d}m
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2">
-              {[15,30,60].map(d => (
-                <button key={d} onClick={() => setDurasi(d)}
-                  className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    durasi === d
-                      ? 'bg-violet-500 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
-                  }`}>
-                  {d}m
-                </button>
-              ))}
+
+            {/* Pilih Limited (opsional, maks 2) */}
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                Border Limited Tersedia (opsional, maks 2)
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {LIMITED_OPTIONS.map(opt => {
+                  const selected = selectedLimited.includes(opt.id)
+                  const disabled = !selected && selectedLimited.length >= 2
+                  return (
+                    <button key={opt.id}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        if (selected) setSelectedLimited(p => p.filter(id => id !== opt.id))
+                        else if (selectedLimited.length < 2) setSelectedLimited(p => [...p, opt.id])
+                      }}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                        selected
+                          ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300'
+                          : disabled
+                          ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-rose-300 dark:hover:border-rose-700'
+                      }`}>
+                      <span>{opt.emoji}</span>
+                      <span className="truncate">{opt.name}</span>
+                      {selected && <span className="ml-auto text-rose-500">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              {selectedLimited.length > 0 && (
+                <p className="text-[10px] text-rose-500 font-bold mt-1.5">
+                  ✨ {selectedLimited.length} Limited dipilih — siswa bisa pilih salah satu
+                </p>
+              )}
             </div>
           </div>
         )}
