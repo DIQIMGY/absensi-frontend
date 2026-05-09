@@ -708,9 +708,10 @@ export default function SiswaProfil() {
                     const isActive = activeBadge === border.id
                     const windowAktif    = borderWindow?.border_window_aktif
                     const sudahPilih     = borderWindow?.sudah_pilih
-                    const bisaPilihBebas = windowAktif && !sudahPilih
+                    const isLimited      = border.rarity === 'limited'
+                    const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited
                     // Border ini yang dipilih via window & masih berlaku — bisa equip/unequip berulang
-                    const windowBadgeOwned = borderSisaDetik > 0 && windowPickedBadgeId === border.id
+                    const windowBadgeOwned = borderSisaDetik > 0 && windowPickedBadgeId === border.id && !isLimited
                     const canInteract    = owned || bisaPilihBebas || windowBadgeOwned
 
                     return (
@@ -815,6 +816,13 @@ export default function SiswaProfil() {
                               FREE
                             </div>
                           )}
+                          {/* Badge LIMITED */}
+                          {isLimited && !owned && (
+                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
+                              style={{ background: 'linear-gradient(135deg,#be0058,#ff2d78)' }}>
+                              LTD
+                            </div>
+                          )}
                         </div>
 
                         {/* Nama & rarity */}
@@ -850,7 +858,7 @@ export default function SiswaProfil() {
                 <div className="mt-4 p-3 rounded-2xl flex items-center gap-3 bg-amber-50 dark:bg-white/[0.03] border border-amber-100 dark:border-white/[0.05]">
                   <Sparkles size={14} className="text-amber-500 dark:text-amber-400 flex-shrink-0"/>
                   <p className="text-[11px] text-slate-500 dark:text-white/35">
-                    Saat admin buka window, kamu punya <span className="text-violet-600 dark:text-violet-400 font-bold">1 jam</span> untuk pilih border. Border yang dipilih berlaku <span className="text-amber-600 dark:text-amber-400 font-bold">1 hari</span>, lalu otomatis lepas.
+                    Saat admin buka window, kamu punya <span className="text-violet-600 dark:text-violet-400 font-bold">1 jam</span> untuk pilih border. Border yang dipilih berlaku <span className="text-amber-600 dark:text-amber-400 font-bold">1 hari</span>. Border <span className="text-rose-500 font-bold">LIMITED</span> hanya bisa didapat dari Gacha Harian.
                   </p>
                 </div>
 

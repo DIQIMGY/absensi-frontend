@@ -9,6 +9,16 @@ const th = (isDark, dark, light) => isDark ? dark : light
 
 // ─── RARITY CONFIG ────────────────────────────────────────────
 export const RARITY_CFG = {
+  limited: {
+    label:'Limited', short:'LTD', stars:6,
+    text:'text-rose-300', particle:'#ff2d78',
+    glow:'rgba(255,45,120,0.9)', glow2:'rgba(255,180,220,0.5)',
+    grad:'linear-gradient(135deg,#4a0020,#be0058,#ff2d78,#ff9ec8,#ffe0f0)',
+    gradBtn:'linear-gradient(135deg,#be0058,#ff2d78,#ff9ec8)',
+    cardBg:'linear-gradient(160deg,#1a0010,#2d0020,#1a0010)',
+    beam:'rgba(255,45,120,0.35)',
+    frameGrad:['#ff2d78','#ff9ec8','#be0058','#ffe0f0'],
+  },
   legendary: {
     label:'Legendary', short:'LEG', stars:5,
     text:'text-amber-400', particle:'#f59e0b',
@@ -76,7 +86,20 @@ export const RARITY_CFG = {
 // glow/glow2 = warna aura sesuai tema border masing-masing
 // Urutan: Legendary → Epic → Rare → Zonk
 export const BADGE_POOL = [
+  // ── LIMITED (0.5% — hanya dari Gacha, tidak bisa dari Window) ─
+  // b59 — BLACKPINK: hitam, neon pink, emas, perak, putih, merah muda
+  { id:'blackpink',      name:'BLACKPINK',                emoji:'🎤', rarity:'limited',   borderImg:'/image/b59.png',
+    glow:'rgba(255,45,120,0.95)',  glow2:'rgba(255,180,220,0.6)'  },
+  // b60 — Sakura Jepang: merah muda, putih, coklat, hijau, emas, merah
+  { id:'sakura',         name:'Sakura Jepang',            emoji:'🌸', rarity:'limited',   borderImg:'/image/b60.png',
+    glow:'rgba(255,160,200,0.95)', glow2:'rgba(200,80,120,0.55)'  },
   // ── LEGENDARY ────────────────────────────────────────────────
+  // b57 — JFC: merah, emas, putih, biru, hijau, ungu, oranye, neon
+  { id:'jfc',            name:'Jember Fashion Carnaval',  emoji:'🎭', rarity:'legendary', borderImg:'/image/b57.png',
+    glow:'rgba(220,20,80,0.92)',   glow2:'rgba(200,160,20,0.52)'  },
+  // b58 — Perahu Hias FBIM: merah, emas, hitam, putih, hijau, biru, coklat, perak
+  { id:'fbim',           name:'Perahu Hias FBIM',         emoji:'🛶', rarity:'legendary', borderImg:'/image/b58.png',
+    glow:'rgba(200,140,20,0.92)',  glow2:'rgba(20,80,160,0.52)'   },
   { id:'dragon_scholar', name:'Wayang Kulit',             emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png',
     glow:'rgba(220,170,40,0.95)',  glow2:'rgba(160,90,20,0.55)'  },
   { id:'gandrung',       name:'Gandrung',                 emoji:'🎶', rarity:'legendary', borderImg:'/image/b18.png',
