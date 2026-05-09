@@ -1,273 +1,160 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import { useAuthStore } from '../stores/authStore'
 
-// Layouts
+// Layouts (tetap static — kecil)
 import AuthLayout from '../layouts/AuthLayout'
 import AdminLayout from '../layouts/AdminLayout'
 import GuruLayout from '../layouts/GuruLayout'
 import SiswaLayout from '../layouts/SiswaLayout'
-
-// Public & Auth Pages
-import PublicAbsen from '../pages/PublicAbsen'
-import Login from '../pages/auth/Login'
-import Register from '../pages/auth/Register'
-
-// Admin Pages
-import AdminDashboard from '../pages/admin/Dashboard'
-import Users from '../pages/admin/Users'
-import Siswas from '../pages/admin/Siswas'
-import Gurus from '../pages/admin/Gurus'
-import Kelas from '../pages/admin/Kelas'
-import Jurusans from '../pages/admin/Jurusans'
-import TahunAjarans from '../pages/admin/TahunAjarans'
-import MataPelajarans from '../pages/admin/MataPelajarans'
-import Absensis from '../pages/admin/Absensis'
-import AbsensiGuru from '../pages/admin/AbsensiGuru'
-import Izins from '../pages/admin/Izins'
-import Pengaturan from '../pages/admin/Pengaturan'
-import Laporan from '../pages/admin/Laporan'
-import LaporanGuru from '../pages/admin/LaporanGuru'
-import Ranking from '../pages/admin/Ranking'
-import Logging from '../pages/admin/Logging'
-import Alumni from '../pages/admin/Alumni'
-import NaikKelas from '../pages/admin/NaikKelas'
-
-// Guru Pages
-import GuruDashboard from '../pages/guru/Dashboard'
-import GuruAbsensi from '../pages/guru/Absensi'
-import GuruProfil from '../pages/guru/Profil'
-import GuruRanking from '../pages/guru/Ranking'
-import GuruRekapHarian from '../pages/guru/RekapHarian'
-import GuruStatistikKelas from '../pages/guru/StatistikKelas'
-import GuruDataSiswa from '../pages/guru/DataSiswa'
-import GuruIzins from '../pages/guru/Izins'
-import GuruRiwayatAbsensi from '../pages/guru/RiwayatAbsensi'
-import GuruNaikKelas from '../pages/guru/NaikKelas'
-
-// Siswa Pages
-import SiswaDashboard from '../pages/siswa/Dashboard'
-import SiswaAbsen from '../pages/siswa/Absen'
-import SiswaRiwayat from '../pages/siswa/Riwayat'
-import SiswaProfil from '../pages/siswa/Profil'
-
-// Components
 import ProtectedRoute from '../components/ProtectedRoute'
 
-// Dashboard redirect component
+// Loading fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-violet-500 rounded-full animate-spin"/>
+  </div>
+)
+
+const Lazy = (Component) => (
+  <Suspense fallback={<PageLoader/>}>
+    <Component/>
+  </Suspense>
+)
+
+// Public & Auth
+const PublicAbsen    = lazy(() => import('../pages/PublicAbsen'))
+const Login          = lazy(() => import('../pages/auth/Login'))
+const Register       = lazy(() => import('../pages/auth/Register'))
+
+// Admin
+const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'))
+const Users          = lazy(() => import('../pages/admin/Users'))
+const Siswas         = lazy(() => import('../pages/admin/Siswas'))
+const Gurus          = lazy(() => import('../pages/admin/Gurus'))
+const Kelas          = lazy(() => import('../pages/admin/Kelas'))
+const Jurusans       = lazy(() => import('../pages/admin/Jurusans'))
+const TahunAjarans   = lazy(() => import('../pages/admin/TahunAjarans'))
+const MataPelajarans = lazy(() => import('../pages/admin/MataPelajarans'))
+const Absensis       = lazy(() => import('../pages/admin/Absensis'))
+const AbsensiGuru    = lazy(() => import('../pages/admin/AbsensiGuru'))
+const Izins          = lazy(() => import('../pages/admin/Izins'))
+const Pengaturan     = lazy(() => import('../pages/admin/Pengaturan'))
+const Laporan        = lazy(() => import('../pages/admin/Laporan'))
+const LaporanGuru    = lazy(() => import('../pages/admin/LaporanGuru'))
+const Ranking        = lazy(() => import('../pages/admin/Ranking'))
+const Logging        = lazy(() => import('../pages/admin/Logging'))
+const Alumni         = lazy(() => import('../pages/admin/Alumni'))
+const NaikKelas      = lazy(() => import('../pages/admin/NaikKelas'))
+
+// Guru
+const GuruDashboard       = lazy(() => import('../pages/guru/Dashboard'))
+const GuruAbsensi         = lazy(() => import('../pages/guru/Absensi'))
+const GuruProfil          = lazy(() => import('../pages/guru/Profil'))
+const GuruRanking         = lazy(() => import('../pages/guru/Ranking'))
+const GuruRekapHarian     = lazy(() => import('../pages/guru/RekapHarian'))
+const GuruStatistikKelas  = lazy(() => import('../pages/guru/StatistikKelas'))
+const GuruDataSiswa       = lazy(() => import('../pages/guru/DataSiswa'))
+const GuruIzins           = lazy(() => import('../pages/guru/Izins'))
+const GuruRiwayatAbsensi  = lazy(() => import('../pages/guru/RiwayatAbsensi'))
+const GuruNaikKelas       = lazy(() => import('../pages/guru/NaikKelas'))
+
+// Siswa
+const SiswaDashboard = lazy(() => import('../pages/siswa/Dashboard'))
+const SiswaAbsen     = lazy(() => import('../pages/siswa/Absen'))
+const SiswaRiwayat   = lazy(() => import('../pages/siswa/Riwayat'))
+const SiswaProfil    = lazy(() => import('../pages/siswa/Profil'))
+
 function DashboardRedirect() {
   const { getDashboardRoute } = useAuthStore()
   return <Navigate to={getDashboardRoute()} replace />
 }
 
 export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <PublicAbsen />, // Halaman absen publik tetap bisa diakses
-  },
-  {
-    path: '/absen',
-    element: <PublicAbsen />, // Halaman absen publik tetap bisa diakses
-  },
+  { path: '/',      element: Lazy(PublicAbsen) },
+  { path: '/absen', element: Lazy(PublicAbsen) },
   {
     path: '/dashboard',
     element: (
-      <ProtectedRoute allowedRoles={['admin', 'guru', 'siswa']}>
-        <DashboardRedirect />
+      <ProtectedRoute allowedRoles={['admin','guru','siswa']}>
+        <DashboardRedirect/>
       </ProtectedRoute>
     ),
   },
   {
     path: '/login',
-    element: <AuthLayout />,
-    children: [
-      {
-        index: true,
-        element: <Login />,
-      },
-    ],
+    element: <AuthLayout/>,
+    children: [{ index: true, element: Lazy(Login) }],
   },
   {
     path: '/register',
-    element: <AuthLayout />,
-    children: [
-      {
-        index: true,
-        element: <Register />,
-      },
-    ],
+    element: <AuthLayout/>,
+    children: [{ index: true, element: Lazy(Register) }],
   },
   {
     path: '/admin',
     element: (
       <ProtectedRoute allowedRoles={['admin']}>
-        <AdminLayout />
+        <AdminLayout/>
       </ProtectedRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <Navigate to="/admin/dashboard" replace />,
-      },
-      {
-        path: 'dashboard',
-        element: <AdminDashboard />,
-      },
-      {
-        path: 'users',
-        element: <Users />,
-      },
-      {
-        path: 'siswas',
-        element: <Siswas />,
-      },
-      {
-        path: 'gurus',
-        element: <Gurus />,
-      },
-      {
-        path: 'kelas',
-        element: <Kelas />,
-      },
-      {
-        path: 'jurusans',
-        element: <Jurusans />,
-      },
-      {
-        path: 'tahun-ajarans',
-        element: <TahunAjarans />,
-      },
-      {
-        path: 'mata-pelajarans',
-        element: <MataPelajarans />,
-      },
-      {
-        path: 'absensis',
-        element: <Absensis />,
-      },
-      {
-        path: 'absensi-guru',
-        element: <AbsensiGuru />,
-      },
-      {
-        path: 'izins',
-        element: <Izins />,
-      },
-      {
-        path: 'pengaturan',
-        element: <Pengaturan />,
-      },
-      {
-        path: 'laporan',
-        element: <Laporan />,
-      },
-      {
-        path: 'laporan-guru',
-        element: <LaporanGuru />,
-      },
-      {
-        path: 'ranking',
-        element: <Ranking />,
-      },
-      {
-        path: 'logging',
-        element: <Logging />,
-      },
-      {
-        path: 'alumni',
-        element: <Alumni />,
-      },
-      {
-        path: 'naik-kelas',
-        element: <NaikKelas />,
-      },
+      { index: true,              element: <Navigate to="/admin/dashboard" replace/> },
+      { path: 'dashboard',        element: Lazy(AdminDashboard) },
+      { path: 'users',            element: Lazy(Users) },
+      { path: 'siswas',           element: Lazy(Siswas) },
+      { path: 'gurus',            element: Lazy(Gurus) },
+      { path: 'kelas',            element: Lazy(Kelas) },
+      { path: 'jurusans',         element: Lazy(Jurusans) },
+      { path: 'tahun-ajarans',    element: Lazy(TahunAjarans) },
+      { path: 'mata-pelajarans',  element: Lazy(MataPelajarans) },
+      { path: 'absensis',         element: Lazy(Absensis) },
+      { path: 'absensi-guru',     element: Lazy(AbsensiGuru) },
+      { path: 'izins',            element: Lazy(Izins) },
+      { path: 'pengaturan',       element: Lazy(Pengaturan) },
+      { path: 'laporan',          element: Lazy(Laporan) },
+      { path: 'laporan-guru',     element: Lazy(LaporanGuru) },
+      { path: 'ranking',          element: Lazy(Ranking) },
+      { path: 'logging',          element: Lazy(Logging) },
+      { path: 'alumni',           element: Lazy(Alumni) },
+      { path: 'naik-kelas',       element: Lazy(NaikKelas) },
     ],
   },
   {
     path: '/guru',
     element: (
-      <ProtectedRoute allowedRoles={['guru', 'admin']}>
-        <GuruLayout />
+      <ProtectedRoute allowedRoles={['guru','admin']}>
+        <GuruLayout/>
       </ProtectedRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <Navigate to="/guru/dashboard" replace />,
-      },
-      {
-        path: 'dashboard',
-        element: <GuruDashboard />,
-      },
-      {
-        path: 'absensi',
-        element: <GuruAbsensi />,
-      },
-      {
-        path: 'ranking',
-        element: <GuruRanking />,
-      },
-      {
-        path: 'rekap-harian',
-        element: <GuruRekapHarian />,
-      },
-      {
-        path: 'statistik-kelas',
-        element: <GuruStatistikKelas />,
-      },
-      {
-        path: 'data-siswa',
-        element: <GuruDataSiswa />,
-      },
-      {
-        path: 'izins',
-        element: <GuruIzins />,
-      },
-      {
-        path: 'riwayat-absensi',
-        element: <GuruRiwayatAbsensi />,
-      },
-      {
-        path: 'naik-kelas',
-        element: <GuruNaikKelas />,
-      },
-      {
-        path: 'profil',
-        element: <GuruProfil />,
-      },
+      { index: true,              element: <Navigate to="/guru/dashboard" replace/> },
+      { path: 'dashboard',        element: Lazy(GuruDashboard) },
+      { path: 'absensi',          element: Lazy(GuruAbsensi) },
+      { path: 'ranking',          element: Lazy(GuruRanking) },
+      { path: 'rekap-harian',     element: Lazy(GuruRekapHarian) },
+      { path: 'statistik-kelas',  element: Lazy(GuruStatistikKelas) },
+      { path: 'data-siswa',       element: Lazy(GuruDataSiswa) },
+      { path: 'izins',            element: Lazy(GuruIzins) },
+      { path: 'riwayat-absensi',  element: Lazy(GuruRiwayatAbsensi) },
+      { path: 'naik-kelas',       element: Lazy(GuruNaikKelas) },
+      { path: 'profil',           element: Lazy(GuruProfil) },
     ],
   },
   {
     path: '/siswa',
     element: (
-      <ProtectedRoute allowedRoles={['siswa', 'admin']}>
-        <SiswaLayout />
+      <ProtectedRoute allowedRoles={['siswa','admin']}>
+        <SiswaLayout/>
       </ProtectedRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <Navigate to="/siswa/dashboard" replace />,
-      },
-      {
-        path: 'dashboard',
-        element: <SiswaDashboard />,
-      },
-      {
-        path: 'absen',
-        element: <SiswaAbsen />,
-      },
-      {
-        path: 'riwayat',
-        element: <SiswaRiwayat />,
-      },
-      {
-        path: 'profil',
-        element: <SiswaProfil />,
-      },
+      { index: true,    element: <Navigate to="/siswa/dashboard" replace/> },
+      { path: 'dashboard', element: Lazy(SiswaDashboard) },
+      { path: 'absen',     element: Lazy(SiswaAbsen) },
+      { path: 'riwayat',   element: Lazy(SiswaRiwayat) },
+      { path: 'profil',    element: Lazy(SiswaProfil) },
     ],
   },
-  {
-    path: '*',
-    element: <Navigate to="/login" replace />,
-  },
+  { path: '*', element: <Navigate to="/login" replace/> },
 ])

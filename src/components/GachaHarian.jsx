@@ -269,7 +269,7 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
     ? { ...badgeFromPool, ...(badgeFromResponse || {}) }
     : badgeFromResponse
   if (!badge || !badge.borderImg) return null
-  const cfg   = RARITY_CFG[badge.rarity] || RARITY_CFG.common
+  const cfg   = RARITY_CFG[badge.rarity] || RARITY_CFG.legendary
   const glow  = badge.glow  || cfg.glow
   const glow2 = badge.glow2 || cfg.glow2
   const scale = { sm:1.45, md:1.45, lg:1.45 }[size] ?? 1.45
