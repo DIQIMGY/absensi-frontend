@@ -1040,12 +1040,13 @@ export default function SiswaDashboard() {
           )}
 
           {/* Budaya Indonesia */}
+          {/* VIDEO BUDAYA DINONAKTIFKAN SEMENTARA — untuk aktifkan kembali: ganti null dengan pengaturan.budaya_video dan pengaturan.budaya_video_2 */}
           {(pengaturan?.budaya_info || (pengaturan?.budaya_fotos || []).some(Boolean) || pengaturan?.budaya_video) && (
             <BudayaIndonesia
               budayaInfo={pengaturan.budaya_info}
               budayaFotos={pengaturan.budaya_fotos || []}
-              budayaVideo={null}      {/* NONAKTIF sementara — kembalikan: pengaturan.budaya_video || null */}
-              budayaVideo2={null}     {/* NONAKTIF sementara — kembalikan: pengaturan.budaya_video_2 || null */}
+              budayaVideo={null}
+              budayaVideo2={null}
               budayaBg={pengaturan.budaya_bg || null}
             />
           )}
