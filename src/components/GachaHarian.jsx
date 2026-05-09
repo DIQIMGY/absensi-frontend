@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Star, Zap, Gift, Sparkles as SparklesIcon, X } from 'lucide-react'
 import { siswaApi } from '../services/siswaService'
@@ -86,42 +86,33 @@ export const RARITY_CFG = {
 // glow/glow2 = warna aura sesuai tema border masing-masing
 // Urutan: Legendary → Epic → Rare → Zonk
 export const BADGE_POOL = [
-  // ── LIMITED (0.5% — hanya dari Gacha, tidak bisa dari Window) ─
-  // b59 — BLACKPINK: hitam, neon pink, emas, perak, putih, merah muda
+  // ── LIMITED ─────────────────────────────────────────────────
   { id:'blackpink',      name:'BLACKPINK',                emoji:'🎤', rarity:'limited',   borderImg:'/image/b59.png',
     glow:'rgba(255,45,120,0.95)',  glow2:'rgba(255,180,220,0.6)'  },
-  // b60 — Sakura Jepang: merah muda, putih, coklat, hijau, emas, merah
   { id:'sakura',         name:'Sakura Jepang',            emoji:'🌸', rarity:'limited',   borderImg:'/image/b60.png',
     glow:'rgba(255,160,200,0.95)', glow2:'rgba(200,80,120,0.55)'  },
-  // b61 — BTS: ungu, perak, hitam, emas, pink, biru
   { id:'bts',            name:'BTS',                      emoji:'🌟', rarity:'limited',   borderImg:'/image/b61.png',
     glow:'rgba(120,60,220,0.95)',  glow2:'rgba(180,180,255,0.6)'  },
-  // b62 — BABYMONSTER: hitam, teal, hijau neon, emas, putih
   { id:'babymonster',    name:'BABYMONSTER',              emoji:'👾', rarity:'limited',   borderImg:'/image/b62.png',
     glow:'rgba(20,200,180,0.95)',  glow2:'rgba(100,255,100,0.55)' },
-  // b63 — aespa: pink neon, biru neon, perak, hitam, hijau neon
   { id:'aespa',          name:'aespa',                    emoji:'🤖', rarity:'limited',   borderImg:'/image/b63.png',
     glow:'rgba(255,60,200,0.95)',  glow2:'rgba(60,200,255,0.55)'  },
-  // b64 — SEVENTEEN: rose quartz, serenity blue, perak, emas, pink
   { id:'seventeen',      name:'SEVENTEEN',                emoji:'💎', rarity:'limited',   borderImg:'/image/b64.png',
     glow:'rgba(200,160,200,0.95)', glow2:'rgba(100,160,220,0.55)' },
-  // b65 — NCT: hijau neon, perak, hitam, emas, biru
   { id:'nct',            name:'NCT',                      emoji:'🌐', rarity:'limited',   borderImg:'/image/b65.png',
     glow:'rgba(60,220,60,0.95)',   glow2:'rgba(180,180,255,0.55)' },
-  // b66 — Mingyu SEVENTEEN: rose quartz, serenity blue, perak, emas
   { id:'mingyu',         name:'Mingyu (SEVENTEEN)',       emoji:'🐶', rarity:'limited',   borderImg:'/image/b66.png',
     glow:'rgba(200,160,200,0.95)', glow2:'rgba(200,160,60,0.55)'  },
-  // b67 — Lisa BLACKPINK: hitam, pink neon, emas, perak, oranye, biru
   { id:'lisa',           name:'Lisa (BLACKPINK)',         emoji:'🐯', rarity:'limited',   borderImg:'/image/b67.png',
     glow:'rgba(255,45,120,0.95)',  glow2:'rgba(200,140,20,0.55)'  },
-  // b68 — Karina aespa: pink neon, biru neon, perak, hitam
   { id:'karina',         name:'Karina (aespa)',           emoji:'🐱', rarity:'limited',   borderImg:'/image/b68.png',
     glow:'rgba(255,60,200,0.95)',  glow2:'rgba(60,200,255,0.55)'  },
   // ── LEGENDARY ────────────────────────────────────────────────
-  // b57 — JFC: merah, emas, putih, biru, hijau, ungu, oranye, neon
+  // b69 — Nusantara Gong: emas, merah, hitam, putih, hijau, biru, perak, perunggu
+  { id:'nusantara_gong',  name:'Nusantara Gong',           emoji:'🛎️', rarity:'legendary', borderImg:'/image/b69.png',
+    glow:'rgba(200,160,20,0.95)',  glow2:'rgba(160,80,20,0.58)'  },
   { id:'jfc',            name:'Jember Fashion Carnaval',  emoji:'🎭', rarity:'legendary', borderImg:'/image/b57.png',
     glow:'rgba(220,20,80,0.92)',   glow2:'rgba(200,160,20,0.52)'  },
-  // b58 — Perahu Hias FBIM: merah, emas, hitam, putih, hijau, biru, coklat, perak
   { id:'fbim',           name:'Perahu Hias FBIM',         emoji:'🛶', rarity:'legendary', borderImg:'/image/b58.png',
     glow:'rgba(200,140,20,0.92)',  glow2:'rgba(20,80,160,0.52)'   },
   { id:'dragon_scholar', name:'Wayang Kulit',             emoji:'🎭', rarity:'legendary', borderImg:'/image/b1.png',
@@ -200,20 +191,28 @@ export const BADGE_POOL = [
     glow:'rgba(40,140,60,0.82)',   glow2:'rgba(120,70,20,0.42)'  },
   { id:'bambu',          name:'Bambu Runcing',            emoji:'🎋', rarity:'rare',      borderImg:'/image/b23.png',
     glow:'rgba(60,140,40,0.82)',   glow2:'rgba(160,20,20,0.42)'  },
-  { id:'serabi',         name:'Serabi Solo',              emoji:'🥥', rarity:'rare',      borderImg:'/image/b40.png',
-    glow:'rgba(40,140,60,0.82)',   glow2:'rgba(120,60,20,0.42)'  },
+  { id:'serabi',         name:'Tari Topeng Cirebon + Pantai',emoji:'🎭', rarity:'rare',      borderImg:'/image/b40.png',
+    glow:'rgba(180,20,20,0.85)',   glow2:'rgba(20,80,180,0.45)'   },
   { id:'mrapen',         name:'Api Abadi Mrapen',         emoji:'🔥', rarity:'rare',      borderImg:'/image/b30.png',
     glow:'rgba(40,120,255,0.82)',  glow2:'rgba(220,120,20,0.42)' },
   { id:'kemerdekaan',    name:'Hari Kemerdekaan RI',      emoji:'🎆', rarity:'rare',      borderImg:'/image/b42.png',
     glow:'rgba(220,20,20,0.82)',   glow2:'rgba(200,160,20,0.42)' },
-  { id:'tumpeng',        name:'Nasi Tumpeng',             emoji:'🍛', rarity:'rare',      borderImg:'/image/b33.png',
-    glow:'rgba(220,180,20,0.82)',  glow2:'rgba(180,40,20,0.42)'  },
-  { id:'esteler',        name:'Es Teler',                 emoji:'🍧', rarity:'rare',      borderImg:'/image/b37.png',
-    glow:'rgba(40,160,80,0.82)',   glow2:'rgba(200,40,40,0.42)'  },
-  { id:'gudeg',          name:'Gudeg Jogja',              emoji:'🥘', rarity:'rare',      borderImg:'/image/b38.png',
-    glow:'rgba(140,80,30,0.82)',   glow2:'rgba(160,30,30,0.42)'  },
-  { id:'rendang',        name:'Rendang Padang',           emoji:'🍜', rarity:'rare',      borderImg:'/image/b36.png',
-    glow:'rgba(120,60,20,0.82)',   glow2:'rgba(180,40,20,0.42)'  },
+  { id:'tumpeng',        name:'Tari Pendet + Ombak',        emoji:'💃', rarity:'rare',      borderImg:'/image/b33.png',
+    glow:'rgba(20,140,200,0.85)',  glow2:'rgba(200,160,20,0.45)'  },
+  { id:'sate',           name:'Tari Likurai + Perahu Layar', emoji:'💃', rarity:'rare',      borderImg:'/image/b34.png',
+    glow:'rgba(20,20,40,0.85)',    glow2:'rgba(180,20,20,0.45)'   },
+  { id:'rawon',          name:'Tari Katuri + Pantai Bira',   emoji:'💃', rarity:'rare',      borderImg:'/image/b35.png',
+    glow:'rgba(200,160,20,0.85)',  glow2:'rgba(20,100,180,0.45)'  },
+  { id:'rendang',        name:'Tari Balumpa + Phinisi',      emoji:'💃', rarity:'rare',      borderImg:'/image/b36.png',
+    glow:'rgba(200,140,20,0.85)',  glow2:'rgba(20,80,160,0.45)'   },
+  { id:'esteler',        name:'Tari Sampi + Terumbu Karang', emoji:'💃', rarity:'rare',      borderImg:'/image/b37.png',
+    glow:'rgba(20,180,180,0.85)',  glow2:'rgba(20,160,60,0.45)'   },
+  { id:'gudeg',          name:'Tari Merak Putih + Laut',     emoji:'🦚', rarity:'rare',      borderImg:'/image/b38.png',
+    glow:'rgba(220,220,220,0.88)', glow2:'rgba(20,120,180,0.48)'  },
+  { id:'pempek',         name:'Tari Jaripah + Laut',         emoji:'��', rarity:'rare',      borderImg:'/image/b39.png',
+    glow:'rgba(180,20,20,0.85)',   glow2:'rgba(20,120,180,0.45)'  },
+  { id:'lumpia',         name:'Tari Sintren + Parangtritis', emoji:'💃', rarity:'rare',      borderImg:'/image/b41.png',
+    glow:'rgba(120,20,180,0.85)',  glow2:'rgba(20,80,180,0.45)'   },
   { id:'kartini',        name:'Hari Kartini',             emoji:'👩‍🎓', rarity:'rare',      borderImg:'/image/b43.png',
     glow:'rgba(200,160,60,0.82)',  glow2:'rgba(160,60,20,0.42)'  },
   { id:'kebangkitan',    name:'Kebangkitan Nasional',     emoji:'🦅', rarity:'rare',      borderImg:'/image/b44.png',
@@ -226,14 +225,6 @@ export const BADGE_POOL = [
     glow:'rgba(120,40,180,0.82)',  glow2:'rgba(20,80,20,0.42)'   },
   { id:'harimau',        name:'Harimau Jawa',             emoji:'🐅', rarity:'rare',      borderImg:'/image/b24.png',
     glow:'rgba(220,100,20,0.82)',  glow2:'rgba(20,80,20,0.42)'   },
-  { id:'lumpia',         name:'Lumpia Semarang',          emoji:'🫔', rarity:'rare',      borderImg:'/image/b41.png',
-    glow:'rgba(200,160,20,0.82)',  glow2:'rgba(40,120,40,0.42)'  },
-  { id:'sate',           name:'Sate Ayam Madura',         emoji:'🍢', rarity:'rare',      borderImg:'/image/b34.png',
-    glow:'rgba(140,80,20,0.82)',   glow2:'rgba(180,30,20,0.42)'  },
-  { id:'rawon',          name:'Rawon Surabaya',           emoji:'🍲', rarity:'rare',      borderImg:'/image/b35.png',
-    glow:'rgba(40,20,20,0.82)',    glow2:'rgba(160,30,20,0.42)'  },
-  { id:'pempek',         name:'Pempek Palembang',         emoji:'🍡', rarity:'rare',      borderImg:'/image/b39.png',
-    glow:'rgba(120,60,20,0.82)',   glow2:'rgba(180,20,20,0.42)'  },
   { id:'sukuh',          name:'Candi Sukuh',              emoji:'🏯', rarity:'rare',      borderImg:'/image/b19.png',
     glow:'rgba(160,140,80,0.82)',  glow2:'rgba(60,80,40,0.42)'   },
   { id:'megalitik',      name:'Batu Megalitikum',         emoji:'🗿', rarity:'rare',      borderImg:'/image/b28.png',
