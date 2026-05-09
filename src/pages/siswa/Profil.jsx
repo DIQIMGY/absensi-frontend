@@ -60,7 +60,8 @@ export default function SiswaProfil() {
   const [showBorderModal, setShowBorderModal] = useState(false)
   const [borderWindow, setBorderWindow] = useState(null)
   const [borderSisaDetik, setBorderSisaDetik] = useState(0)
-  const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null) // badge yg dipilih via window, persist selama expires_at valid
+  const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null)
+  const [windowBadgeIds, setWindowBadgeIds] = useState([]) // semua window badges aktif
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -77,13 +78,15 @@ export default function SiswaProfil() {
     try {
       const res = await siswaApi.getBorderWindowStatus()
       setBorderWindow(res.data)
-      // Sync active_badge
       if (res.data.active_badge !== undefined) setActiveBadge(res.data.active_badge)
       setBorderSisaDetik(res.data.border_sisa_detik || 0)
-      // window_badge = badge yang dipilih via window, persist selama expires_at valid
-      if (res.data.border_sisa_detik > 0 && res.data.window_badge) {
-        setWindowPickedBadgeId(res.data.window_badge)
-      } else if (!res.data.border_sisa_detik || res.data.border_sisa_detik <= 0) {
+      // Simpan semua window badges aktif
+      const wBadges = res.data.window_badges || []
+      setWindowBadgeIds(wBadges.map(wb => wb.id))
+      // backward compat
+      if (wBadges.length > 0) {
+        setWindowPickedBadgeId(res.data.window_badge || wBadges[0]?.id || null)
+      } else {
         setWindowPickedBadgeId(null)
       }
     } catch { /* silent */ }
@@ -712,8 +715,8 @@ export default function SiswaProfil() {
                     const sudahPilih     = borderWindow?.sudah_pilih
                     const isLimited      = border.rarity === 'limited'
                     const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited
-                    // Border ini yang dipilih via window & masih berlaku — bisa equip/unequip berulang
-                    const windowBadgeOwned = borderSisaDetik > 0 && windowPickedBadgeId === border.id && !isLimited
+                    // Border ini ada di window_badges aktif — bisa equip/unequip berulang
+                    const windowBadgeOwned = windowBadgeIds.includes(border.id) && !isLimited
                     const canInteract    = owned || bisaPilihBebas || windowBadgeOwned
 
                     return (
@@ -728,9 +731,10 @@ export default function SiswaProfil() {
                               await siswaApi.pilihBorderWindow(border.id)
                               setActiveBadge(border.id)
                               setWindowPickedBadgeId(border.id)
+                              setWindowBadgeIds(prev => [...prev.filter(id => id !== border.id), border.id])
                               setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
                               setBorderSisaDetik(86400)
-                              toast.success(`${border.name} terpasang! Berlaku 1 hari.`)
+                              toast.success(`${border.name} terpasang! Berlaku 24 jam.`)
                             } else {
                               // Equip / unequip — bisa berulang kali
                               if (isActive) {
