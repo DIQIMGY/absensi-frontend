@@ -1044,8 +1044,8 @@ export default function SiswaDashboard() {
             <BudayaIndonesia
               budayaInfo={pengaturan.budaya_info}
               budayaFotos={pengaturan.budaya_fotos || []}
-              budayaVideo={pengaturan.budaya_video || null}
-              budayaVideo2={pengaturan.budaya_video_2 || null}
+              budayaVideo={null}      {/* NONAKTIF sementara — kembalikan: pengaturan.budaya_video || null */}
+              budayaVideo2={null}     {/* NONAKTIF sementara — kembalikan: pengaturan.budaya_video_2 || null */}
               budayaBg={pengaturan.budaya_bg || null}
             />
           )}

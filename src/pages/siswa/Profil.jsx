@@ -251,9 +251,12 @@ export default function SiswaProfil() {
               ? <video src={coverPreview} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
               : <img src={coverPreview} alt="cover" className="w-full h-full object-cover"/>
           ) : profil?.foto_cover_url ? (
+            /* NONAKTIF sementara — kembalikan kondisi video saat koneksi stabil:
             profil?.cover_type === 'video'
               ? <video src={profil.foto_cover_url} autoPlay loop muted playsInline className="w-full h-full object-cover"/>
               : <img src={profil.foto_cover_url} alt="cover" className="w-full h-full object-cover"/>
+            */
+            <img src={profil.foto_cover_url} alt="cover" className="w-full h-full object-cover"/>
           ) : (
             <div className="w-full h-full" style={{ background: 'linear-gradient(135deg,#3b0764 0%,#4c1d95 40%,#5b21b6 70%,#6d28d9 100%)' }}>
               <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'18px 18px' }}/>
