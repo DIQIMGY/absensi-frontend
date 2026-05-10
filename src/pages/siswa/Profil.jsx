@@ -1,4 +1,4 @@
-﻿﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   User, Mail, Phone, MapPin, Calendar, Hash,
@@ -58,22 +58,12 @@ export default function SiswaProfil() {
   const [activeBadge, setActiveBadge] = useState(null)
   const [ownedBadges, setOwnedBadges] = useState([])
   const [showBorderModal, setShowBorderModal] = useState(false)
-
-  // Preload gambar border yang dimiliki + aktif saat modal dibuka
-  const handleOpenBorderModal = () => {
-    setShowBorderModal(true)
-    // Preload border yang dimiliki dan window badges
-    const toPreload = [
-      ...ownedBadges.map(b => BADGE_POOL.find(p => p.id === b.id)?.borderImg).filter(Boolean),
-      ...windowBadgeIds.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
-      activeBadge ? BADGE_POOL.find(p => p.id === activeBadge)?.borderImg : null,
-    ].filter(Boolean)
-    toPreload.forEach(src => { const img = new Image(); img.src = src })
-  }
+  const [showKoleksiModal, setShowKoleksiModal] = useState(false)
   const [borderWindow, setBorderWindow] = useState(null)
   const [borderSisaDetik, setBorderSisaDetik] = useState(0)
   const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null)
-  const [windowBadgeIds, setWindowBadgeIds] = useState([]) // semua window badges aktif
+  const [windowBadgeIds, setWindowBadgeIds] = useState([])
+  const [permanentBadges, setPermanentBadges] = useState([])
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -84,7 +74,26 @@ export default function SiswaProfil() {
       const res = await siswaApi.getGachaStatus()
       setActiveBadge(res.data.active_badge)
       setOwnedBadges(res.data.badges || [])
+      setPermanentBadges(res.data.permanent_badges || [])
     } catch { /* silent */ }
+  }
+
+  // Broadcast perubahan active badge ke layout
+  const updateActiveBadge = (badgeId) => {
+    setActiveBadge(badgeId)
+    window.dispatchEvent(new CustomEvent('badge-changed', { detail: { activeBadge: badgeId } }))
+  }
+
+  // Preload gambar border yang dimiliki + aktif saat modal dibuka
+  const handleOpenBorderModal = () => {
+    setShowBorderModal(true)
+    const toPreload = [
+      ...ownedBadges.map(b => BADGE_POOL.find(p => p.id === b.id)?.borderImg).filter(Boolean),
+      ...windowBadgeIds.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
+      ...permanentBadges.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
+      activeBadge ? BADGE_POOL.find(p => p.id === activeBadge)?.borderImg : null,
+    ].filter(Boolean)
+    toPreload.forEach(src => { const img = new Image(); img.src = src })
   }
   const fetchBorderWindow = async () => {
     try {
@@ -400,7 +409,7 @@ export default function SiswaProfil() {
                   <button key={badge.id}
                     onClick={async () => {
                       try {
-                        if (isActive) { await siswaApi.unequipBadge(); setActiveBadge(null); toast.success('Badge dilepas') }
+                        if (isActive) { await siswaApi.unequipBadge(); updateActiveBadge(null); toast.success('Badge dilepas') }
                         else { await siswaApi.equipBadge(badge.id); setActiveBadge(badge.id); toast.success('Badge terpasang!') }
                       } catch { toast.error('Gagal') }
                     }}
@@ -419,12 +428,12 @@ export default function SiswaProfil() {
           </div>
         )}
 
-        {/* Button Border Tersedia */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+        {/* Button Border Tersedia + Koleksiku */}
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => handleOpenBorderModal()}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all group"
+            className="flex-1 flex items-center justify-between px-4 py-3 rounded-2xl transition-all group"
             style={{
               background: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
                 ? 'linear-gradient(135deg, rgba(120,60,200,0.15) 0%, rgba(60,100,220,0.12) 100%)'
@@ -471,6 +480,22 @@ export default function SiswaProfil() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
               </svg>
             </div>
+          </motion.button>
+
+          {/* Button Koleksiku */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowKoleksiModal(true)}
+            className="flex flex-col items-center justify-center px-4 py-3 rounded-2xl transition-all flex-shrink-0"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,180,220,0.08) 0%, rgba(0,100,160,0.08) 100%)',
+              border: permanentBadges.length > 0 ? '1px solid rgba(0,229,255,0.3)' : '1px solid rgba(0,180,220,0.15)',
+            }}>
+            <span className="text-base leading-none">🎒</span>
+            <p className="text-[9px] font-black text-slate-700 dark:text-white mt-1">Koleksiku</p>
+            <p className="text-[8px] text-slate-400 dark:text-slate-500 mt-0.5">
+              {permanentBadges.length + ownedBadges.length + windowBadgeIds.length}
+            </p>
           </motion.button>
         </div>
       </div>
@@ -686,6 +711,16 @@ export default function SiswaProfil() {
                 </button>
               </div>
 
+              {/* Banner permanent dimiliki */}
+              {permanentBadges.length > 0 && (
+                <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2 bg-cyan-50 dark:bg-cyan-900/15 border border-cyan-200 dark:border-cyan-500/20">
+                  <span className="text-sm">∞</span>
+                  <p className="text-[11px] text-cyan-700 dark:text-cyan-300 font-bold">
+                    {permanentBadges.length} border permanen · milikmu selamanya
+                  </p>
+                </div>
+              )}
+
               {/* Banner window aktif */}
               {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih && (
                 <motion.div
@@ -725,12 +760,15 @@ export default function SiswaProfil() {
                     const windowAktif    = borderWindow?.border_window_aktif
                     const sudahPilih     = borderWindow?.sudah_pilih
                     const isLimited      = border.rarity === 'limited'
+                    const isPermanent    = border.rarity === 'permanent'
                     const windowLimited  = borderWindow?.limited_badges || []
                     const isLimitedAvail = isLimited && windowAktif && !sudahPilih && windowLimited.includes(border.id)
-                    const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited
+                    const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited && !isPermanent
                     // Border ini ada di window_badges aktif — bisa equip/unequip berulang
                     const windowBadgeOwned = windowBadgeIds.includes(border.id)
-                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned || isLimitedAvail
+                    // Permanent — milik selamanya
+                    const isPermanentOwned = isPermanent && permanentBadges.includes(border.id)
+                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned || isLimitedAvail || isPermanentOwned
 
                     return (
                       <motion.button
@@ -739,10 +777,10 @@ export default function SiswaProfil() {
                         onClick={async () => {
                           if (!canInteract) return
                           try {
-                            if ((bisaPilihBebas || isLimitedAvail) && !owned && !windowBadgeOwned) {
+                            if ((bisaPilihBebas || isLimitedAvail) && !owned && !windowBadgeOwned && !isPermanentOwned) {
                               // Pilih border baru via window (1x per window)
                               await siswaApi.pilihBorderWindow(border.id)
-                              setActiveBadge(border.id)
+                              updateActiveBadge(border.id)
                               setWindowPickedBadgeId(border.id)
                               setWindowBadgeIds(prev => [...prev.filter(id => id !== border.id), border.id])
                               setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
@@ -752,11 +790,11 @@ export default function SiswaProfil() {
                               // Equip / unequip — bisa berulang kali
                               if (isActive) {
                                 await siswaApi.unequipBadge()
-                                setActiveBadge(null)
+                                updateActiveBadge(null)
                                 toast.success('Border dilepas')
                               } else {
                                 await siswaApi.equipBadge(border.id)
-                                setActiveBadge(border.id)
+                                updateActiveBadge(border.id)
                                 toast.success(`${border.name} terpasang!`)
                               }
                             }
@@ -844,6 +882,13 @@ export default function SiswaProfil() {
                               LTD✨
                             </div>
                           )}
+                          {/* Badge PERM untuk permanent yang dimiliki */}
+                          {isPermanentOwned && (
+                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black"
+                              style={{ background: 'linear-gradient(135deg,#003d5c,#00e5ff)', color: '#000' }}>
+                              ∞
+                            </div>
+                          )}
                           {/* Badge LIMITED */}
                           {isLimited && !owned && (
                             <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
@@ -899,11 +944,210 @@ export default function SiswaProfil() {
                     onClick={async () => {
                       try {
                         await siswaApi.unequipBadge()
-                        setActiveBadge(null)
+                        updateActiveBadge(null)
                         toast.success('Border dilepas')
                       } catch {
                         toast.error('Gagal melepas border')
                       }
+                    }}
+                    className="mt-3 w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08]">
+                    <X size={14}/>
+                    Lepas Border Aktif
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL KOLEKSIKU ── */}
+      <AnimatePresence>
+        {showKoleksiModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)' }}
+            onClick={() => setShowKoleksiModal(false)}>
+            <motion.div
+              initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#0f0d1a] border border-slate-200 dark:border-white/[0.06]"
+              style={{ maxHeight: '90vh' }}>
+
+              {/* Handle bar mobile */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-white/20"/>
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                <div>
+                  <h2 className="text-base font-black text-slate-900 dark:text-white">🎒 Koleksiku</h2>
+                  <p className="text-[11px] text-slate-400 dark:text-white/40 mt-0.5">
+                    {permanentBadges.length} permanen · {ownedBadges.length} trial gacha · {windowBadgeIds.length} trial window
+                  </p>
+                </div>
+                <button onClick={() => setShowKoleksiModal(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/[0.07] text-slate-500 dark:text-white/40">
+                  <X size={14}/>
+                </button>
+              </div>
+
+              <div className="h-px mx-5 bg-slate-100 dark:bg-white/[0.06]"/>
+
+              <div className="overflow-y-auto px-4 py-4" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+                {/* Hitung semua koleksi */}
+                {(() => {
+                  // Gabungkan semua badge yang dimiliki
+                  const allOwned = []
+
+                  // 1. Permanent
+                  permanentBadges.forEach(id => {
+                    const b = BADGE_POOL.find(p => p.id === id)
+                    if (b) allOwned.push({ ...b, type: 'permanent', expiresLabel: null })
+                  })
+
+                  // 2. Window badges (trial)
+                  const wBadgesRaw = borderWindow?.window_badges || []
+                  wBadgesRaw.forEach(wb => {
+                    const b = BADGE_POOL.find(p => p.id === wb.id)
+                    if (b && !permanentBadges.includes(wb.id)) {
+                      const exp = wb.expires_at ? new Date(wb.expires_at) : null
+                      const sisaMs = exp ? exp - Date.now() : 0
+                      const sisaJam = sisaMs > 0 ? Math.floor(sisaMs / 3600000) : 0
+                      const sisaMenit = sisaMs > 0 ? Math.floor((sisaMs % 3600000) / 60000) : 0
+                      allOwned.push({
+                        ...b,
+                        type: 'window',
+                        expiresLabel: sisaMs > 0 ? `${sisaJam}j ${sisaMenit}m` : 'Expired',
+                      })
+                    }
+                  })
+
+                  // 3. Gacha badges (trial hari ini)
+                  ownedBadges.forEach(badge => {
+                    const b = BADGE_POOL.find(p => p.id === badge.id)
+                    if (b && !permanentBadges.includes(badge.id) && !wBadgesRaw.find(w => w.id === badge.id)) {
+                      allOwned.push({ ...b, type: 'gacha', expiresLabel: 'Hari ini' })
+                    }
+                  })
+
+                  if (allOwned.length === 0) {
+                    return (
+                      <div className="text-center py-12">
+                        <p className="text-4xl mb-3">🎒</p>
+                        <p className="text-sm font-bold text-slate-500 dark:text-white/40">Koleksi masih kosong</p>
+                        <p className="text-[11px] text-slate-400 dark:text-white/25 mt-1">Gacha harian untuk mulai koleksi!</p>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {allOwned.map((border, idx) => {
+                        const cfg = RARITY_CFG[border.rarity] || RARITY_CFG.common
+                        const glow = border.glow || cfg.glow
+                        const glow2 = border.glow2 || cfg.glow2
+                        const isActive = activeBadge === border.id
+                        const isPerm = border.type === 'permanent'
+
+                        return (
+                          <motion.button
+                            key={`${border.id}-${idx}`}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={async () => {
+                              try {
+                                if (isActive) {
+                                  await siswaApi.unequipBadge()
+                                  updateActiveBadge(null)
+                                  toast.success('Border dilepas')
+                                } else {
+                                  await siswaApi.equipBadge(border.id)
+                                  updateActiveBadge(border.id)
+                                  toast.success(`${border.name} terpasang!`)
+                                }
+                              } catch (e) {
+                                toast.error(e.response?.data?.message || 'Gagal')
+                              }
+                            }}
+                            className="relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all bg-slate-50 dark:bg-white/[0.02]"
+                            style={{
+                              background: isActive ? `linear-gradient(160deg, ${glow}22, ${glow2}18)` : undefined,
+                              border: isActive ? `1.5px solid ${glow}55` : '1.5px solid transparent',
+                              cursor: 'pointer',
+                            }}>
+
+                            {/* Preview */}
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+                              <div className="absolute inset-0 rounded-full"
+                                style={{ background: `radial-gradient(circle, ${glow}18 0%, transparent 70%)` }}/>
+                              <motion.img
+                                src={border.borderImg}
+                                alt={border.name}
+                                loading="lazy"
+                                className="absolute pointer-events-none select-none"
+                                style={{
+                                  top: '50%', left: '50%',
+                                  transform: 'translate(-50%,-50%) scale(1.35)',
+                                  width: '100%', height: '100%',
+                                  objectFit: 'contain', zIndex: 10,
+                                }}
+                                animate={{ filter: isActive ? [
+                                  `drop-shadow(0 0 6px ${glow2})`,
+                                  `drop-shadow(0 0 16px ${glow})`,
+                                  `drop-shadow(0 0 6px ${glow2})`,
+                                ] : [`drop-shadow(0 0 4px ${glow2})`]}}
+                                transition={{ repeat: isActive ? Infinity : 0, duration: 2.4, ease: 'easeInOut' }}
+                              />
+                              {/* Label type */}
+                              <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[7px] font-black"
+                                style={isPerm
+                                  ? { background: 'linear-gradient(135deg,#003d5c,#00e5ff)', color: '#000' }
+                                  : { background: 'rgba(0,0,0,0.55)', color: 'rgba(255,255,255,0.7)' }}>
+                                {isPerm ? '∞' : 'TRIAL'}
+                              </div>
+                            </div>
+
+                            {/* Nama */}
+                            <div className="text-center w-full">
+                              <p className="text-[10px] font-black leading-tight truncate text-slate-800 dark:text-white/85">
+                                {border.name}
+                              </p>
+                              <p className="text-[8px] mt-0.5"
+                                style={{ color: isPerm ? 'rgba(0,229,255,0.8)' : 'rgba(200,160,60,0.8)' }}>
+                                {isPerm ? 'Permanen' : border.expiresLabel}
+                              </p>
+                            </div>
+
+                            {/* Aktif indicator */}
+                            {isActive && (
+                              <motion.div
+                                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-2 border-white dark:border-[#0f0d1a]"
+                                style={{ zIndex: 2 }}>
+                                <CheckCircle size={10} className="text-white"/>
+                              </motion.div>
+                            )}
+                          </motion.button>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+
+                {/* Lepas border aktif */}
+                {activeBadge && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={async () => {
+                      try {
+                        await siswaApi.unequipBadge()
+                        updateActiveBadge(null)
+                        toast.success('Border dilepas')
+                      } catch { toast.error('Gagal') }
                     }}
                     className="mt-3 w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08]">
                     <X size={14}/>

@@ -266,7 +266,15 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
     }
     fetchBadge()
     const t = setInterval(fetchBadge, 60000)
-    return () => clearInterval(t)
+
+    // Listen event badge-changed dari Profil — update langsung tanpa fetch
+    const onBadgeChanged = (e) => setLayoutActiveBadge(e.detail.activeBadge)
+    window.addEventListener('badge-changed', onBadgeChanged)
+
+    return () => {
+      clearInterval(t)
+      window.removeEventListener('badge-changed', onBadgeChanged)
+    }
   }, [user?.role])
 
   useEffect(() => {

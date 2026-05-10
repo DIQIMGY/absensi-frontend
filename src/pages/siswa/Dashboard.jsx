@@ -1018,9 +1018,10 @@ export default function SiswaDashboard() {
           </div>
 
 
-          {/* Gacha Harian � floating di pojok kanan atas */}
+          {/* Gacha Harian floating di pojok kanan atas */}
           <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
             setActiveBadge(newBadgeId)
+            window.dispatchEvent(new CustomEvent('badge-changed', { detail: { activeBadge: newBadgeId } }))
             setOwnedBadges(newBadges || [])
           }} />
 

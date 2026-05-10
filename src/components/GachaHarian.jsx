@@ -19,6 +19,16 @@ export const RARITY_CFG = {
     beam:'rgba(255,45,120,0.35)',
     frameGrad:['#ff2d78','#ff9ec8','#be0058','#ffe0f0'],
   },
+  permanent: {
+    label:'Permanent', short:'PERM', stars:7,
+    text:'text-cyan-300', particle:'#00e5ff',
+    glow:'rgba(0,229,255,0.95)', glow2:'rgba(0,180,220,0.6)',
+    grad:'linear-gradient(135deg,#001a2e,#003d5c,#00e5ff,#80f4ff,#ffffff)',
+    gradBtn:'linear-gradient(135deg,#003d5c,#00e5ff,#80f4ff)',
+    cardBg:'linear-gradient(160deg,#000d14,#001a28,#000d14)',
+    beam:'rgba(0,229,255,0.4)',
+    frameGrad:['#00e5ff','#80f4ff','#003d5c','#ffffff'],
+  },
   legendary: {
     label:'Legendary', short:'LEG', stars:5,
     text:'text-amber-400', particle:'#f59e0b',
