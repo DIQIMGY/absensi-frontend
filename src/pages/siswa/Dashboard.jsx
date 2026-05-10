@@ -163,11 +163,43 @@ export default function SiswaDashboard() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // Auto-polling setiap 30 detik � supaya dashboard update otomatis setelah sync fingerprint
+  // Auto-polling setiap 30 detik supaya dashboard update otomatis setelah sync fingerprint
   useEffect(() => {
     const poll = setInterval(() => fetchAll(true), 30000)
     return () => clearInterval(poll)
   }, [fetchAll])
+
+  // Saat badge ganti (dari Profil/GachaHarian) — update ranking list langsung tanpa re-fetch
+  useEffect(() => {
+    const onBadgeChanged = (e) => {
+      const newBadge = e.detail?.activeBadge ?? null
+      setActiveBadge(newBadge)
+      // Patch active_badge di semua list ranking kelas & sekolah untuk user ini
+      setRanking(prev => {
+        if (!prev) return prev
+        const myId = data?.siswa?.id
+        if (!myId) return prev
+        const patch = (list) => list?.map(s => s.id === myId ? { ...s, active_badge: newBadge } : s) ?? []
+        return {
+          ...prev,
+          kelas: {
+            ...prev.kelas,
+            siswa_rajin:     patch(prev.kelas?.siswa_rajin),
+            siswa_terlambat: patch(prev.kelas?.siswa_terlambat),
+            siswa_alpha:     patch(prev.kelas?.siswa_alpha),
+          },
+          sekolah: {
+            ...prev.sekolah,
+            siswa_rajin:     patch(prev.sekolah?.siswa_rajin),
+            siswa_terlambat: patch(prev.sekolah?.siswa_terlambat),
+            siswa_alpha:     patch(prev.sekolah?.siswa_alpha),
+          },
+        }
+      })
+    }
+    window.addEventListener('badge-changed', onBadgeChanged)
+    return () => window.removeEventListener('badge-changed', onBadgeChanged)
+  }, [data?.siswa?.id])
 
   const getGreeting = () => {
     const h = now.getHours()
