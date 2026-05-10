@@ -87,219 +87,178 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const initial  = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
   const hasBadge = !!siswa.active_badge
 
-  const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
-  const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
+  const totalAbsen = (siswa.total_hadir||0) + (siswa.total_terlambat||0) + (siswa.total_alpha||0)
+  const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir||0)+(siswa.total_terlambat||0))/totalAbsen*100) : 0
   const pctColor   = pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444'
-  const pctGrad    = pctHadir >= 80
-    ? 'linear-gradient(90deg,#059669,#10b981,#34d399)'
-    : pctHadir >= 60
-    ? 'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24)'
-    : 'linear-gradient(90deg,#dc2626,#ef4444,#f87171)'
-
-  const rankEmoji  = siswa.posisi <= 3 ? ['👑','🥈','🥉'][siswa.posisi - 1] : null
+  const pctLabel   = pctHadir >= 80 ? 'Baik' : pctHadir >= 60 ? 'Cukup' : 'Kurang'
+  const rankEmoji  = siswa.posisi <= 3 ? ['👑','🥈','🥉'][siswa.posisi-1] : null
 
   return (
     <AnimatePresence>
+      {/* ── BACKDROP ── */}
       <motion.div
-        key="backdrop"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.22 }}
+        key="bd"
+        initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+        transition={{ duration:0.2 }}
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
-        style={{ background: 'rgba(2,6,23,0.80)', backdropFilter: 'blur(8px)' }}
+        style={{ background:'rgba(2,6,23,0.82)', backdropFilter:'blur(10px)' }}
         onClick={onClose}
       >
+        {/* ── CARD ── */}
         <motion.div
           key="card"
-          initial={{ opacity: 0, y: 80, scale: 0.93 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 340, damping: 30 }}
-          className="relative w-full sm:max-w-[360px] rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
-          style={{ background: '#0f172a' }}
+          initial={{ opacity:0, y:72, scale:0.94 }}
+          animate={{ opacity:1, y:0, scale:1 }}
+          exit={{ opacity:0, y:48, scale:0.96 }}
+          transition={{ type:'spring', stiffness:360, damping:32 }}
+          className="w-full sm:max-w-[340px] rounded-t-[24px] sm:rounded-[24px] overflow-hidden"
+          style={{ background:'#111827', boxShadow:'0 40px 100px rgba(0,0,0,0.7)' }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ── DRAG HANDLE mobile ── */}
-          <div className="flex justify-center pt-3 pb-1 sm:hidden">
-            <div className="w-9 h-1 rounded-full bg-white/20" />
+          {/* drag handle mobile */}
+          <div className="flex justify-center pt-2.5 sm:hidden">
+            <div className="w-8 h-1 rounded-full" style={{ background:'rgba(255,255,255,0.15)' }}/>
           </div>
 
           {/* ── COVER 16:9 ── */}
-          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-            {hasCover ? (
-              <img src={siswa.foto_cover_url} alt="cover"
-                className="w-full h-full object-cover" onError={() => setCoverErr(true)} />
-            ) : (
-              <div className="w-full h-full relative overflow-hidden"
-                style={{ background: isMe
-                  ? 'linear-gradient(135deg,#1e0a3c 0%,#3b0764 40%,#4c1d95 70%,#6d28d9 100%)'
-                  : 'linear-gradient(135deg,#020617 0%,#0f172a 40%,#1e1b4b 70%,#312e81 100%)' }}>
-                {/* Animated orbs */}
-                <div className="absolute top-2 right-4 w-20 h-20 rounded-full opacity-20 blur-2xl"
-                  style={{ background: isMe ? '#a78bfa' : '#818cf8' }} />
-                <div className="absolute bottom-0 left-8 w-16 h-16 rounded-full opacity-15 blur-xl"
-                  style={{ background: isMe ? '#7c3aed' : '#6366f1' }} />
-                <div className="absolute inset-0 opacity-[0.04]"
-                  style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '14px 14px' }} />
+          <div className="relative w-full" style={{ aspectRatio:'16/9' }}>
+            {hasCover
+              ? <img src={siswa.foto_cover_url} alt="cover" className="w-full h-full object-cover" onError={()=>setCoverErr(true)}/>
+              : <div className="w-full h-full relative overflow-hidden"
+                  style={{ background: isMe
+                    ? 'linear-gradient(135deg,#1e0a3c,#3b0764,#5b21b6)'
+                    : 'linear-gradient(135deg,#0c1445,#1e1b4b,#312e81)' }}>
+                  <div className="absolute inset-0 opacity-[0.05]"
+                    style={{ backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'14px 14px' }}/>
+                  <div className="absolute top-3 right-6 w-16 h-16 rounded-full blur-2xl opacity-25"
+                    style={{ background: isMe ? '#a78bfa' : '#818cf8' }}/>
+                  <div className="absolute bottom-2 left-6 w-12 h-12 rounded-full blur-xl opacity-20"
+                    style={{ background: isMe ? '#7c3aed' : '#6366f1' }}/>
+                </div>
+            }
+            {/* rank pill */}
+            <div className="absolute top-2.5 left-2.5">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                style={{ background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.12)' }}>
+                {rankEmoji && <span className="text-sm leading-none">{rankEmoji}</span>}
+                <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
               </div>
-            )}
-
-            {/* Bottom scrim — smooth fade into card bg */}
-            <div className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
-              style={{ background: 'linear-gradient(to top,#0f172a,transparent)' }} />
-
-            {/* Rank pill — top left */}
-            <div className="absolute top-3 left-3">
-              {rankEmoji ? (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
-                  <span className="text-base leading-none">{rankEmoji}</span>
-                  <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
-                </div>
-              ) : (
-                <div className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
-                  <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
-                </div>
-              )}
             </div>
-
-            {/* Close — top right */}
-            <motion.button whileTap={{ scale: 0.85 }} onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all">
-              <X size={14} />
+            {/* close */}
+            <motion.button whileTap={{ scale:0.85 }} onClick={onClose}
+              className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.12)' }}>
+              <X size={13} className="text-white/80"/>
             </motion.button>
           </div>
 
-          {/* ── BODY ── */}
-          <div className="px-5 pb-6">
+          {/* ── INFO SECTION — bersih, tidak overlap ── */}
+          <div className="px-4 pt-4 pb-5">
 
-            {/* ── AVATAR ROW — avatar kiri, nama kanan ── */}
-            <div className="flex items-end gap-4" style={{ marginTop: -36 }}>
-
-              {/* Avatar — overlap cover */}
-              <div className="relative flex-shrink-0" style={{ marginBottom: 0 }}>
-                {/* Ring */}
-                <div className="rounded-full" style={{
-                  padding: 3,
-                  background: isMe
-                    ? 'linear-gradient(135deg,#7c3aed,#c4b5fd,#7c3aed)'
-                    : 'linear-gradient(135deg,#6366f1,#a5b4fc,#6366f1)',
-                  boxShadow: isMe
-                    ? '0 0 28px rgba(124,58,237,0.7)'
-                    : '0 0 20px rgba(99,102,241,0.5)',
-                }}>
-                  <div className="rounded-full bg-slate-900" style={{ padding: 2.5 }}>
+            {/* ── ROW: avatar kecil + nama ── */}
+            <div className="flex items-center gap-3 mb-4">
+              {/* Avatar kecil — 48px, badge scale kecil jadi tidak nabrak */}
+              <div className="relative flex-shrink-0" style={{ width:56, height:56 }}>
+                {/* ring */}
+                <div className="absolute inset-0 rounded-full"
+                  style={{
+                    padding:2,
+                    background: isMe
+                      ? 'linear-gradient(135deg,#7c3aed,#c4b5fd)'
+                      : 'linear-gradient(135deg,#6366f1,#a5b4fc)',
+                    boxShadow: isMe ? '0 0 14px rgba(124,58,237,0.5)' : '0 0 10px rgba(99,102,241,0.35)',
+                  }}>
+                  <div className="w-full h-full rounded-full"
+                    style={{ background:'#111827', padding:2 }}>
                     <div
-                      className={`overflow-hidden bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-[16px]'}`}
-                      style={{ width: 76, height: 76, fontSize: 28 }}
-                    >
+                      className={`w-full h-full overflow-hidden bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center font-black text-white ${hasBadge?'rounded-full':'rounded-xl'}`}
+                      style={{ fontSize:18 }}>
                       {hasFoto
-                        ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setFotoErr(true)} />
+                        ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={()=>setFotoErr(true)}/>
                         : initial}
                     </div>
                   </div>
                 </div>
-                {/* Badge overlay — di luar ring, punya ruang sendiri */}
+                {/* badge — size xs, scale lebih kecil */}
                 {hasBadge && (
-                  <div className="absolute pointer-events-none" style={{ inset: -12 }}>
+                  <div className="absolute pointer-events-none" style={{ inset:-8 }}>
                     <div className="relative w-full h-full">
-                      <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />
+                      <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="sm"/>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Nama + kelas — rata bawah dengan avatar */}
-              <div className="flex-1 min-w-0 pb-1">
-                <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <h2 className="text-[17px] font-black text-white leading-tight tracking-tight">
+              {/* nama + info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h2 className="text-[15px] font-black text-white leading-tight truncate">
                     {siswa.nama_lengkap}
                   </h2>
                   {isMe && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black"
-                      style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.4)', color: '#c4b5fd' }}>
-                      <Star size={7} />KAMU
+                    <span className="flex-shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black"
+                      style={{ background:'rgba(124,58,237,0.2)', border:'1px solid rgba(167,139,250,0.35)', color:'#c4b5fd' }}>
+                      <Star size={6}/>KAMU
                     </span>
                   )}
                 </div>
-                <p className="text-[12px] font-medium" style={{ color: 'rgba(148,163,184,0.9)' }}>
+                <p className="text-[11px] mt-0.5 font-medium truncate"
+                  style={{ color:'rgba(148,163,184,0.85)' }}>
                   {siswa.kelas || '-'}
                 </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(100,116,139,0.9)' }}>
+                <p className="text-[10px] mt-0.5"
+                  style={{ color:'rgba(71,85,105,0.9)' }}>
                   NIS {siswa.nis || '-'}
                 </p>
               </div>
             </div>
 
-            {/* ── DIVIDER ── */}
-            <div className="my-5 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-
-            {/* ── KEHADIRAN SECTION ── */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em]"
-                  style={{ color: 'rgba(100,116,139,0.9)' }}>Tingkat Kehadiran</span>
+            {/* ── KEHADIRAN BAR ── */}
+            <div className="mb-4 px-3 py-3 rounded-2xl"
+              style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color:'rgba(100,116,139,0.8)' }}>Kehadiran</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[15px] font-black tabular-nums" style={{ color: pctColor }}>
-                    {pctHadir}%
-                  </span>
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-                    style={{
-                      background: `${pctColor}18`,
-                      color: pctColor,
-                      border: `1px solid ${pctColor}30`,
-                    }}>
-                    {pctHadir >= 80 ? 'Baik' : pctHadir >= 60 ? 'Cukup' : 'Kurang'}
+                  <span className="text-[13px] font-black tabular-nums" style={{ color:pctColor }}>{pctHadir}%</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md"
+                    style={{ background:`${pctColor}18`, color:pctColor, border:`1px solid ${pctColor}28` }}>
+                    {pctLabel}
                   </span>
                 </div>
               </div>
-              {/* Track */}
-              <div className="relative h-2 rounded-full overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.07)' }}>
-                <motion.div className="absolute inset-y-0 left-0 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${pctHadir}%` }}
-                  transition={{ duration: 1, ease: [0.34, 1.56, 0.64, 1], delay: 0.2 }}
-                  style={{ background: pctGrad }} />
-              </div>
-              {/* Tick marks */}
-              <div className="flex justify-between mt-1.5 px-0.5">
-                {[0, 25, 50, 75, 100].map(v => (
-                  <span key={v} className="text-[9px]"
-                    style={{ color: pctHadir >= v ? pctColor : 'rgba(71,85,105,0.7)' }}>
-                    {v}%
-                  </span>
-                ))}
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background:'rgba(255,255,255,0.08)' }}>
+                <motion.div className="h-full rounded-full"
+                  initial={{ width:0 }}
+                  animate={{ width:`${pctHadir}%` }}
+                  transition={{ duration:0.9, ease:'easeOut', delay:0.15 }}
+                  style={{ background: pctHadir>=80
+                    ? 'linear-gradient(90deg,#059669,#34d399)'
+                    : pctHadir>=60
+                    ? 'linear-gradient(90deg,#d97706,#fbbf24)'
+                    : 'linear-gradient(90deg,#dc2626,#f87171)' }}/>
               </div>
             </div>
 
-            {/* ── STATS ROW ── */}
+            {/* ── STATS 3 KOLOM ── */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'Hadir',     val: siswa.total_hadir,     color: '#10b981', glow: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.2)'  },
-                { label: 'Terlambat', val: siswa.total_terlambat, color: '#f59e0b', glow: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.2)'  },
-                { label: 'Alpha',     val: siswa.total_alpha,     color: '#ef4444', glow: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.2)'   },
-              ].map((s, i) => (
+                { label:'Hadir',     val:siswa.total_hadir,     c:'#10b981', bg:'rgba(16,185,129,0.08)',  bd:'rgba(16,185,129,0.18)' },
+                { label:'Terlambat', val:siswa.total_terlambat, c:'#f59e0b', bg:'rgba(245,158,11,0.08)', bd:'rgba(245,158,11,0.18)' },
+                { label:'Alpha',     val:siswa.total_alpha,     c:'#ef4444', bg:'rgba(239,68,68,0.08)',  bd:'rgba(239,68,68,0.18)'  },
+              ].map((s,i) => (
                 <motion.div key={s.label}
-                  initial={{ opacity: 0, y: 16, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.1 + i * 0.07, type: 'spring', stiffness: 260, damping: 20 }}
-                  className="relative rounded-2xl overflow-hidden text-center py-4 px-2"
-                  style={{
-                    background: s.glow,
-                    border: `1px solid ${s.border}`,
-                  }}
-                >
-                  {/* Glow dot top center */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-px"
-                    style={{ background: `linear-gradient(90deg,transparent,${s.color},transparent)` }} />
-                  <p className="text-[26px] font-black tabular-nums leading-none" style={{ color: s.color }}>
-                    {s.val}
-                  </p>
-                  <p className="text-[10px] font-semibold mt-1.5 uppercase tracking-wider"
-                    style={{ color: 'rgba(148,163,184,0.7)' }}>
-                    {s.label}
-                  </p>
+                  initial={{ opacity:0, y:12 }}
+                  animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.1+i*0.06, type:'spring', stiffness:240, damping:20 }}
+                  className="rounded-2xl text-center py-3.5 px-2 relative overflow-hidden"
+                  style={{ background:s.bg, border:`1px solid ${s.bd}` }}>
+                  {/* top line */}
+                  <div className="absolute inset-x-0 top-0 h-px"
+                    style={{ background:`linear-gradient(90deg,transparent,${s.c},transparent)` }}/>
+                  <p className="text-[22px] font-black tabular-nums leading-none" style={{ color:s.c }}>{s.val}</p>
+                  <p className="text-[9px] font-semibold mt-1.5 uppercase tracking-wider"
+                    style={{ color:'rgba(148,163,184,0.6)' }}>{s.label}</p>
                 </motion.div>
               ))}
             </div>
