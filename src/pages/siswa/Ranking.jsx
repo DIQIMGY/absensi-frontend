@@ -4,6 +4,7 @@ import {
   Trophy, RefreshCw, Crown, Star,
   ChevronLeft, ChevronRight,
   CheckCircle, Clock, AlertTriangle, X,
+  GraduationCap, Shield, UserCheck,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { BadgeOverlay } from '../../components/GachaHarian'
@@ -62,8 +63,222 @@ function SiswaAvatar({ siswa, size = 44 }) {
   )
 }
 
+// ─── PROFILE CARD MODAL ───────────────────────────────────────
+function ProfileCardModal({ siswa, onClose, myId }) {
+  const [coverErr, setCoverErr] = useState(false)
+  const [fotoErr,  setFotoErr]  = useState(false)
+  const isMe = siswa?.id === myId
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  if (!siswa) return null
+
+  const hasCover = siswa.foto_cover_url && !coverErr
+  const hasFoto  = siswa.foto_url && !fotoErr
+  const initial  = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
+  const hasBadge = !!siswa.active_badge
+
+  const stats = [
+    { label: 'Hadir',     val: siswa.total_hadir,     color: '#10b981', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-100 dark:border-emerald-800/40', text: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    { label: 'Terlambat', val: siswa.total_terlambat, color: '#f59e0b', bg: 'bg-amber-50 dark:bg-amber-900/20',   border: 'border-amber-100 dark:border-amber-800/40',   text: 'text-amber-600 dark:text-amber-400',   dot: 'bg-amber-500' },
+    { label: 'Alpha',     val: siswa.total_alpha,     color: '#ef4444', bg: 'bg-rose-50 dark:bg-rose-900/20',     border: 'border-rose-100 dark:border-rose-800/40',     text: 'text-rose-600 dark:text-rose-400',     dot: 'bg-rose-500' },
+  ]
+
+  const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
+  const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
+
+  return (
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+        style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
+        onClick={onClose}
+      >
+        {/* Card */}
+        <motion.div
+          key="card"
+          initial={{ opacity: 0, y: 60, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+          className="relative w-full sm:max-w-sm bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* ── COVER 16:9 ── */}
+          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+            {hasCover ? (
+              <img
+                src={siswa.foto_cover_url}
+                alt="cover"
+                className="w-full h-full object-cover"
+                onError={() => setCoverErr(true)}
+              />
+            ) : (
+              /* Fallback gradient cover */
+              <div className="w-full h-full"
+                style={{ background: isMe
+                  ? 'linear-gradient(135deg,#2e1065,#4c1d95,#5b21b6)'
+                  : 'linear-gradient(135deg,#0f172a,#1e1b4b,#312e81)' }}>
+                <div className="absolute inset-0 opacity-[0.06]"
+                  style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '16px 16px' }} />
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
+                <div className="absolute bottom-0 left-1/4 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
+              </div>
+            )}
+
+            {/* Gradient overlay bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)' }} />
+
+            {/* Rank badge top-left */}
+            <div className="absolute top-3 left-3">
+              {siswa.posisi <= 3 ? (
+                <span className="text-2xl leading-none drop-shadow-lg">
+                  {['👑','🥈','🥉'][siswa.posisi - 1]}
+                </span>
+              ) : (
+                <div className="px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-sm border border-white/20">
+                  <span className="text-white font-black text-xs">#{siswa.posisi}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Close button */}
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={onClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+            >
+              <X size={14} />
+            </motion.button>
+
+            {/* "KAMU" badge */}
+            {isMe && (
+              <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/80 backdrop-blur-sm border border-violet-400/50">
+                <Star size={9} className="text-white" />
+                <span className="text-[10px] font-black text-white">KAMU</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── AVATAR overlapping cover ── */}
+          <div className="relative px-5 pb-5">
+            {/* Avatar */}
+            <div className="absolute -top-9 left-5">
+              <div
+                className="rounded-full p-[3px] shadow-xl"
+                style={{
+                  background: isMe
+                    ? 'linear-gradient(135deg,#7c3aed,#a78bfa)'
+                    : 'linear-gradient(135deg,#6366f1,#818cf8)',
+                  boxShadow: isMe ? '0 0 20px rgba(124,58,237,0.5)' : '0 0 16px rgba(99,102,241,0.35)',
+                }}
+              >
+                <div className="rounded-full p-[2px] bg-white dark:bg-slate-900">
+                  <div
+                    className={`overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-2xl'}`}
+                    style={{ width: 64, height: 64, fontSize: 24 }}
+                  >
+                    {hasFoto
+                      ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setFotoErr(true)} />
+                      : initial}
+                  </div>
+                  {hasBadge && <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />}
+                </div>
+              </div>
+            </div>
+
+            {/* Spacer for avatar */}
+            <div className="h-8" />
+
+            {/* ── NAME & CLASS ── */}
+            <div className="mb-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight truncate">
+                    {siswa.nama_lengkap}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      <GraduationCap size={10} />
+                      {siswa.kelas || '-'}
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600 text-[10px]">·</span>
+                    <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      <Shield size={10} />
+                      {siswa.nis || '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kehadiran % bar */}
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Tingkat Kehadiran</span>
+                  <span className="text-sm font-black" style={{ color: pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444' }}>
+                    {pctHadir}%
+                  </span>
+                </div>
+                <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pctHadir}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                    className="h-full rounded-full"
+                    style={{ background: pctHadir >= 80 ? 'linear-gradient(90deg,#10b981,#34d399)' : pctHadir >= 60 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── STATS 3 KOLOM ── */}
+            <div className="grid grid-cols-3 gap-2">
+              {stats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.06, type: 'spring', stiffness: 200 }}
+                  className={`${s.bg} border ${s.border} rounded-2xl p-3 text-center`}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${s.dot} mx-auto mb-1.5`} />
+                  <p className={`text-2xl font-black tabular-nums leading-none ${s.text}`}>{s.val}</p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-1">{s.label}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Bottom drag handle (mobile) */}
+            <div className="flex justify-center mt-4 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 // ─── PODIUM TOP 3 ─────────────────────────────────────────────
-function PodiumSection({ items, valKey, activeTab, myId }) {
+function PodiumSection({ items, valKey, activeTab, myId, onAvatarClick }) {
   const top3 = items.slice(0, 3)
   if (top3.length === 0) return null
   // order: 2nd, 1st, 3rd
@@ -101,9 +316,11 @@ function PodiumSection({ items, valKey, activeTab, myId }) {
                 >
                   <span className="text-2xl leading-none">{cfg.crown}</span>
 
-                  {/* Avatar — padding biar border nggak nempel */}
-                  <div
-                    className="rounded-full p-[3px]"
+                  {/* Avatar — padding biar border nggak nempel, clickable */}
+                  <motion.div
+                    whileTap={{ scale: 0.93 }}
+                    className="rounded-full p-[3px] cursor-pointer"
+                    onClick={() => onAvatarClick(siswa)}
                     style={{
                       background: isMe
                         ? 'linear-gradient(135deg,#7c3aed,#a78bfa)'
@@ -114,7 +331,7 @@ function PodiumSection({ items, valKey, activeTab, myId }) {
                     <div className="rounded-full p-[2px] bg-slate-900">
                       <SiswaAvatar siswa={siswa} size={cfg.size} />
                     </div>
-                  </div>
+                  </motion.div>
 
                   {isMe && (
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/40">
@@ -215,6 +432,7 @@ export default function SiswaRankingPage() {
   const [loading, setLoading]       = useState(true)
   const [page, setPage]             = useState(1)
   const [refreshing, setRefreshing] = useState(false)
+  const [selectedSiswa, setSelectedSiswa] = useState(null)
   const listRef = useRef(null)
 
   const fetchRanking = useCallback(async (pg = 1, sort = tab, isRefresh = false) => {
@@ -262,6 +480,15 @@ export default function SiswaRankingPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 pb-10">
+
+      {/* ── PROFILE CARD MODAL ── */}
+      {selectedSiswa && (
+        <ProfileCardModal
+          siswa={selectedSiswa}
+          myId={myId}
+          onClose={() => setSelectedSiswa(null)}
+        />
+      )}
 
       {/* ── HEADER ── */}
       <div className="flex items-start justify-between mb-5">
@@ -351,7 +578,8 @@ export default function SiswaRankingPage() {
 
             {/* Podium top 3 — page 1 only */}
             {page === 1 && items.length > 0 && (
-              <PodiumSection items={items} valKey={valKey} activeTab={activeTab} myId={myId} />
+              <PodiumSection items={items} valKey={valKey} activeTab={activeTab} myId={myId}
+                onAvatarClick={(s) => setSelectedSiswa(s)} />
             )}
 
             {/* ── LIST ── */}
@@ -394,8 +622,11 @@ export default function SiswaRankingPage() {
                       )}
                     </div>
 
-                    {/* Avatar */}
-                    <SiswaAvatar siswa={siswa} size={42} />
+                    {/* Avatar — clickable */}
+                    <motion.div whileTap={{ scale: 0.9 }} className="cursor-pointer flex-shrink-0"
+                      onClick={() => setSelectedSiswa(siswa)}>
+                      <SiswaAvatar siswa={siswa} size={42} />
+                    </motion.div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
