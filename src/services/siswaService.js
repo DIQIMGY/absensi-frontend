@@ -50,4 +50,7 @@ export const siswaApi = {
   // Border Window
   getBorderWindowStatus: () => api.get('/siswa/border-window'),
   pilihBorderWindow: (badge_id) => api.post('/siswa/border-window/pilih', { badge_id }),
+
+  // Ranking Sekolah
+  getRankingSekolah: (params) => api.get('/siswa/ranking-sekolah', { params }),
 }

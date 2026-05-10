@@ -50,6 +50,7 @@ import SiswaDashboard from '../pages/siswa/Dashboard'
 import SiswaAbsen from '../pages/siswa/Absen'
 import SiswaRiwayat from '../pages/siswa/Riwayat'
 import SiswaProfil from '../pages/siswa/Profil'
+import SiswaRanking from '../pages/siswa/Ranking'
 
 function DashboardRedirect() {
   const { getDashboardRoute } = useAuthStore()
@@ -140,6 +141,7 @@ export const router = createBrowserRouter([
       { path: 'absen',     element: <SiswaAbsen /> },
       { path: 'riwayat',   element: <SiswaRiwayat /> },
       { path: 'profil',    element: <SiswaProfil /> },
+      { path: 'ranking',   element: <SiswaRanking /> },
     ],
   },
   { path: '*', element: <Navigate to="/login" replace /> },

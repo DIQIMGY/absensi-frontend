@@ -1,5 +1,5 @@
 import AppLayout from './AppLayout'
-import { LayoutDashboard, Camera, History, User, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, Camera, History, User, GraduationCap, Trophy } from 'lucide-react'
 import { siswaApi } from '../services/siswaService'
 import PulangNotification from '../components/PulangNotification'
 import SantaiDirumahNotification from '../components/SantaiDirumahNotification'
@@ -11,6 +11,7 @@ const menuGroups = [
       { path: '/siswa/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/siswa/absen',     icon: Camera,          label: 'Absen' },
       { path: '/siswa/riwayat',   icon: History,         label: 'Riwayat' },
+      { path: '/siswa/ranking',   icon: Trophy,          label: 'Ranking' },
       { path: '/siswa/profil',    icon: User,            label: 'Profil' },
     ],
   },
