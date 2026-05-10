@@ -117,6 +117,9 @@ export const BADGE_POOL = [
     glow:'rgba(255,45,120,0.95)',  glow2:'rgba(200,140,20,0.55)'  },
   { id:'karina',         name:'Karina (aespa)',           emoji:'🐱', rarity:'limited',   borderImg:'/image/b68.png',
     glow:'rgba(255,60,200,0.95)',  glow2:'rgba(60,200,255,0.55)'  },
+  // b71 — Taehyung (V) BTS: ungu, perak, hitam, emas, hijau, biru
+  { id:'taehyung',       name:'Taehyung (V) - BTS',       emoji:'🐯', rarity:'limited',   borderImg:'/image/b71.png',
+    glow:'rgba(120,60,220,0.95)',  glow2:'rgba(180,180,255,0.6)'  },
   // ── LEGENDARY ────────────────────────────────────────────────
   // b69 — Nusantara Gong: emas, merah, hitam, putih, hijau, biru, perak, perunggu
   { id:'nusantara_gong',  name:'Nusantara Gong',           emoji:'🛎️', rarity:'legendary', borderImg:'/image/b69.png',
@@ -192,6 +195,9 @@ export const BADGE_POOL = [
     glow:'rgba(180,30,30,0.88)',   glow2:'rgba(180,150,40,0.48)' },
   { id:'sumpah',         name:'Sumpah Pemuda',            emoji:'🤝', rarity:'epic',      borderImg:'/image/b46.png',
     glow:'rgba(200,20,20,0.88)',   glow2:'rgba(20,60,180,0.48)'  },
+  // b70 — Tari Kembang Goyang + Kawah Ijen: api biru, kuning belerang, merah, emas, hitam, putih
+  { id:'kembang_ijen',   name:'Kembang Goyang + Ijen',    emoji:'💃', rarity:'epic',      borderImg:'/image/b70.png',
+    glow:'rgba(20,160,255,0.92)',  glow2:'rgba(200,180,20,0.52)' },
   // ── RARE ─────────────────────────────────────────────────────
   { id:'galaxy_brain',   name:'Candi Borobudur',          emoji:'🏯', rarity:'rare',      borderImg:'/image/b2.png',
     glow:'rgba(180,200,140,0.82)', glow2:'rgba(80,120,80,0.42)'  },

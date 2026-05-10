@@ -26,6 +26,7 @@ const LIMITED_OPTIONS = [
   { id:'mingyu',      name:'Mingyu (SEVENTEEN)',   emoji:'🐶' },
   { id:'lisa',        name:'Lisa (BLACKPINK)',     emoji:'🐯' },
   { id:'karina',      name:'Karina (aespa)',       emoji:'🐱' },
+  { id:'taehyung',   name:'Taehyung (V) - BTS',   emoji:'🐯' },
 ]
 
 function BorderWindowPanel() {
