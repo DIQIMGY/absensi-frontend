@@ -69,14 +69,12 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const [fotoErr,  setFotoErr]  = useState(false)
   const isMe = siswa?.id === myId
 
-  // Close on Escape
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -89,214 +87,223 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const initial  = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
   const hasBadge = !!siswa.active_badge
 
-  const stats = [
-    { label: 'Hadir',     val: siswa.total_hadir,     color: '#10b981', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-100 dark:border-emerald-800/40', text: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
-    { label: 'Terlambat', val: siswa.total_terlambat, color: '#f59e0b', bg: 'bg-amber-50 dark:bg-amber-900/20',   border: 'border-amber-100 dark:border-amber-800/40',   text: 'text-amber-600 dark:text-amber-400',   dot: 'bg-amber-500' },
-    { label: 'Alpha',     val: siswa.total_alpha,     color: '#ef4444', bg: 'bg-rose-50 dark:bg-rose-900/20',     border: 'border-rose-100 dark:border-rose-800/40',     text: 'text-rose-600 dark:text-rose-400',     dot: 'bg-rose-500' },
-  ]
-
   const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
   const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
+  const pctColor   = pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444'
+  const pctGrad    = pctHadir >= 80
+    ? 'linear-gradient(90deg,#059669,#10b981,#34d399)'
+    : pctHadir >= 60
+    ? 'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24)'
+    : 'linear-gradient(90deg,#dc2626,#ef4444,#f87171)'
+
+  const rankEmoji  = siswa.posisi <= 3 ? ['👑','🥈','🥉'][siswa.posisi - 1] : null
 
   return (
     <AnimatePresence>
-      {/* Backdrop */}
       <motion.div
         key="backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-        style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
+        transition={{ duration: 0.22 }}
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
+        style={{ background: 'rgba(2,6,23,0.80)', backdropFilter: 'blur(8px)' }}
         onClick={onClose}
       >
-        {/* Card */}
         <motion.div
           key="card"
-          initial={{ opacity: 0, y: 60, scale: 0.95 }}
+          initial={{ opacity: 0, y: 80, scale: 0.93 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-          className="relative w-full sm:max-w-sm bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+          exit={{ opacity: 0, y: 50, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+          className="relative w-full sm:max-w-[360px] rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
+          style={{ background: '#0f172a' }}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* ── DRAG HANDLE mobile ── */}
+          <div className="flex justify-center pt-3 pb-1 sm:hidden">
+            <div className="w-9 h-1 rounded-full bg-white/20" />
+          </div>
+
           {/* ── COVER 16:9 ── */}
           <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
             {hasCover ? (
-              <img
-                src={siswa.foto_cover_url}
-                alt="cover"
-                className="w-full h-full object-cover"
-                onError={() => setCoverErr(true)}
-              />
+              <img src={siswa.foto_cover_url} alt="cover"
+                className="w-full h-full object-cover" onError={() => setCoverErr(true)} />
             ) : (
-              /* Fallback gradient cover */
-              <div className="w-full h-full"
+              <div className="w-full h-full relative overflow-hidden"
                 style={{ background: isMe
-                  ? 'linear-gradient(135deg,#2e1065,#4c1d95,#5b21b6)'
-                  : 'linear-gradient(135deg,#0f172a,#1e1b4b,#312e81)' }}>
-                <div className="absolute inset-0 opacity-[0.06]"
-                  style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '16px 16px' }} />
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
-                <div className="absolute bottom-0 left-1/4 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
+                  ? 'linear-gradient(135deg,#1e0a3c 0%,#3b0764 40%,#4c1d95 70%,#6d28d9 100%)'
+                  : 'linear-gradient(135deg,#020617 0%,#0f172a 40%,#1e1b4b 70%,#312e81 100%)' }}>
+                {/* Animated orbs */}
+                <div className="absolute top-2 right-4 w-20 h-20 rounded-full opacity-20 blur-2xl"
+                  style={{ background: isMe ? '#a78bfa' : '#818cf8' }} />
+                <div className="absolute bottom-0 left-8 w-16 h-16 rounded-full opacity-15 blur-xl"
+                  style={{ background: isMe ? '#7c3aed' : '#6366f1' }} />
+                <div className="absolute inset-0 opacity-[0.04]"
+                  style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '14px 14px' }} />
               </div>
             )}
 
-            {/* Gradient overlay bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)' }} />
+            {/* Bottom scrim — smooth fade into card bg */}
+            <div className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+              style={{ background: 'linear-gradient(to top,#0f172a,transparent)' }} />
 
-            {/* Rank badge top-left */}
+            {/* Rank pill — top left */}
             <div className="absolute top-3 left-3">
-              {siswa.posisi <= 3 ? (
-                <span className="text-2xl leading-none drop-shadow-lg">
-                  {['👑','🥈','🥉'][siswa.posisi - 1]}
-                </span>
+              {rankEmoji ? (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
+                  <span className="text-base leading-none">{rankEmoji}</span>
+                  <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
+                </div>
               ) : (
-                <div className="px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-sm border border-white/20">
-                  <span className="text-white font-black text-xs">#{siswa.posisi}</span>
+                <div className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
+                  <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
                 </div>
               )}
             </div>
 
-            {/* Close button */}
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-            >
+            {/* Close — top right */}
+            <motion.button whileTap={{ scale: 0.85 }} onClick={onClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all">
               <X size={14} />
             </motion.button>
-
-            {/* "KAMU" badge — dipindah ke nama row */}
           </div>
 
-          {/* ── AVATAR + NAMA ROW (overlap cover) ── */}
-          {/* Pakai padding-top besar supaya border badge punya ruang, nama di sebelah kanan */}
-          <div className="relative px-5 pb-5">
+          {/* ── BODY ── */}
+          <div className="px-5 pb-6">
 
-            {/* Avatar container — cukup besar supaya border badge tidak terpotong */}
-            <div className="absolute left-4" style={{ top: -52 }}>
-              {/* Outer ring */}
-              <div
-                className="rounded-full shadow-2xl"
-                style={{
+            {/* ── AVATAR ROW — avatar kiri, nama kanan ── */}
+            <div className="flex items-end gap-4" style={{ marginTop: -36 }}>
+
+              {/* Avatar — overlap cover */}
+              <div className="relative flex-shrink-0" style={{ marginBottom: 0 }}>
+                {/* Ring */}
+                <div className="rounded-full" style={{
                   padding: 3,
                   background: isMe
-                    ? 'linear-gradient(135deg,#7c3aed,#a78bfa,#7c3aed)'
-                    : 'linear-gradient(135deg,#6366f1,#818cf8,#6366f1)',
+                    ? 'linear-gradient(135deg,#7c3aed,#c4b5fd,#7c3aed)'
+                    : 'linear-gradient(135deg,#6366f1,#a5b4fc,#6366f1)',
                   boxShadow: isMe
-                    ? '0 0 24px rgba(124,58,237,0.6), 0 4px 16px rgba(0,0,0,0.4)'
-                    : '0 0 18px rgba(99,102,241,0.4), 0 4px 16px rgba(0,0,0,0.4)',
-                }}
-              >
-                {/* Inner gap */}
-                <div className="rounded-full bg-white dark:bg-slate-900" style={{ padding: 2 }}>
-                  {/* Photo */}
-                  <div
-                    className={`overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-[18px]'}`}
-                    style={{ width: 72, height: 72, fontSize: 26 }}
-                  >
-                    {hasFoto
-                      ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setFotoErr(true)} />
-                      : initial}
+                    ? '0 0 28px rgba(124,58,237,0.7)'
+                    : '0 0 20px rgba(99,102,241,0.5)',
+                }}>
+                  <div className="rounded-full bg-slate-900" style={{ padding: 2.5 }}>
+                    <div
+                      className={`overflow-hidden bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-[16px]'}`}
+                      style={{ width: 76, height: 76, fontSize: 28 }}
+                    >
+                      {hasFoto
+                        ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setFotoErr(true)} />
+                        : initial}
+                    </div>
                   </div>
                 </div>
+                {/* Badge overlay — di luar ring, punya ruang sendiri */}
+                {hasBadge && (
+                  <div className="absolute pointer-events-none" style={{ inset: -12 }}>
+                    <div className="relative w-full h-full">
+                      <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />
+                    </div>
+                  </div>
+                )}
               </div>
-              {/* BadgeOverlay di luar ring supaya tidak terpotong */}
-              {hasBadge && (
-                <div className="absolute inset-0 pointer-events-none" style={{ margin: -10 }}>
-                  <div className="relative w-full h-full">
-                    <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />
-                  </div>
+
+              {/* Nama + kelas — rata bawah dengan avatar */}
+              <div className="flex-1 min-w-0 pb-1">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <h2 className="text-[17px] font-black text-white leading-tight tracking-tight">
+                    {siswa.nama_lengkap}
+                  </h2>
+                  {isMe && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black"
+                      style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.4)', color: '#c4b5fd' }}>
+                      <Star size={7} />KAMU
+                    </span>
+                  )}
                 </div>
-              )}
+                <p className="text-[12px] font-medium" style={{ color: 'rgba(148,163,184,0.9)' }}>
+                  {siswa.kelas || '-'}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(100,116,139,0.9)' }}>
+                  NIS {siswa.nis || '-'}
+                </p>
+              </div>
             </div>
 
-            {/* Spacer — tinggi = avatar + sedikit ruang badge atas */}
-            <div style={{ height: hasBadge ? 44 : 36 }} />
+            {/* ── DIVIDER ── */}
+            <div className="my-5 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-            {/* ── NAMA + INFO — di bawah avatar, dengan padding-left supaya tidak nabrak badge ── */}
-            <div className="mb-4">
-              {/* Nama row */}
-              <div className="flex items-start gap-3">
-                {/* Spacer kiri selebar avatar + badge */}
-                <div style={{ width: hasBadge ? 96 : 84, flexShrink: 0 }} />
-                {/* Nama di kanan */}
-                <div className="flex-1 min-w-0 pt-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-base font-black text-slate-900 dark:text-white leading-tight">
-                      {siswa.nama_lengkap}
-                    </h2>
-                    {isMe && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-700/50">
-                        <Star size={8} className="text-violet-500" />
-                        <span className="text-[9px] font-black text-violet-600 dark:text-violet-400">KAMU</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      <GraduationCap size={9} />{siswa.kelas || '-'}
-                    </span>
-                    <span className="text-slate-300 dark:text-slate-600">·</span>
-                    <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      <Shield size={9} />{siswa.nis || '-'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Kehadiran % bar */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kehadiran</span>
-                  <span className="text-sm font-black tabular-nums"
-                    style={{ color: pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444' }}>
+            {/* ── KEHADIRAN SECTION ── */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]"
+                  style={{ color: 'rgba(100,116,139,0.9)' }}>Tingkat Kehadiran</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[15px] font-black tabular-nums" style={{ color: pctColor }}>
                     {pctHadir}%
                   </span>
-                </div>
-                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pctHadir}%` }}
-                    transition={{ duration: 0.9, ease: 'easeOut', delay: 0.25 }}
-                    className="h-full rounded-full"
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
                     style={{
-                      background: pctHadir >= 80
-                        ? 'linear-gradient(90deg,#059669,#10b981,#34d399)'
-                        : pctHadir >= 60
-                        ? 'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24)'
-                        : 'linear-gradient(90deg,#dc2626,#ef4444,#f87171)',
-                    }}
-                  />
+                      background: `${pctColor}18`,
+                      color: pctColor,
+                      border: `1px solid ${pctColor}30`,
+                    }}>
+                    {pctHadir >= 80 ? 'Baik' : pctHadir >= 60 ? 'Cukup' : 'Kurang'}
+                  </span>
                 </div>
+              </div>
+              {/* Track */}
+              <div className="relative h-2 rounded-full overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.07)' }}>
+                <motion.div className="absolute inset-y-0 left-0 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pctHadir}%` }}
+                  transition={{ duration: 1, ease: [0.34, 1.56, 0.64, 1], delay: 0.2 }}
+                  style={{ background: pctGrad }} />
+              </div>
+              {/* Tick marks */}
+              <div className="flex justify-between mt-1.5 px-0.5">
+                {[0, 25, 50, 75, 100].map(v => (
+                  <span key={v} className="text-[9px]"
+                    style={{ color: pctHadir >= v ? pctColor : 'rgba(71,85,105,0.7)' }}>
+                    {v}%
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* ── STATS 3 KOLOM ── */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {stats.map((s, i) => (
-                <motion.div
-                  key={s.label}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12 + i * 0.07, type: 'spring', stiffness: 220, damping: 18 }}
-                  className={`${s.bg} border ${s.border} rounded-2xl p-3 text-center relative overflow-hidden`}
+            {/* ── STATS ROW ── */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Hadir',     val: siswa.total_hadir,     color: '#10b981', glow: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.2)'  },
+                { label: 'Terlambat', val: siswa.total_terlambat, color: '#f59e0b', glow: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.2)'  },
+                { label: 'Alpha',     val: siswa.total_alpha,     color: '#ef4444', glow: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.2)'   },
+              ].map((s, i) => (
+                <motion.div key={s.label}
+                  initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.1 + i * 0.07, type: 'spring', stiffness: 260, damping: 20 }}
+                  className="relative rounded-2xl overflow-hidden text-center py-4 px-2"
+                  style={{
+                    background: s.glow,
+                    border: `1px solid ${s.border}`,
+                  }}
                 >
-                  {/* Subtle top accent line */}
-                  <div className="absolute inset-x-0 top-0 h-0.5 rounded-full" style={{ background: s.color }} />
-                  <p className={`text-2xl font-black tabular-nums leading-none mt-1 ${s.text}`}>{s.val}</p>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-1.5 uppercase tracking-wide">{s.label}</p>
+                  {/* Glow dot top center */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-px"
+                    style={{ background: `linear-gradient(90deg,transparent,${s.color},transparent)` }} />
+                  <p className="text-[26px] font-black tabular-nums leading-none" style={{ color: s.color }}>
+                    {s.val}
+                  </p>
+                  <p className="text-[10px] font-semibold mt-1.5 uppercase tracking-wider"
+                    style={{ color: 'rgba(148,163,184,0.7)' }}>
+                    {s.label}
+                  </p>
                 </motion.div>
               ))}
             </div>
 
-            {/* Bottom drag handle (mobile) */}
-            <div className="flex justify-center mt-5 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-            </div>
           </div>
         </motion.div>
       </motion.div>
