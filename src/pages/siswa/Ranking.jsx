@@ -169,105 +169,132 @@ function ProfileCardModal({ siswa, onClose, myId }) {
               <X size={14} />
             </motion.button>
 
-            {/* "KAMU" badge */}
-            {isMe && (
-              <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/80 backdrop-blur-sm border border-violet-400/50">
-                <Star size={9} className="text-white" />
-                <span className="text-[10px] font-black text-white">KAMU</span>
-              </div>
-            )}
+            {/* "KAMU" badge — dipindah ke nama row */}
           </div>
 
-          {/* ── AVATAR overlapping cover ── */}
+          {/* ── AVATAR + NAMA ROW (overlap cover) ── */}
+          {/* Pakai padding-top besar supaya border badge punya ruang, nama di sebelah kanan */}
           <div className="relative px-5 pb-5">
-            {/* Avatar */}
-            <div className="absolute -top-9 left-5">
+
+            {/* Avatar container — cukup besar supaya border badge tidak terpotong */}
+            <div className="absolute left-4" style={{ top: -52 }}>
+              {/* Outer ring */}
               <div
-                className="rounded-full p-[3px] shadow-xl"
+                className="rounded-full shadow-2xl"
                 style={{
+                  padding: 3,
                   background: isMe
-                    ? 'linear-gradient(135deg,#7c3aed,#a78bfa)'
-                    : 'linear-gradient(135deg,#6366f1,#818cf8)',
-                  boxShadow: isMe ? '0 0 20px rgba(124,58,237,0.5)' : '0 0 16px rgba(99,102,241,0.35)',
+                    ? 'linear-gradient(135deg,#7c3aed,#a78bfa,#7c3aed)'
+                    : 'linear-gradient(135deg,#6366f1,#818cf8,#6366f1)',
+                  boxShadow: isMe
+                    ? '0 0 24px rgba(124,58,237,0.6), 0 4px 16px rgba(0,0,0,0.4)'
+                    : '0 0 18px rgba(99,102,241,0.4), 0 4px 16px rgba(0,0,0,0.4)',
                 }}
               >
-                <div className="rounded-full p-[2px] bg-white dark:bg-slate-900">
+                {/* Inner gap */}
+                <div className="rounded-full bg-white dark:bg-slate-900" style={{ padding: 2 }}>
+                  {/* Photo */}
                   <div
-                    className={`overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-2xl'}`}
-                    style={{ width: 64, height: 64, fontSize: 24 }}
+                    className={`overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white ${hasBadge ? 'rounded-full' : 'rounded-[18px]'}`}
+                    style={{ width: 72, height: 72, fontSize: 26 }}
                   >
                     {hasFoto
                       ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setFotoErr(true)} />
                       : initial}
                   </div>
-                  {hasBadge && <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />}
                 </div>
               </div>
+              {/* BadgeOverlay di luar ring supaya tidak terpotong */}
+              {hasBadge && (
+                <div className="absolute inset-0 pointer-events-none" style={{ margin: -10 }}>
+                  <div className="relative w-full h-full">
+                    <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="md" />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Spacer for avatar */}
-            <div className="h-8" />
+            {/* Spacer — tinggi = avatar + sedikit ruang badge atas */}
+            <div style={{ height: hasBadge ? 44 : 36 }} />
 
-            {/* ── NAME & CLASS ── */}
+            {/* ── NAMA + INFO — di bawah avatar, dengan padding-left supaya tidak nabrak badge ── */}
             <div className="mb-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight truncate">
-                    {siswa.nama_lengkap}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {/* Nama row */}
+              <div className="flex items-start gap-3">
+                {/* Spacer kiri selebar avatar + badge */}
+                <div style={{ width: hasBadge ? 96 : 84, flexShrink: 0 }} />
+                {/* Nama di kanan */}
+                <div className="flex-1 min-w-0 pt-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+                      {siswa.nama_lengkap}
+                    </h2>
+                    {isMe && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-700/50">
+                        <Star size={8} className="text-violet-500" />
+                        <span className="text-[9px] font-black text-violet-600 dark:text-violet-400">KAMU</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      <GraduationCap size={10} />
-                      {siswa.kelas || '-'}
+                      <GraduationCap size={9} />{siswa.kelas || '-'}
                     </span>
-                    <span className="text-slate-300 dark:text-slate-600 text-[10px]">·</span>
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
                     <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      <Shield size={10} />
-                      {siswa.nis || '-'}
+                      <Shield size={9} />{siswa.nis || '-'}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Kehadiran % bar */}
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Tingkat Kehadiran</span>
-                  <span className="text-sm font-black" style={{ color: pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444' }}>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kehadiran</span>
+                  <span className="text-sm font-black tabular-nums"
+                    style={{ color: pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444' }}>
                     {pctHadir}%
                   </span>
                 </div>
-                <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${pctHadir}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                    transition={{ duration: 0.9, ease: 'easeOut', delay: 0.25 }}
                     className="h-full rounded-full"
-                    style={{ background: pctHadir >= 80 ? 'linear-gradient(90deg,#10b981,#34d399)' : pctHadir >= 60 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)' }}
+                    style={{
+                      background: pctHadir >= 80
+                        ? 'linear-gradient(90deg,#059669,#10b981,#34d399)'
+                        : pctHadir >= 60
+                        ? 'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24)'
+                        : 'linear-gradient(90deg,#dc2626,#ef4444,#f87171)',
+                    }}
                   />
                 </div>
               </div>
             </div>
 
             {/* ── STATS 3 KOLOM ── */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               {stats.map((s, i) => (
                 <motion.div
                   key={s.label}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.06, type: 'spring', stiffness: 200 }}
-                  className={`${s.bg} border ${s.border} rounded-2xl p-3 text-center`}
+                  transition={{ delay: 0.12 + i * 0.07, type: 'spring', stiffness: 220, damping: 18 }}
+                  className={`${s.bg} border ${s.border} rounded-2xl p-3 text-center relative overflow-hidden`}
                 >
-                  <div className={`w-1.5 h-1.5 rounded-full ${s.dot} mx-auto mb-1.5`} />
-                  <p className={`text-2xl font-black tabular-nums leading-none ${s.text}`}>{s.val}</p>
-                  <p className="text-[10px] text-slate-400 font-medium mt-1">{s.label}</p>
+                  {/* Subtle top accent line */}
+                  <div className="absolute inset-x-0 top-0 h-0.5 rounded-full" style={{ background: s.color }} />
+                  <p className={`text-2xl font-black tabular-nums leading-none mt-1 ${s.text}`}>{s.val}</p>
+                  <p className="text-[10px] text-slate-400 font-semibold mt-1.5 uppercase tracking-wide">{s.label}</p>
                 </motion.div>
               ))}
             </div>
 
             {/* Bottom drag handle (mobile) */}
-            <div className="flex justify-center mt-4 sm:hidden">
+            <div className="flex justify-center mt-5 sm:hidden">
               <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
             </div>
           </div>
