@@ -432,11 +432,17 @@ export default function SiswaRankingPage() {
   useEffect(() => {
     const onBadgeChanged = (e) => {
       const newBadge = e.detail?.activeBadge ?? null
+      // 1. Patch list data
       setData(prev => {
         if (!prev) return prev
         const myId = prev.my_id
         const patch = (list) => list?.map(s => s.id===myId ? { ...s, active_badge:newBadge } : s) ?? []
         return { ...prev, data:patch(prev.data) }
+      })
+      // 2. Patch modal jika sedang terbuka untuk user yang sama
+      setSelectedSiswa(prev => {
+        if (!prev) return prev
+        return { ...prev, active_badge: newBadge }
       })
     }
     window.addEventListener('badge-changed', onBadgeChanged)
