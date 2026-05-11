@@ -245,6 +245,12 @@ export const BADGE_POOL = [
     glow:'rgba(160,140,80,0.82)',  glow2:'rgba(60,80,40,0.42)'   },
   { id:'megalitik',      name:'Batu Megalitikum',         emoji:'🗿', rarity:'rare',      borderImg:'/image/b28.png',
     glow:'rgba(120,120,100,0.82)', glow2:'rgba(40,80,40,0.42)'   },
+  { id:'joglo',          name:'Rumah Joglo',              emoji:'🏠', rarity:'rare',      borderImg:'/image/b72.png',
+    glow:'rgba(140,80,20,0.82)',   glow2:'rgba(200,160,20,0.42)'  },
+  // ── PERMANENT FREE ────────────────────────────────────────────
+  // b73 = gratis untuk semua siswa, auto-diberikan saat pertama login
+  { id:'nusantara_free', name:'Nusantara Classic',        emoji:'🇮🇩', rarity:'permanent', borderImg:'/image/b73.png',
+    glow:'rgba(200,20,20,0.88)',   glow2:'rgba(200,160,20,0.52)'  },
   // ── ZONK ──────────────────────────────────────────────────────
   { id:'zonk_rock',  name:'Batu Keberuntungan', emoji:'🪨', rarity:'zonk', borderImg:null, glow:null, glow2:null },
   { id:'zonk_snail', name:'Siput Pelan',        emoji:'🐌', rarity:'zonk', borderImg:null, glow:null, glow2:null },
