@@ -41,7 +41,6 @@ function SiswaAvatar({ siswa, size=44 }) {
 // ─── PROFILE CARD MODAL ───────────────────────────────────────
 function ProfileCardModal({ siswa, onClose, myId }) {
   const [coverErr, setCoverErr] = useState(false)
-  const [fotoErr,  setFotoErr]  = useState(false)
   const [isDark,   setIsDark]   = useState(() => document.documentElement.classList.contains('dark'))
   const isMe = siswa?.id === myId
 
@@ -66,9 +65,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   if (!siswa) return null
 
   const hasCover  = siswa.foto_cover_url && !coverErr
-  const hasFoto   = siswa.foto_url && !fotoErr
   const initial   = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
-  const hasBadge  = !!siswa.active_badge
   const totalAbsen = (siswa.total_hadir||0)+(siswa.total_terlambat||0)+(siswa.total_alpha||0)
   const pctHadir  = totalAbsen > 0 ? Math.round(((siswa.total_hadir||0)+(siswa.total_terlambat||0))/totalAbsen*100) : 0
   const pctColor  = pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444'
@@ -87,9 +84,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const boxBg      = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
   const boxBd      = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const barTrack   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
-  const avatarGap  = isDark ? '#111827' : '#ffffff'
   const handleBg   = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'
-  const nameColor  = isDark ? '#f8fafc' : '#0f172a'
   const subColor   = isDark ? 'rgba(148,163,184,0.85)' : 'rgba(71,85,105,0.9)'
   const metaColor  = isDark ? 'rgba(100,116,139,0.8)'  : 'rgba(100,116,139,0.9)'
   const labelColor = isDark ? 'rgba(148,163,184,0.55)' : 'rgba(100,116,139,0.7)'
@@ -161,53 +156,31 @@ function ProfileCardModal({ siswa, onClose, myId }) {
           {/* ── BODY ── */}
           <div className="px-4 pt-3 pb-5 space-y-3">
 
-            {/* AVATAR + NAMA */}
-            <div className="flex items-center gap-3">
-              <div className="relative flex-shrink-0" style={{ width:56, height:56 }}>
-                <div className="absolute inset-0 rounded-full"
-                  style={{
-                    padding:2.5,
-                    background: isMe
-                      ? 'linear-gradient(135deg,#7c3aed,#c4b5fd,#7c3aed)'
-                      : 'linear-gradient(135deg,#6366f1,#a5b4fc,#6366f1)',
-                    boxShadow: isMe ? '0 0 16px rgba(124,58,237,0.5)' : '0 0 12px rgba(99,102,241,0.35)',
-                  }}>
-                  <div className="w-full h-full rounded-full" style={{ background:avatarGap, padding:2 }}>
-                    <div
-                      className={`w-full h-full overflow-hidden bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center font-black text-white ${hasBadge?'rounded-full':'rounded-xl'}`}
-                      style={{ fontSize:20 }}>
-                      {hasFoto
-                        ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={()=>setFotoErr(true)}/>
-                        : initial}
-                    </div>
+            {/* NAMA + INFO — langsung, tanpa foto profil */}
+            <div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-[17px] font-black leading-tight" style={{ color:nameColor }}>
+                      {siswa.nama_lengkap}
+                    </h2>
+                    {isMe && (
+                      <span className="flex-shrink-0 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black"
+                        style={{ background:meBg, border:`1px solid ${meBd}`, color:meColor }}>
+                        <Star size={7}/>KAMU
+                      </span>
+                    )}
                   </div>
-                </div>
-                {hasBadge && (
-                  <div className="absolute pointer-events-none" style={{ inset:-8 }}>
-                    <div className="relative w-full h-full">
-                      <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="sm"/>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h2 className="text-[15px] font-black leading-tight truncate" style={{ color:nameColor }}>
-                    {siswa.nama_lengkap}
-                  </h2>
-                  {isMe && (
-                    <span className="flex-shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black"
-                      style={{ background:meBg, border:`1px solid ${meBd}`, color:meColor }}>
-                      <Star size={6}/>KAMU
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold" style={{ color:subColor }}>
+                      <GraduationCap size={10} style={{ color:metaColor }}/>{siswa.kelas || '-'}
                     </span>
-                  )}
+                    <span style={{ color:metaColor }}>·</span>
+                    <span className="text-[11px] font-mono" style={{ color:metaColor }}>
+                      NIS {siswa.nis || '-'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-[11px] mt-0.5 font-semibold truncate" style={{ color:subColor }}>
-                  {siswa.kelas || '-'}
-                </p>
-                <p className="text-[10px] mt-0.5 font-mono" style={{ color:metaColor }}>
-                  NIS {siswa.nis || '-'}
-                </p>
               </div>
             </div>
 
