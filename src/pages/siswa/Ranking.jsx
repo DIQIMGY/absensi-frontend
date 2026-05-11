@@ -85,6 +85,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const boxBd      = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const barTrack   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const handleBg   = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'
+  const nameColor  = isDark ? '#f8fafc' : '#0f172a'
   const subColor   = isDark ? 'rgba(148,163,184,0.85)' : 'rgba(71,85,105,0.9)'
   const metaColor  = isDark ? 'rgba(100,116,139,0.8)'  : 'rgba(100,116,139,0.9)'
   const labelColor = isDark ? 'rgba(148,163,184,0.55)' : 'rgba(100,116,139,0.7)'
