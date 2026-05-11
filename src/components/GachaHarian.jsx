@@ -303,17 +303,22 @@ export function BadgeOverlay({ badgeId, badges=[], size='md' }) {
   const cfg   = RARITY_CFG[badge.rarity] || RARITY_CFG.legendary
   const glow  = badge.glow  || cfg.glow
   const glow2 = badge.glow2 || cfg.glow2
-  const scale = { sm:1.45, md:1.45, lg:1.45 }[size] ?? 1.45
+  // Pakai inset negatif + width/height 145% — TIDAK pakai scale()
+  // Ini membuat browser render gambar di ukuran besar dari awal → tidak pecah di laptop
+  const overflow = 22.5 // persen overflow ke setiap sisi = (145-100)/2
   return (
     <motion.img
       src={badge.borderImg}
       alt={badge.name}
       className="absolute pointer-events-none select-none"
       style={{
-        top:'50%', left:'50%',
-        transform:`translate(-50%,-50%) scale(${scale})`,
-        width:'100%', height:'100%',
-        objectFit:'contain', zIndex:20,
+        top: `-${overflow}%`,
+        left: `-${overflow}%`,
+        width: '145%',
+        height: '145%',
+        objectFit: 'contain',
+        zIndex: 20,
+        imageRendering: 'high-quality',
       }}
       animate={{ filter:[
         `drop-shadow(0 0 6px ${glow2})`,

@@ -440,7 +440,7 @@ export default function SiswaRankingPage() {
   const maxVal    = items[0]?.[valKey] || 1
 
   return (
-    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 pb-10">
+    <div className="max-w-2xl lg:max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 pb-10">
 
       {/* MODAL */}
       {selectedSiswa && (
@@ -454,9 +454,9 @@ export default function SiswaRankingPage() {
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:activeTab.gradFull }}>
               <Trophy size={15} className="text-white"/>
             </div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white">Ranking Sekolah</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Ranking Sekolah</h1>
           </div>
-          <p className="text-[11px] text-slate-400 ml-10">
+          <p className="text-[11px] sm:text-xs text-slate-400 ml-10">
             {data?.bulan ? `Bulan ${data.bulan}/${data.tahun} · ` : ''}
             <span className="font-semibold text-slate-500 dark:text-slate-300">{total} siswa</span>
           </p>
@@ -475,7 +475,7 @@ export default function SiswaRankingPage() {
           const isActive = tab===t.key
           return (
             <button key={t.key} onClick={() => handleTab(t.key)}
-              className="relative flex-1 flex flex-col items-center gap-0.5 py-2.5 rounded-xl text-xs font-black transition-all z-10">
+              className="relative flex-1 flex flex-col items-center gap-0.5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black transition-all z-10">
               {isActive && (
                 <motion.div layoutId="tab-bg" className="absolute inset-0 rounded-xl shadow-lg"
                   style={{ background:t.gradFull }}
@@ -494,15 +494,15 @@ export default function SiswaRankingPage() {
       <AnimatePresence>
         {myPosisi && (
           <motion.div key="my-pos" initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
-            className="mb-4 flex items-center gap-3 px-4 py-3 rounded-2xl"
+            className="mb-4 flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 rounded-2xl"
             style={{ background:`${activeTab.color}12`, border:`1px solid ${activeTab.color}35` }}>
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background:`${activeTab.color}25` }}>
               <Crown size={15} style={{ color:activeTab.color }}/>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Posisi kamu bulan ini</p>
-              <p className="text-sm font-black text-slate-800 dark:text-white">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Posisi kamu bulan ini</p>
+              <p className="text-sm sm:text-base font-black text-slate-800 dark:text-white">
                 <span style={{ color:activeTab.color }}>#{myPosisi}</span>
                 <span className="text-slate-400 font-normal text-xs ml-1">dari {total} siswa</span>
               </p>
@@ -552,7 +552,7 @@ export default function SiswaRankingPage() {
                   <motion.div key={siswa.id}
                     initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }}
                     transition={{ delay:i*0.025, type:'spring', stiffness:200, damping:20 }}
-                    className={`relative flex items-center gap-3 px-3 sm:px-4 py-3 rounded-2xl border overflow-hidden transition-all ${
+                    className={`relative flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 rounded-2xl border overflow-hidden transition-all ${
                       isMe
                         ? 'bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/50 ring-1 ring-violet-300/60 dark:ring-violet-700/40'
                         : isTop3 && posisi===1
