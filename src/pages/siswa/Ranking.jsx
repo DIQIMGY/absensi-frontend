@@ -167,6 +167,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
               <div className="absolute bottom-3 right-3 z-10">
                 {siswa.musik_audio_url && (
                   <audio ref={musikRef} src={siswa.musik_audio_url}
+                    loop
                     onEnded={() => setMusikPlaying(false)}/>
                 )}
 
