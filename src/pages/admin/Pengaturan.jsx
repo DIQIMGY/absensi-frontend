@@ -39,6 +39,7 @@ const LIMITED_OPTIONS = [
   { id:'exo',         name:'EXO',                    emoji:'🌌' },
   { id:'enhypen',     name:'ENHYPEN',                emoji:'🌙' },
   { id:'illit',       name:'ILLIT',                  emoji:'🧚' },
+  { id:'lesserafim',  name:'LE SSERAFIM',            emoji:'⚡' },
 ]
 
 function BorderWindowPanel() {
@@ -207,6 +208,7 @@ function BorderWindowPanel() {
                       newjeans:'/image/b80.png', treasure:'/image/b81.png',
                       h2h:'/image/b82.png', exo:'/image/b83.png',
                       enhypen:'/image/b84.png', illit:'/image/b85.png',
+                      lesserafim:'/image/b86.png',
                     }
                     const borderImg = imgMap[opt.id]
                     return (

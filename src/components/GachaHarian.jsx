@@ -144,6 +144,8 @@ export const BADGE_POOL = [
     glow:'rgba(20,60,180,0.95)',   glow2:'rgba(160,20,40,0.55)'   },
   { id:'illit',          name:'ILLIT',                    emoji:'🧚', rarity:'limited',   borderImg:'/image/b85.png',
     glow:'rgba(255,160,200,0.95)', glow2:'rgba(160,220,200,0.55)' },
+  { id:'lesserafim',     name:'LE SSERAFIM',              emoji:'⚡', rarity:'limited',   borderImg:'/image/b86.png',
+    glow:'rgba(20,100,220,0.95)',  glow2:'rgba(200,200,255,0.55)' },
   // ── LEGENDARY ────────────────────────────────────────────────
   // b69 — Nusantara Gong: emas, merah, hitam, putih, hijau, biru, perak, perunggu
   { id:'nusantara_gong',  name:'Nusantara Gong',           emoji:'🛎️', rarity:'legendary', borderImg:'/image/b69.png',
