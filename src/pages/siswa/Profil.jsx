@@ -1403,7 +1403,7 @@ export default function SiswaProfil() {
                   </div>
                   <div>
                     <h2 className="text-sm font-black text-slate-900 dark:text-white">Musik Favorit</h2>
-                    <p className="text-[10px] text-slate-400">Foto album + audio ≤30 detik</p>
+                    <p className="text-[10px] text-slate-400">Foto album + audio (maks 10MB)</p>
                   </div>
                 </div>
                 <button onClick={() => setShowMusikEdit(false)}
@@ -1453,7 +1453,7 @@ export default function SiswaProfil() {
                 {/* Upload audio */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
-                    Audio <span className="text-slate-300 dark:text-slate-600 font-normal normal-case">(opsional, maks 30 detik)</span>
+                    Audio <span className="text-slate-300 dark:text-slate-600 font-normal normal-case">(opsional, maks 10MB)</span>
                   </label>
                   <label className={`flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
                     musikAudioName
@@ -1467,7 +1467,7 @@ export default function SiswaProfil() {
                       <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
                         {musikAudioName || 'Klik untuk upload audio'}
                       </p>
-                      <p className="text-[10px] text-slate-400">MP3, AAC, OGG · Maks 30 detik</p>
+                      <p className="text-[10px] text-slate-400">MP3, AAC, OGG · Maks 10MB</p>
                     </div>
                     {musikAudioName && (
                       <button type="button" onClick={e => { e.preventDefault(); setMusikAudioFile(null); setMusikAudioName('') }}
@@ -1478,15 +1478,8 @@ export default function SiswaProfil() {
                     <input type="file" className="hidden" accept="audio/*" onChange={e => {
                       const f = e.target.files[0]; if (!f) return
                       if (f.size > 10*1024*1024) { toast.error('Maks 10MB'); return }
-                      // Validasi durasi
-                      const url = URL.createObjectURL(f)
-                      const audio = document.createElement('audio')
-                      audio.preload = 'metadata'
-                      audio.onloadedmetadata = () => {
-                        URL.revokeObjectURL(url)
-                        if (audio.duration > 31) { toast.error('Audio maksimal 30 detik'); return }
-                        setMusikAudioFile(f)
-                        setMusikAudioName(f.name)
+                      setMusikAudioFile(f)
+                      setMusikAudioName(f.name)
                       }
                       audio.src = url
                     }}/>
