@@ -1480,8 +1480,6 @@ export default function SiswaProfil() {
                       if (f.size > 10*1024*1024) { toast.error('Maks 10MB'); return }
                       setMusikAudioFile(f)
                       setMusikAudioName(f.name)
-                      }
-                      audio.src = url
                     }}/>
                   </label>
                 </div>
