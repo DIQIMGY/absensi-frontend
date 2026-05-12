@@ -163,16 +163,36 @@ function ProfileCardModal({ siswa, onClose, myId }) {
             </motion.button>
 
             {/* ── MUSIK — pojok kanan bawah cover ── */}
-            {(siswa.musik_foto_url || siswa.musik_audio_url) && (
-              <div className="absolute bottom-3 right-3 z-10">
+            {(siswa.musik_foto_url || siswa.musik_audio_url || siswa.musik_nama) && (
+              <div className="absolute bottom-3 right-3 z-10 flex flex-col items-end gap-1">
                 {siswa.musik_audio_url && (
                   <audio ref={musikRef} src={siswa.musik_audio_url}
                     onEnded={() => setMusikPlaying(false)}/>
                 )}
+
+                {/* Nama + artis — di atas foto */}
+                {(siswa.musik_nama || siswa.musik_artis) && (
+                  <div className="text-right mb-0.5">
+                    {siswa.musik_nama && (
+                      <p className="text-white text-[10px] font-bold leading-tight drop-shadow-lg"
+                        style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+                        {siswa.musik_nama}
+                      </p>
+                    )}
+                    {siswa.musik_artis && (
+                      <p className="text-white/70 text-[9px] leading-tight drop-shadow"
+                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                        {siswa.musik_artis}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Foto album bulat — klik play/pause */}
                 <motion.button
                   whileTap={{ scale: 0.88 }}
                   onClick={() => {
-                    if (!musikRef.current) return
+                    if (!musikRef.current || !siswa.musik_audio_url) return
                     if (musikPlaying) {
                       musikRef.current.pause()
                       setMusikPlaying(false)
@@ -183,7 +203,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                   }}
                   className="relative block"
                   style={{ width: 40, height: 40 }}
-                  title={musikPlaying ? 'Pause' : 'Play musik'}
+                  title={musikPlaying ? 'Pause' : (siswa.musik_audio_url ? 'Play musik' : siswa.musik_nama || 'Musik')}
                 >
                   {/* Glow pulse saat playing */}
                   {musikPlaying && (
@@ -198,7 +218,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                     transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease:'linear' }}
                     className="w-full h-full rounded-full overflow-hidden"
                     style={{
-                      border: '2.5px solid rgba(255,255,255,0.5)',
+                      border: '2.5px solid rgba(255,255,255,0.55)',
                       background: 'linear-gradient(135deg,#1a0a2e,#3b0764)',
                       boxShadow: musikPlaying ? '0 0 12px rgba(167,139,250,0.7)' : '0 2px 8px rgba(0,0,0,0.5)',
                     }}
@@ -214,6 +234,12 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-white/90"/>
                   </div>
+                  {/* No audio indicator */}
+                  {!siswa.musik_audio_url && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-2 h-2 rounded-full bg-white/90"/>
+                    </div>
+                  )}
                 </motion.button>
               </div>
             )}
