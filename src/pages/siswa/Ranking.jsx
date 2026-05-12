@@ -4,7 +4,7 @@ import {
   Trophy, RefreshCw, Crown, Star,
   ChevronLeft, ChevronRight,
   CheckCircle, Clock, AlertTriangle, X,
-  GraduationCap, Shield,
+  GraduationCap, Shield, Disc,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { BadgeOverlay } from '../../components/GachaHarian'
@@ -42,7 +42,16 @@ function SiswaAvatar({ siswa, size=44 }) {
 function ProfileCardModal({ siswa, onClose, myId }) {
   const [coverErr, setCoverErr] = useState(false)
   const [isDark,   setIsDark]   = useState(() => document.documentElement.classList.contains('dark'))
+  const [musikPlaying, setMusikPlaying] = useState(false)
+  const musikRef = useRef(null)
   const isMe = siswa?.id === myId
+
+  // Stop musik saat modal ditutup
+  useEffect(() => {
+    return () => {
+      if (musikRef.current) { musikRef.current.pause(); musikRef.current.currentTime = 0 }
+    }
+  }, [])
 
   useEffect(() => {
     const check = () => setIsDark(document.documentElement.classList.contains('dark'))
@@ -152,6 +161,62 @@ function ProfileCardModal({ siswa, onClose, myId }) {
               style={{ background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.15)' }}>
               <X size={13} className="text-white"/>
             </motion.button>
+
+            {/* ── MUSIK — pojok kanan bawah cover ── */}
+            {(siswa.musik_foto_url || siswa.musik_audio_url) && (
+              <div className="absolute bottom-3 right-3 z-10">
+                {siswa.musik_audio_url && (
+                  <audio ref={musikRef} src={siswa.musik_audio_url}
+                    onEnded={() => setMusikPlaying(false)}/>
+                )}
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={() => {
+                    if (!musikRef.current) return
+                    if (musikPlaying) {
+                      musikRef.current.pause()
+                      setMusikPlaying(false)
+                    } else {
+                      musikRef.current.play()
+                      setMusikPlaying(true)
+                    }
+                  }}
+                  className="relative block"
+                  style={{ width: 40, height: 40 }}
+                  title={musikPlaying ? 'Pause' : 'Play musik'}
+                >
+                  {/* Glow pulse saat playing */}
+                  {musikPlaying && (
+                    <motion.div className="absolute inset-0 rounded-full"
+                      animate={{ scale:[1,1.4,1], opacity:[0.5,0,0.5] }}
+                      transition={{ repeat:Infinity, duration:1.5, ease:'easeInOut' }}
+                      style={{ background:'rgba(167,139,250,0.5)' }}/>
+                  )}
+                  {/* Foto muter */}
+                  <motion.div
+                    animate={{ rotate: musikPlaying ? 360 : 0 }}
+                    transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease:'linear' }}
+                    className="w-full h-full rounded-full overflow-hidden"
+                    style={{
+                      border: '2.5px solid rgba(255,255,255,0.5)',
+                      background: 'linear-gradient(135deg,#1a0a2e,#3b0764)',
+                      boxShadow: musikPlaying ? '0 0 12px rgba(167,139,250,0.7)' : '0 2px 8px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    {siswa.musik_foto_url
+                      ? <img src={siswa.musik_foto_url} alt="album" className="w-full h-full object-cover"/>
+                      : <div className="w-full h-full flex items-center justify-center">
+                          <Disc size={16} className="text-white/50"/>
+                        </div>
+                    }
+                  </motion.div>
+                  {/* Center dot vinyl */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-2 h-2 rounded-full bg-white/90"/>
+                  </div>
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* ── BODY ── */}

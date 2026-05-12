@@ -1,11 +1,11 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   User, Mail, Phone, MapPin, Calendar, Hash,
   Camera, Save, QrCode, Loader, Download,
   X, Eye, AlertCircle, GraduationCap,
   UserCircle, Home, Award, BookOpen,
-  CheckCircle, Shield, Sparkles, Lock,
+  CheckCircle, Shield, Sparkles, Lock, Send, MessageSquare, Music, Disc,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
@@ -64,6 +64,25 @@ export default function SiswaProfil() {
   const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null)
   const [windowBadgeIds, setWindowBadgeIds] = useState([])
   const [permanentBadges, setPermanentBadges] = useState([])
+  // Pesan Dispen
+  const [showPesanModal, setShowPesanModal] = useState(false)
+  // Musik Favorit
+  const [musikPlaying, setMusikPlaying] = useState(false)
+  const [musikForm, setMusikForm] = useState({ nama: '', artis: '' })
+  const [musikFotoFile, setMusikFotoFile] = useState(null)
+  const [musikFotoPreview, setMusikFotoPreview] = useState(null)
+  const [musikAudioFile, setMusikAudioFile] = useState(null)
+  const [musikAudioName, setMusikAudioName] = useState('')
+  const [musikSaving, setMusikSaving] = useState(false)
+  const [showMusikEdit, setShowMusikEdit] = useState(false)
+  const musikAudioRef = useRef(null)
+  const [guruList, setGuruList] = useState([])
+  const [pesanForm, setPesanForm] = useState({ guru_id: '', judul: '', pesan: '' })
+  const [pesanFoto, setPesanFoto] = useState(null)
+  const [pesanFotoPreview, setPesanFotoPreview] = useState(null)
+  const [pesanSending, setPesanSending] = useState(false)
+  const [riwayatPesan, setRiwayatPesan] = useState([])
+  const [pesanTab, setPesanTab] = useState('kirim') // 'kirim' | 'riwayat'
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
@@ -82,6 +101,86 @@ export default function SiswaProfil() {
   const updateActiveBadge = (badgeId) => {
     setActiveBadge(badgeId)
     window.dispatchEvent(new CustomEvent('badge-changed', { detail: { activeBadge: badgeId } }))
+  }
+
+  const fetchGuruList = async () => {
+    try {
+      const res = await siswaApi.getPesanDispenGurus()
+      setGuruList(res.data.data || [])
+    } catch { /* silent */ }
+  }
+
+  const fetchRiwayatPesan = async () => {
+    try {
+      const res = await siswaApi.getPesanDispen()
+      setRiwayatPesan(res.data.data || [])
+    } catch { /* silent */ }
+  }
+
+  const handleOpenPesan = () => {
+    setShowPesanModal(true)
+    setPesanTab('kirim')
+    if (guruList.length === 0) fetchGuruList()
+    fetchRiwayatPesan()
+  }
+
+  const handleKirimPesan = async () => {
+    if (!pesanForm.guru_id) { toast.error('Pilih guru terlebih dahulu'); return }
+    if (!pesanForm.judul.trim()) { toast.error('Judul tidak boleh kosong'); return }
+    if (!pesanForm.pesan.trim()) { toast.error('Pesan tidak boleh kosong'); return }
+    setPesanSending(true)
+    try {
+      const fd = new FormData()
+      fd.append('guru_id', pesanForm.guru_id)
+      fd.append('judul', pesanForm.judul)
+      fd.append('pesan', pesanForm.pesan)
+      if (pesanFoto) fd.append('foto_bukti', pesanFoto)
+      await siswaApi.kirimPesanDispen(fd)
+      toast.success('Pesan berhasil dikirim ke guru!')
+      setPesanForm({ guru_id: '', judul: '', pesan: '' })
+      setPesanFoto(null); setPesanFotoPreview(null)
+      setPesanTab('riwayat')
+      fetchRiwayatPesan()
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal mengirim pesan') }
+    finally { setPesanSending(false) }
+  }
+
+  // ── MUSIK FAVORIT ──
+  const handleMusikPlay = () => {
+    if (!musikAudioRef.current) return
+    if (musikPlaying) {
+      musikAudioRef.current.pause()
+      setMusikPlaying(false)
+    } else {
+      musikAudioRef.current.play()
+      setMusikPlaying(true)
+    }
+  }
+
+  const handleSaveMusik = async () => {
+    setMusikSaving(true)
+    try {
+      const fd = new FormData()
+      fd.append('musik_nama', musikForm.nama)
+      fd.append('musik_artis', musikForm.artis)
+      if (musikFotoFile) fd.append('musik_foto', musikFotoFile)
+      if (musikAudioFile) fd.append('musik_audio', musikAudioFile)
+      await siswaApi.updateMusik(fd)
+      toast.success('Musik favorit disimpan!')
+      setShowMusikEdit(false)
+      fetchProfil()
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal menyimpan') }
+    finally { setMusikSaving(false) }
+  }
+
+  const handleHapusMusik = async () => {
+    try {
+      await siswaApi.hapusMusik()
+      toast.success('Musik favorit dihapus')
+      setShowMusikEdit(false)
+      setMusikPlaying(false)
+      fetchProfil()
+    } catch { toast.error('Gagal menghapus') }
   }
 
   // Preload gambar border yang dimiliki + aktif saat modal dibuka
@@ -314,6 +413,87 @@ export default function SiswaProfil() {
               }}
               className="absolute top-3 right-3 w-8 h-8 bg-black/60 hover:bg-red-600 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all border border-white/20 z-10">
               <X size={14}/>
+            </button>
+          )}
+          {/* Icon surat — sosmed style, top-right saat tidak edit */}
+          {!editMode && (
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={handleOpenPesan}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center z-10 transition-all"
+              style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.18)' }}
+              title="Kirim pesan ke guru"
+            >
+              <Send size={15} className="text-white"/>
+            </motion.button>
+          )}
+
+          {/* ── MUSIK FAVORIT — pojok kanan bawah cover, hanya foto bulat ── */}
+          {!editMode && (profil?.musik_foto_url || profil?.musik_audio_url) && (
+            <div className="absolute bottom-3 right-3 z-10">
+              {/* Audio hidden */}
+              {profil.musik_audio_url && (
+                <audio
+                  ref={musikAudioRef}
+                  src={profil.musik_audio_url}
+                  onEnded={() => setMusikPlaying(false)}
+                />
+              )}
+              {/* Foto album bulat — klik play/pause */}
+              <motion.button
+                whileTap={{ scale: 0.88 }}
+                onClick={handleMusikPlay}
+                className="relative block"
+                style={{ width: 44, height: 44 }}
+                title={musikPlaying ? 'Pause' : 'Play musik'}
+              >
+                {/* Glow ring saat playing */}
+                {musikPlaying && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                    style={{ background: 'rgba(167,139,250,0.5)' }}
+                  />
+                )}
+                {/* Foto muter */}
+                <motion.div
+                  animate={{ rotate: musikPlaying ? 360 : 0 }}
+                  transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease: 'linear' }}
+                  className="w-full h-full rounded-full overflow-hidden shadow-lg"
+                  style={{
+                    border: '2.5px solid rgba(255,255,255,0.55)',
+                    background: 'linear-gradient(135deg,#1a0a2e,#3b0764)',
+                    boxShadow: musikPlaying ? '0 0 14px rgba(167,139,250,0.7)' : '0 2px 8px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {profil.musik_foto_url
+                    ? <img src={profil.musik_foto_url} alt="album" className="w-full h-full object-cover"/>
+                    : <div className="w-full h-full flex items-center justify-center">
+                        <Disc size={18} className="text-white/50"/>
+                      </div>
+                  }
+                </motion.div>
+                {/* Center dot vinyl */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/90 shadow-sm"/>
+                </div>
+              </motion.button>
+            </div>
+          )}
+
+          {/* Edit mode: tombol edit musik */}
+          {editMode && (
+            <button
+              onClick={() => {
+                setMusikForm({ nama: profil?.musik_nama || '', artis: profil?.musik_artis || '' })
+                setMusikFotoPreview(profil?.musik_foto_url || null)
+                setShowMusikEdit(true)
+              }}
+              className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white text-[10px] font-bold transition-all"
+              style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.18)' }}
+            >
+              <Music size={11}/> {profil?.musik_nama ? 'Edit Musik' : 'Tambah Musik'}
             </button>
           )}
         </div>
@@ -1153,6 +1333,357 @@ export default function SiswaProfil() {
                     <X size={14}/>
                     Lepas Border Aktif
                   </motion.button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL EDIT MUSIK ── */}
+      <AnimatePresence>
+        {showMusikEdit && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(2,6,23,0.75)', backdropFilter: 'blur(10px)' }}
+            onClick={() => setShowMusikEdit(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+              className="w-full sm:max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-center pt-3 sm:hidden">
+                <div className="w-9 h-1 rounded-full bg-slate-200 dark:bg-slate-700"/>
+              </div>
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+                    <Music size={15} className="text-violet-600 dark:text-violet-400"/>
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-900 dark:text-white">Musik Favorit</h2>
+                    <p className="text-[10px] text-slate-400">Foto album + audio ≤30 detik</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowMusikEdit(false)}
+                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <X size={13}/>
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Preview foto album */}
+                <div className="flex items-center gap-4">
+                  <label className="relative cursor-pointer flex-shrink-0">
+                    <motion.div
+                      animate={{ rotate: 0 }}
+                      className="w-16 h-16 rounded-full overflow-hidden shadow-lg"
+                      style={{ border: '3px solid rgba(139,92,246,0.5)', background: 'linear-gradient(135deg,#1a0a2e,#3b0764)' }}
+                    >
+                      {musikFotoPreview
+                        ? <img src={musikFotoPreview} alt="album" className="w-full h-full object-cover"/>
+                        : <div className="w-full h-full flex items-center justify-center">
+                            <Disc size={22} className="text-white/40"/>
+                          </div>
+                      }
+                    </motion.div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center border-2 border-white dark:border-slate-900">
+                      <Camera size={10} className="text-white"/>
+                    </div>
+                    <input type="file" className="hidden" accept="image/*" onChange={e => {
+                      const f = e.target.files[0]; if (!f) return
+                      if (f.size > 5*1024*1024) { toast.error('Maks 5MB'); return }
+                      setMusikFotoFile(f)
+                      const r = new FileReader(); r.onloadend = () => setMusikFotoPreview(r.result); r.readAsDataURL(f)
+                    }}/>
+                  </label>
+                  <div className="flex-1 space-y-2">
+                    <input type="text" value={musikForm.nama}
+                      onChange={e => setMusikForm(p => ({ ...p, nama: e.target.value }))}
+                      placeholder="Nama lagu" maxLength={200}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"/>
+                    <input type="text" value={musikForm.artis}
+                      onChange={e => setMusikForm(p => ({ ...p, artis: e.target.value }))}
+                      placeholder="Nama artis / band" maxLength={200}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"/>
+                  </div>
+                </div>
+
+                {/* Upload audio */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                    Audio <span className="text-slate-300 dark:text-slate-600 font-normal normal-case">(opsional, maks 30 detik)</span>
+                  </label>
+                  <label className={`flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
+                    musikAudioName
+                      ? 'border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/10'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-700 bg-slate-50 dark:bg-slate-800/40'
+                  }`}>
+                    <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center flex-shrink-0">
+                      <Music size={14} className="text-violet-500"/>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                        {musikAudioName || 'Klik untuk upload audio'}
+                      </p>
+                      <p className="text-[10px] text-slate-400">MP3, AAC, OGG · Maks 30 detik</p>
+                    </div>
+                    {musikAudioName && (
+                      <button type="button" onClick={e => { e.preventDefault(); setMusikAudioFile(null); setMusikAudioName('') }}
+                        className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        <X size={10} className="text-slate-500"/>
+                      </button>
+                    )}
+                    <input type="file" className="hidden" accept="audio/*" onChange={e => {
+                      const f = e.target.files[0]; if (!f) return
+                      if (f.size > 10*1024*1024) { toast.error('Maks 10MB'); return }
+                      // Validasi durasi
+                      const url = URL.createObjectURL(f)
+                      const audio = document.createElement('audio')
+                      audio.preload = 'metadata'
+                      audio.onloadedmetadata = () => {
+                        URL.revokeObjectURL(url)
+                        if (audio.duration > 31) { toast.error('Audio maksimal 30 detik'); return }
+                        setMusikAudioFile(f)
+                        setMusikAudioName(f.name)
+                      }
+                      audio.src = url
+                    }}/>
+                  </label>
+                </div>
+
+                {/* Tombol aksi */}
+                <div className="flex gap-2 pt-1">
+                  <motion.button whileTap={{ scale: 0.97 }}
+                    onClick={handleSaveMusik}
+                    disabled={musikSaving}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-black text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 4px 14px rgba(124,58,237,0.3)' }}>
+                    {musikSaving ? <Loader size={13} className="animate-spin"/> : <Music size={13}/>}
+                    {musikSaving ? 'Menyimpan...' : 'Simpan'}
+                  </motion.button>
+                  {(profil?.musik_nama || profil?.musik_foto_url) && (
+                    <button onClick={handleHapusMusik}
+                      className="px-4 py-2.5 rounded-xl text-sm font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/50 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
+                      Hapus
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL PESAN DISPEN ── */}      <AnimatePresence>
+        {showPesanModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(2,6,23,0.75)', backdropFilter: 'blur(10px)' }}
+            onClick={() => setShowPesanModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+              className="w-full sm:max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Drag handle mobile */}
+              <div className="flex justify-center pt-3 sm:hidden">
+                <div className="w-9 h-1 rounded-full bg-slate-200 dark:bg-slate-700"/>
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+                    <MessageSquare size={15} className="text-violet-600 dark:text-violet-400"/>
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-900 dark:text-white">Pesan ke Guru</h2>
+                    <p className="text-[10px] text-slate-400">Kirim pesan / dispen ke guru</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPesanModal(false)}
+                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <X size={13}/>
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex border-b border-slate-100 dark:border-slate-800">
+                {[
+                  { key: 'kirim', label: 'Kirim Pesan', icon: Send },
+                  { key: 'riwayat', label: 'Riwayat', icon: MessageSquare },
+                ].map(t => (
+                  <button key={t.key} onClick={() => { setPesanTab(t.key); if (t.key === 'riwayat') fetchRiwayatPesan() }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold border-b-2 transition-all ${
+                      pesanTab === t.key
+                        ? 'border-violet-500 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-900/10'
+                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}>
+                    <t.icon size={12}/>{t.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="overflow-y-auto max-h-[70vh]">
+                {pesanTab === 'kirim' ? (
+                  <div className="p-5 space-y-4">
+                    {/* Pilih Guru */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                        Tujuan Guru
+                      </label>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        {guruList.length === 0 ? (
+                          <p className="text-xs text-slate-400 text-center py-3">Memuat daftar guru...</p>
+                        ) : guruList.map(g => (
+                          <button key={g.id} type="button"
+                            onClick={() => setPesanForm(p => ({ ...p, guru_id: String(g.id) }))}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${
+                              pesanForm.guru_id === String(g.id)
+                                ? 'bg-violet-50 dark:bg-violet-900/20 border-violet-300 dark:border-violet-700 ring-1 ring-violet-300 dark:ring-violet-700/50'
+                                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-violet-200 dark:hover:border-violet-800'
+                            }`}>
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center flex-shrink-0">
+                              {g.foto_url
+                                ? <img src={g.foto_url} alt={g.nama_lengkap} className="w-full h-full object-cover"/>
+                                : <span className="text-white font-black text-xs">{g.nama_lengkap.charAt(0)}</span>}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{g.nama_lengkap}</p>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {g.is_wali_kelas ? `Wali Kelas ${g.kelas || ''}` : 'Guru'} · {g.nip}
+                              </p>
+                            </div>
+                            {pesanForm.guru_id === String(g.id) && (
+                              <div className="w-4 h-4 rounded-full bg-violet-500 flex items-center justify-center flex-shrink-0">
+                                <CheckCircle size={10} className="text-white"/>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Judul */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Judul</label>
+                      <input
+                        type="text"
+                        value={pesanForm.judul}
+                        onChange={e => setPesanForm(p => ({ ...p, judul: e.target.value }))}
+                        placeholder="Contoh: Izin tidak masuk sekolah"
+                        maxLength={200}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+
+                    {/* Pesan */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Pesan</label>
+                      <textarea
+                        value={pesanForm.pesan}
+                        onChange={e => setPesanForm(p => ({ ...p, pesan: e.target.value }))}
+                        placeholder="Tulis pesan atau alasan dispen kamu di sini..."
+                        rows={4}
+                        maxLength={2000}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all resize-none"
+                      />
+                      <p className="text-[10px] text-slate-400 text-right mt-0.5">{pesanForm.pesan.length}/2000</p>
+                    </div>
+
+                    {/* Foto Bukti */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                        Foto Bukti <span className="text-slate-300 dark:text-slate-600 font-normal normal-case">(opsional)</span>
+                      </label>
+                      {pesanFotoPreview ? (
+                        <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100 dark:bg-slate-800">
+                          <img src={pesanFotoPreview} alt="bukti" className="w-full h-full object-cover"/>
+                          <button onClick={() => { setPesanFoto(null); setPesanFotoPreview(null) }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-red-600 transition-colors">
+                            <X size={12}/>
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-700 transition-colors bg-slate-50 dark:bg-slate-800/40">
+                          <Camera size={20} className="text-slate-300 dark:text-slate-600"/>
+                          <span className="text-xs text-slate-400">Klik untuk upload foto bukti</span>
+                          <input type="file" className="hidden" accept="image/*" onChange={e => {
+                            const f = e.target.files[0]; if (!f) return
+                            if (f.size > 5 * 1024 * 1024) { toast.error('Maks 5MB'); return }
+                            setPesanFoto(f)
+                            const r = new FileReader(); r.onloadend = () => setPesanFotoPreview(r.result); r.readAsDataURL(f)
+                          }}/>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Tombol Kirim */}
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleKirimPesan}
+                      disabled={pesanSending || !pesanForm.guru_id || !pesanForm.judul || !pesanForm.pesan}
+                      className="w-full py-3 rounded-xl text-sm font-black text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 4px 16px rgba(124,58,237,0.3)' }}
+                    >
+                      {pesanSending ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
+                      {pesanSending ? 'Mengirim...' : 'Kirim Pesan'}
+                    </motion.button>
+                  </div>
+                ) : (
+                  /* Riwayat */
+                  <div className="p-4 space-y-2">
+                    {riwayatPesan.length === 0 ? (
+                      <div className="flex flex-col items-center py-10 gap-2 text-slate-400">
+                        <MessageSquare size={28} className="opacity-30"/>
+                        <p className="text-sm font-medium">Belum ada pesan terkirim</p>
+                      </div>
+                    ) : riwayatPesan.map(p => (
+                      <div key={p.id} className={`rounded-2xl border p-3.5 ${
+                        p.status === 'approved' ? 'bg-emerald-50 dark:bg-emerald-900/15 border-emerald-200 dark:border-emerald-700/40'
+                        : p.status === 'rejected' ? 'bg-rose-50 dark:bg-rose-900/15 border-rose-200 dark:border-rose-700/40'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
+                      }`}>
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{p.judul}</p>
+                          <span className={`flex-shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full ${
+                            p.status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                            : p.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
+                            : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
+                          }`}>
+                            {p.status === 'approved' ? '✓ Disetujui' : p.status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                          Ke: <span className="font-semibold">{p.guru_nama}</span>
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{p.pesan}</p>
+                        {p.catatan_guru && (
+                          <div className="mt-2 px-2.5 py-1.5 rounded-lg bg-white/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/50">
+                            <p className="text-[10px] text-slate-400 font-semibold mb-0.5">Catatan Guru:</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-300">{p.catatan_guru}</p>
+                          </div>
+                        )}
+                        {p.foto_bukti && (
+                          <img src={p.foto_bukti} alt="bukti" className="mt-2 w-full max-h-32 object-cover rounded-xl"/>
+                        )}
+                        <p className="text-[9px] text-slate-400 mt-1.5">
+                          {new Date(p.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </motion.div>

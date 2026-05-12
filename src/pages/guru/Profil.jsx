@@ -5,6 +5,7 @@ import {
   Camera, Save, QrCode, Loader, Download,
   X, Eye, AlertCircle, BookOpen, School,
   Award, Briefcase, Users, Shield, Sparkles,
+  MessageSquare, CheckCircle, XCircle, Clock, Send,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import { useAuthStore } from '../../stores/authStore'
@@ -44,16 +45,75 @@ export default function GuruProfil() {
   const [showQrModal, setShowQrModal] = useState(false)
   const [logoForQr, setLogoForQr] = useState(null)
   const [fotoForQr, setFotoForQr] = useState(null)
+  // Pesan Dispen
+  const [showInboxModal, setShowInboxModal] = useState(false)
+  const [inboxPesan, setInboxPesan] = useState([])
+  const [inboxUnread, setInboxUnread] = useState(0)
+  const [inboxFilter, setInboxFilter] = useState('all')
+  const [inboxLoading, setInboxLoading] = useState(false)
+  const [selectedPesan, setSelectedPesan] = useState(null)
+  const [catatanGuru, setCatatanGuru] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
   useEffect(() => {
     fetchProfile()
+    fetchInboxUnread()
     return () => { if (fotoPreview?.startsWith('blob:')) URL.revokeObjectURL(fotoPreview) }
   }, [])
 
-  const fetchProfile = async () => {
+  const fetchInboxUnread = async () => {
     try {
+      const res = await guruApi.getPesanDispenUnread()
+      setInboxUnread(res.data.data?.count || 0)
+    } catch { /* silent */ }
+  }
+
+  const fetchInbox = async (filter = inboxFilter) => {
+    setInboxLoading(true)
+    try {
+      const res = await guruApi.getPesanDispen({ status: filter })
+      setInboxPesan(res.data.data || [])
+      // Mark as read
+      await guruApi.markPesanDispenRead()
+      setInboxUnread(0)
+    } catch { /* silent */ }
+    finally { setInboxLoading(false) }
+  }
+
+  const handleOpenInbox = () => {
+    setShowInboxModal(true)
+    setSelectedPesan(null)
+    fetchInbox(inboxFilter)
+  }
+
+  const handleApprove = async (id) => {
+    setActionLoading(true)
+    try {
+      await guruApi.approvePesanDispen(id, { catatan: catatanGuru || 'Disetujui.' })
+      toast.success('Pesan disetujui!')
+      setCatatanGuru('')
+      setSelectedPesan(null)
+      fetchInbox(inboxFilter)
+    } catch { toast.error('Gagal menyetujui') }
+    finally { setActionLoading(false) }
+  }
+
+  const handleReject = async (id) => {
+    if (!catatanGuru.trim()) { toast.error('Isi alasan penolakan'); return }
+    setActionLoading(true)
+    try {
+      await guruApi.rejectPesanDispen(id, { catatan: catatanGuru })
+      toast.success('Pesan ditolak')
+      setCatatanGuru('')
+      setSelectedPesan(null)
+      fetchInbox(inboxFilter)
+    } catch { toast.error('Gagal menolak') }
+    finally { setActionLoading(false) }
+  }
+
+  const fetchProfile = async () => {    try {
       setLoading(true)
       const res = await guruApi.getProfile()
       const d = res.data.data
@@ -279,6 +339,23 @@ export default function GuruProfil() {
           </div>
         </div>
 
+        {/* Chat icon — sosmed style, top-right cover */}
+        {!isEditing && (
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={handleOpenInbox}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center z-10 transition-all"
+            style={{ background: 'rgba(0,0,0,0.50)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.18)' }}
+            title="Inbox pesan dari siswa"
+          >
+            <MessageSquare size={15} className="text-white"/>
+            {inboxUnread > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[9px] font-black text-white px-0.5">
+                {inboxUnread > 99 ? '99+' : inboxUnread}
+              </span>
+            )}
+          </motion.button>
+        )}
         {/* Edit / Save / Cancel buttons â€” top right of white area */}
         <div className="absolute right-4 sm:right-6 -bottom-10 sm:-bottom-12 flex items-center gap-2">
           {!isEditing ? (
@@ -566,6 +643,212 @@ export default function GuruProfil() {
                   <div className="py-10 text-center">
                     <Loader size={32} className="text-emerald-500 animate-spin mx-auto mb-3"/>
                     <p className="text-sm text-slate-400">Memuat QR Code...</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL INBOX PESAN DISPEN ── */}
+      <AnimatePresence>
+        {showInboxModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(2,6,23,0.75)', backdropFilter: 'blur(10px)' }}
+            onClick={() => { setShowInboxModal(false); setSelectedPesan(null) }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+              className="w-full sm:max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 sm:hidden">
+                <div className="w-9 h-1 rounded-full bg-slate-200 dark:bg-slate-700"/>
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                      <MessageSquare size={15} className="text-emerald-600 dark:text-emerald-400"/>
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-900 dark:text-white">Inbox Pesan Siswa</h2>
+                    <p className="text-[10px] text-slate-400">{inboxPesan.length} pesan</p>
+                  </div>
+                </div>
+                <button onClick={() => { setShowInboxModal(false); setSelectedPesan(null) }}
+                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <X size={13}/>
+                </button>
+              </div>
+
+              {/* Filter tabs */}
+              <div className="flex border-b border-slate-100 dark:border-slate-800">
+                {[
+                  { key: 'all', label: 'Semua' },
+                  { key: 'pending', label: 'Menunggu' },
+                  { key: 'approved', label: 'Disetujui' },
+                  { key: 'rejected', label: 'Ditolak' },
+                ].map(f => (
+                  <button key={f.key}
+                    onClick={() => { setInboxFilter(f.key); fetchInbox(f.key); setSelectedPesan(null) }}
+                    className={`flex-1 py-2 text-[10px] font-bold transition-all border-b-2 ${
+                      inboxFilter === f.key
+                        ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="overflow-y-auto max-h-[70vh]">
+                {/* Detail pesan */}
+                {selectedPesan ? (
+                  <div className="p-5">
+                    <button onClick={() => { setSelectedPesan(null); setCatatanGuru('') }}
+                      className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4 transition-colors">
+                      ← Kembali ke inbox
+                    </button>
+
+                    {/* Info siswa */}
+                    <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                        {selectedPesan.siswa_foto
+                          ? <img src={selectedPesan.siswa_foto} alt={selectedPesan.siswa_nama} className="w-full h-full object-cover"/>
+                          : <span className="text-white font-black text-sm">{selectedPesan.siswa_nama?.charAt(0)}</span>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{selectedPesan.siswa_nama}</p>
+                        <p className="text-[10px] text-slate-400">{selectedPesan.siswa_kelas} · {selectedPesan.siswa_nis}</p>
+                      </div>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                        selectedPesan.status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                        : selectedPesan.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
+                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
+                      }`}>
+                        {selectedPesan.status === 'approved' ? '✓ Disetujui' : selectedPesan.status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-black text-slate-900 dark:text-white mb-2">{selectedPesan.judul}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">{selectedPesan.pesan}</p>
+
+                    {selectedPesan.foto_bukti && (
+                      <div className="mb-4 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide px-3 pt-2.5 pb-1">Foto Bukti</p>
+                        <img src={selectedPesan.foto_bukti} alt="bukti" className="w-full max-h-48 object-cover"/>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-slate-400 mb-4">
+                      Dikirim: {new Date(selectedPesan.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                    </p>
+
+                    {selectedPesan.catatan_guru && (
+                      <div className="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                        <p className="text-[10px] font-bold text-slate-400 mb-1">Catatan kamu sebelumnya:</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">{selectedPesan.catatan_guru}</p>
+                      </div>
+                    )}
+
+                    {/* Action — hanya untuk pending */}
+                    {selectedPesan.status === 'pending' && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                            Catatan <span className="text-slate-300 dark:text-slate-600 font-normal normal-case">(wajib jika tolak)</span>
+                          </label>
+                          <textarea
+                            value={catatanGuru}
+                            onChange={e => setCatatanGuru(e.target.value)}
+                            placeholder="Tulis catatan untuk siswa..."
+                            rows={3}
+                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <motion.button whileTap={{ scale: 0.97 }}
+                            onClick={() => handleApprove(selectedPesan.id)}
+                            disabled={actionLoading}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-black text-white flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                            style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
+                            {actionLoading ? <Loader size={13} className="animate-spin"/> : <CheckCircle size={13}/>}
+                            Setujui
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.97 }}
+                            onClick={() => handleReject(selectedPesan.id)}
+                            disabled={actionLoading}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-black text-white flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                            style={{ background: 'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>
+                            {actionLoading ? <Loader size={13} className="animate-spin"/> : <XCircle size={13}/>}
+                            Tolak
+                          </motion.button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* List pesan */
+                  <div className="p-4 space-y-2">
+                    {inboxLoading ? (
+                      <div className="flex items-center justify-center py-10">
+                        <div className="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-emerald-500 rounded-full animate-spin"/>
+                      </div>
+                    ) : inboxPesan.length === 0 ? (
+                      <div className="flex flex-col items-center py-10 gap-2 text-slate-400">
+                        <MessageSquare size={28} className="opacity-30"/>
+                        <p className="text-sm font-medium">Tidak ada pesan</p>
+                      </div>
+                    ) : inboxPesan.map(p => (
+                      <motion.button key={p.id}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => { setSelectedPesan(p); setCatatanGuru('') }}
+                        className={`w-full text-left rounded-2xl border p-3.5 transition-all hover:shadow-sm ${
+                          !p.dibaca ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-700/40'
+                          : p.status === 'approved' ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'
+                          : p.status === 'rejected' ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
+                        }`}>
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                            {p.siswa_foto
+                              ? <img src={p.siswa_foto} alt={p.siswa_nama} className="w-full h-full object-cover"/>
+                              : <span className="text-white font-black text-xs">{p.siswa_nama?.charAt(0)}</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-0.5">
+                              <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{p.siswa_nama}</p>
+                              <span className={`flex-shrink-0 text-[8px] font-black px-1.5 py-0.5 rounded-full ${
+                                p.status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                                : p.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
+                                : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
+                              }`}>
+                                {p.status === 'approved' ? '✓' : p.status === 'rejected' ? '✗' : '⏳'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{p.judul}</p>
+                            <p className="text-[10px] text-slate-400 truncate mt-0.5">{p.pesan}</p>
+                            <p className="text-[9px] text-slate-300 dark:text-slate-600 mt-1">
+                              {p.siswa_kelas} · {new Date(p.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short' })}
+                            </p>
+                          </div>
+                          {!p.dibaca && (
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 mt-1"/>
+                          )}
+                        </div>
+                      </motion.button>
+                    ))}
                   </div>
                 )}
               </div>

@@ -46,4 +46,11 @@ export const guruApi = {
   getRekomendasiSaya: () => api.get('/guru/naik-kelas/rekomendasi-saya'),
   simpanRekomendasi: (data) => api.post('/guru/naik-kelas/rekomendasi', data),
   hapusRekomendasi: (siswaId) => api.delete(`/guru/naik-kelas/rekomendasi/${siswaId}`),
+
+  // Pesan Dispen dari Siswa
+  getPesanDispen: (params) => api.get('/guru/pesan-dispen', { params }),
+  getPesanDispenUnread: () => api.get('/guru/pesan-dispen/unread', { silent: true }),
+  markPesanDispenRead: () => api.post('/guru/pesan-dispen/mark-read'),
+  approvePesanDispen: (id, data) => api.post(`/guru/pesan-dispen/${id}/approve`, data),
+  rejectPesanDispen: (id, data) => api.post(`/guru/pesan-dispen/${id}/reject`, data),
 }

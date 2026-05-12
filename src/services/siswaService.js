@@ -53,4 +53,17 @@ export const siswaApi = {
 
   // Ranking Sekolah
   getRankingSekolah: (params) => api.get('/siswa/ranking-sekolah', { params }),
+
+  // Pesan Dispen
+  getPesanDispenGurus: () => api.get('/siswa/pesan-dispen/gurus'),
+  getPesanDispen: () => api.get('/siswa/pesan-dispen'),
+  kirimPesanDispen: (data) => api.post('/siswa/pesan-dispen', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  // Musik Favorit
+  updateMusik: (data) => api.post('/siswa/profil/musik', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  hapusMusik: () => api.delete('/siswa/profil/musik'),
 }
