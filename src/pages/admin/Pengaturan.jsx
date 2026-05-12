@@ -177,11 +177,11 @@ function BorderWindowPanel() {
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                   Border Limited Tersedia
-                  <span className="ml-1.5 text-slate-400 dark:text-slate-500 normal-case font-normal">(opsional, maks 5)</span>
+                  <span className="ml-1.5 text-slate-400 dark:text-slate-500 normal-case font-normal">(opsional, bebas pilih)</span>
                 </label>
                 {selectedLimited.length > 0 && (
                   <span className="text-[10px] font-black text-rose-500 flex items-center gap-1">
-                    ✨ {selectedLimited.length}/5 dipilih
+                    ✨ {selectedLimited.length} dipilih
                   </span>
                 )}
               </div>
@@ -192,7 +192,7 @@ function BorderWindowPanel() {
                   style={{ scrollbarWidth:'thin', scrollbarColor:'rgba(124,58,237,0.3) transparent' }}>
                   {LIMITED_OPTIONS.map(opt => {
                     const selected = selectedLimited.includes(opt.id)
-                    const disabled = !selected && selectedLimited.length >= 5
+                    const disabled = !selected && false
                     // Map id ke borderImg
                     const imgMap = {
                       blackpink:'/image/b59.png', sakura:'/image/b60.png',
@@ -215,7 +215,7 @@ function BorderWindowPanel() {
                         disabled={disabled}
                         onClick={() => {
                           if (selected) setSelectedLimited(p => p.filter(id => id !== opt.id))
-                          else if (selectedLimited.length < 5) setSelectedLimited(p => [...p, opt.id])
+                          else setSelectedLimited(p => [...p, opt.id])
                         }}
                         className={`relative flex-shrink-0 rounded-2xl overflow-hidden transition-all ${
                           disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:scale-105'
