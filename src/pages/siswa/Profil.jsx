@@ -428,55 +428,90 @@ export default function SiswaProfil() {
             </motion.button>
           )}
 
-          {/* ── MUSIK FAVORIT — pojok kanan bawah cover, hanya foto bulat ── */}
-          {!editMode && (profil?.musik_foto_url || profil?.musik_audio_url) && (
+          {/* ── MUSIK FAVORIT — pojok kanan bawah cover ── */}
+          {!editMode && (profil?.musik_foto_url || profil?.musik_audio_url || profil?.musik_nama) && (
             <div className="absolute bottom-3 right-3 z-10">
-              {/* Audio hidden */}
               {profil.musik_audio_url && (
-                <audio
-                  ref={musikAudioRef}
-                  src={profil.musik_audio_url}
-                  onEnded={() => setMusikPlaying(false)}
-                />
+                <audio ref={musikAudioRef} src={profil.musik_audio_url}
+                  onEnded={() => setMusikPlaying(false)}/>
               )}
-              {/* Foto album bulat — klik play/pause */}
+
+              {/* Music pill — glassmorphism */}
               <motion.button
-                whileTap={{ scale: 0.88 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleMusikPlay}
-                className="relative block"
-                style={{ width: 44, height: 44 }}
-                title={musikPlaying ? 'Pause' : 'Play musik'}
+                className="flex items-center gap-2.5 rounded-full overflow-hidden"
+                style={{
+                  background: 'rgba(0,0,0,0.52)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  boxShadow: musikPlaying
+                    ? '0 4px 20px rgba(167,139,250,0.45), 0 0 0 1px rgba(167,139,250,0.3)'
+                    : '0 4px 16px rgba(0,0,0,0.4)',
+                  padding: '5px 12px 5px 5px',
+                  maxWidth: 180,
+                }}
               >
-                {/* Glow ring saat playing */}
-                {musikPlaying && (
+                {/* Vinyl disc */}
+                <div className="relative flex-shrink-0" style={{ width: 34, height: 34 }}>
+                  {/* Outer glow ring saat playing */}
+                  {musikPlaying && (
+                    <motion.div className="absolute inset-0 rounded-full"
+                      animate={{ scale:[1,1.5,1], opacity:[0.6,0,0.6] }}
+                      transition={{ repeat:Infinity, duration:1.4, ease:'easeInOut' }}
+                      style={{ background:'rgba(167,139,250,0.4)' }}/>
+                  )}
                   <motion.div
-                    className="absolute inset-0 rounded-full"
-                    animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
-                    transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-                    style={{ background: 'rgba(167,139,250,0.5)' }}
-                  />
-                )}
-                {/* Foto muter */}
-                <motion.div
-                  animate={{ rotate: musikPlaying ? 360 : 0 }}
-                  transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease: 'linear' }}
-                  className="w-full h-full rounded-full overflow-hidden shadow-lg"
-                  style={{
-                    border: '2.5px solid rgba(255,255,255,0.55)',
-                    background: 'linear-gradient(135deg,#1a0a2e,#3b0764)',
-                    boxShadow: musikPlaying ? '0 0 14px rgba(167,139,250,0.7)' : '0 2px 8px rgba(0,0,0,0.5)',
-                  }}
-                >
-                  {profil.musik_foto_url
-                    ? <img src={profil.musik_foto_url} alt="album" className="w-full h-full object-cover"/>
-                    : <div className="w-full h-full flex items-center justify-center">
-                        <Disc size={18} className="text-white/50"/>
-                      </div>
-                  }
-                </motion.div>
-                {/* Center dot vinyl */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/90 shadow-sm"/>
+                    animate={{ rotate: musikPlaying ? 360 : 0 }}
+                    transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease:'linear' }}
+                    className="w-full h-full rounded-full overflow-hidden"
+                    style={{
+                      border: musikPlaying ? '2px solid rgba(167,139,250,0.7)' : '2px solid rgba(255,255,255,0.35)',
+                      background: 'linear-gradient(135deg,#0f0a1e,#1e0a3c)',
+                    }}
+                  >
+                    {profil.musik_foto_url
+                      ? <img src={profil.musik_foto_url} alt="album" className="w-full h-full object-cover"/>
+                      : <div className="w-full h-full flex items-center justify-center">
+                          <Disc size={14} className="text-white/40"/>
+                        </div>
+                    }
+                  </motion.div>
+                  {/* Center hole */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-2 h-2 rounded-full"
+                      style={{ background: musikPlaying ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.8)' }}/>
+                  </div>
+                </div>
+
+                {/* Text info */}
+                <div className="flex-1 min-w-0 text-left">
+                  {profil.musik_nama && (
+                    <p className="text-white font-bold leading-tight truncate"
+                      style={{ fontSize: 10, letterSpacing: '0.01em' }}>
+                      {profil.musik_nama}
+                    </p>
+                  )}
+                  {profil.musik_artis && (
+                    <p className="truncate leading-tight mt-0.5"
+                      style={{ fontSize: 9, color: 'rgba(200,180,255,0.75)' }}>
+                      {profil.musik_artis}
+                    </p>
+                  )}
+                  {/* Equalizer bars saat playing */}
+                  {musikPlaying && (
+                    <div className="flex items-end gap-0.5 mt-1" style={{ height: 8 }}>
+                      {[0,1,2,3].map(i => (
+                        <motion.div key={i}
+                          className="w-0.5 rounded-full"
+                          style={{ background: 'rgba(167,139,250,0.8)' }}
+                          animate={{ height: ['30%','100%','50%','80%','30%'] }}
+                          transition={{ repeat:Infinity, duration:0.6+i*0.15, ease:'easeInOut', delay:i*0.1 }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.button>
             </div>
