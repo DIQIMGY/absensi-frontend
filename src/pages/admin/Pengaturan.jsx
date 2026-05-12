@@ -16,17 +16,29 @@ import { useState as useLocalState, useEffect as useLocalEffect } from 'react'
 
 // ─── BORDER WINDOW PANEL ──────────────────────────────────────
 const LIMITED_OPTIONS = [
-  { id:'blackpink',   name:'BLACKPINK',           emoji:'🎤' },
-  { id:'sakura',      name:'Sakura Jepang',        emoji:'🌸' },
-  { id:'bts',         name:'BTS',                  emoji:'🌟' },
-  { id:'babymonster', name:'BABYMONSTER',          emoji:'👾' },
-  { id:'aespa',       name:'aespa',                emoji:'🤖' },
-  { id:'seventeen',   name:'SEVENTEEN',            emoji:'💎' },
-  { id:'nct',         name:'NCT',                  emoji:'🌐' },
-  { id:'mingyu',      name:'Mingyu (SEVENTEEN)',   emoji:'🐶' },
-  { id:'lisa',        name:'Lisa (BLACKPINK)',     emoji:'🐯' },
-  { id:'karina',      name:'Karina (aespa)',       emoji:'🐱' },
-  { id:'taehyung',   name:'Taehyung (V) - BTS',   emoji:'🐯' },
+  { id:'blackpink',   name:'BLACKPINK',              emoji:'🎤' },
+  { id:'sakura',      name:'Sakura Jepang',           emoji:'🌸' },
+  { id:'bts',         name:'BTS',                    emoji:'🌟' },
+  { id:'babymonster', name:'BABYMONSTER',             emoji:'👾' },
+  { id:'aespa',       name:'aespa',                  emoji:'🤖' },
+  { id:'seventeen',   name:'SEVENTEEN',               emoji:'💎' },
+  { id:'nct',         name:'NCT',                    emoji:'🌐' },
+  { id:'mingyu',      name:'Mingyu (SEVENTEEN)',      emoji:'🐶' },
+  { id:'lisa',        name:'Lisa (BLACKPINK)',        emoji:'🐯' },
+  { id:'karina',      name:'Karina (aespa)',          emoji:'🐱' },
+  { id:'taehyung',   name:'Taehyung (V) - BTS',      emoji:'🐯' },
+  { id:'txt',         name:'TXT',                    emoji:'🌟' },
+  { id:'itzy',        name:'ITZY',                   emoji:'👑' },
+  { id:'redvelvet',   name:'Red Velvet',              emoji:'🧁' },
+  { id:'twice',       name:'TWICE',                  emoji:'🍭' },
+  { id:'ive',         name:'IVE',                    emoji:'💎' },
+  { id:'straykids',   name:'Stray Kids',             emoji:'🐺' },
+  { id:'newjeans',    name:'NewJeans',               emoji:'🐰' },
+  { id:'treasure',    name:'TREASURE',               emoji:'🌠' },
+  { id:'h2h',         name:'Hearts2Hearts (H2H)',    emoji:'💙' },
+  { id:'exo',         name:'EXO',                    emoji:'🌌' },
+  { id:'enhypen',     name:'ENHYPEN',                emoji:'🌙' },
+  { id:'illit',       name:'ILLIT',                  emoji:'🧚' },
 ]
 
 function BorderWindowPanel() {
@@ -159,41 +171,106 @@ function BorderWindowPanel() {
               </div>
             </div>
 
-            {/* Pilih Limited (opsional, maks 2) */}
+
+            {/* Pilih Limited (opsional, maks 5) */}
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                Border Limited Tersedia (opsional, maks 2)
-              </label>
-              <div className="grid grid-cols-2 gap-1.5">
-                {LIMITED_OPTIONS.map(opt => {
-                  const selected = selectedLimited.includes(opt.id)
-                  const disabled = !selected && selectedLimited.length >= 2
-                  return (
-                    <button key={opt.id}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => {
-                        if (selected) setSelectedLimited(p => p.filter(id => id !== opt.id))
-                        else if (selectedLimited.length < 2) setSelectedLimited(p => [...p, opt.id])
-                      }}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                        selected
-                          ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300'
-                          : disabled
-                          ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-rose-300 dark:hover:border-rose-700'
-                      }`}>
-                      <span>{opt.emoji}</span>
-                      <span className="truncate">{opt.name}</span>
-                      {selected && <span className="ml-auto text-rose-500">✓</span>}
-                    </button>
-                  )
-                })}
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                  Border Limited Tersedia
+                  <span className="ml-1.5 text-slate-400 dark:text-slate-500 normal-case font-normal">(opsional, maks 5)</span>
+                </label>
+                {selectedLimited.length > 0 && (
+                  <span className="text-[10px] font-black text-rose-500 flex items-center gap-1">
+                    ✨ {selectedLimited.length}/5 dipilih
+                  </span>
+                )}
               </div>
+
+              {/* Scrollable horizontal grid */}
+              <div className="relative">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"
+                  style={{ scrollbarWidth:'thin', scrollbarColor:'rgba(124,58,237,0.3) transparent' }}>
+                  {LIMITED_OPTIONS.map(opt => {
+                    const selected = selectedLimited.includes(opt.id)
+                    const disabled = !selected && selectedLimited.length >= 5
+                    // Map id ke borderImg
+                    const imgMap = {
+                      blackpink:'/image/b59.png', sakura:'/image/b60.png',
+                      bts:'/image/b61.png', babymonster:'/image/b62.png',
+                      aespa:'/image/b63.png', seventeen:'/image/b64.png',
+                      nct:'/image/b65.png', mingyu:'/image/b66.png',
+                      lisa:'/image/b67.png', karina:'/image/b68.png',
+                      taehyung:'/image/b71.png',
+                      txt:'/image/b74.png', itzy:'/image/b75.png',
+                      redvelvet:'/image/b76.png', twice:'/image/b77.png',
+                      ive:'/image/b78.png', straykids:'/image/b79.png',
+                      newjeans:'/image/b80.png', treasure:'/image/b81.png',
+                      h2h:'/image/b82.png', exo:'/image/b83.png',
+                      enhypen:'/image/b84.png', illit:'/image/b85.png',
+                    }
+                    const borderImg = imgMap[opt.id]
+                    return (
+                      <button key={opt.id}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => {
+                          if (selected) setSelectedLimited(p => p.filter(id => id !== opt.id))
+                          else if (selectedLimited.length < 5) setSelectedLimited(p => [...p, opt.id])
+                        }}
+                        className={`relative flex-shrink-0 rounded-2xl overflow-hidden transition-all ${
+                          disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                        } ${selected ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-900' : ''}`}
+                        style={{ width: 72, height: 72 }}
+                        title={opt.name}
+                      >
+                        {/* Border image */}
+                        {borderImg
+                          ? <img src={borderImg} alt={opt.name}
+                              className="w-full h-full object-contain"
+                              style={{ background: 'linear-gradient(135deg,#1a0a2e,#2d1060)' }}/>
+                          : <div className="w-full h-full flex items-center justify-center text-2xl"
+                              style={{ background: 'linear-gradient(135deg,#1a0a2e,#2d1060)' }}>
+                              {opt.emoji}
+                            </div>
+                        }
+
+                        {/* Selected checkmark */}
+                        {selected && (
+                          <div className="absolute inset-0 flex items-center justify-center"
+                            style={{ background: 'rgba(244,63,94,0.25)' }}>
+                            <div className="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center shadow-lg">
+                              <span className="text-white text-xs font-black">✓</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Name tooltip bottom */}
+                        <div className="absolute inset-x-0 bottom-0 py-0.5 text-center"
+                          style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}>
+                          <p className="text-white text-[8px] font-bold truncate px-1">{opt.name}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                {/* Fade right edge */}
+                <div className="absolute right-0 top-0 bottom-2 w-8 pointer-events-none"
+                  style={{ background: 'linear-gradient(to left, var(--tw-gradient-from, #0f172a), transparent)' }}/>
+              </div>
+
               {selectedLimited.length > 0 && (
-                <p className="text-[10px] text-rose-500 font-bold mt-1.5">
-                  ✨ {selectedLimited.length} Limited dipilih — siswa bisa pilih salah satu
-                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {selectedLimited.map(id => {
+                    const opt = LIMITED_OPTIONS.find(o => o.id === id)
+                    return opt ? (
+                      <span key={id} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700/50">
+                        {opt.emoji} {opt.name}
+                        <button type="button" onClick={() => setSelectedLimited(p => p.filter(i => i !== id))}
+                          className="ml-0.5 text-rose-400 hover:text-rose-600 font-black">×</button>
+                      </span>
+                    ) : null
+                  })}
+                </div>
               )}
             </div>
           </div>
