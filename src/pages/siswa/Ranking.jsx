@@ -383,17 +383,20 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                 exit={{ y: '100%' }}
                 transition={{ type: 'spring', stiffness: 320, damping: 32 }}
                 className="absolute inset-0 flex flex-col items-center justify-center rounded-t-[24px] sm:rounded-[24px] overflow-hidden"
-                style={{ background: 'rgba(2,6,23,0.97)', zIndex: 10 }}
+                style={{ background: isDark ? '#0f172a' : '#f8fafc', zIndex: 10 }}
               >
-                {/* Close / back */}
+                {/* Back button */}
                 <motion.button
                   whileTap={{ scale: 0.88 }}
                   onClick={() => setShowFotoView(false)}
                   className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+                  style={{
+                    background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
+                  }}
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M10 3L5 8L10 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M10 3L5 8L10 13" stroke={isDark ? 'white' : '#334155'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </motion.button>
 
@@ -402,25 +405,29 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                   whileTap={{ scale: 0.88 }}
                   onClick={onClose}
                   className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+                  style={{
+                    background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
+                  }}
                 >
-                  <X size={15} className="text-white"/>
+                  <X size={15} style={{ color: isDark ? 'white' : '#334155' }}/>
                 </motion.button>
 
                 {/* Nama */}
-                <p className="absolute top-5 left-0 right-0 text-center text-white font-bold text-sm opacity-80 pointer-events-none">
+                <p className="absolute top-5 left-0 right-0 text-center font-bold text-sm pointer-events-none"
+                  style={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(15,23,42,0.7)' }}>
                   {siswa.nama_lengkap}
                 </p>
 
-                {/* Foto + border besar */}
+                {/* Foto + border — ukuran pas */}
                 <motion.div
                   initial={{ scale: 0.7, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.05 }}
                   className="relative"
-                  style={{ width: 'min(72vw, 260px)', height: 'min(72vw, 260px)' }}
+                  style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}
                 >
-                  <div className={`w-full h-full overflow-hidden shadow-2xl ${
+                  <div className={`w-full h-full overflow-hidden shadow-xl ${
                     siswa.active_badge ? 'rounded-full' : 'rounded-3xl'
                   }`}>
                     <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover"/>
@@ -432,13 +439,17 @@ function ProfileCardModal({ siswa, onClose, myId }) {
 
                 {/* Info bawah */}
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mt-5 text-center"
+                  className="mt-4 text-center px-4"
                 >
-                  <p className="text-white font-black text-base">{siswa.nama_lengkap}</p>
-                  <p className="text-white/50 text-xs mt-0.5">{siswa.kelas} · {siswa.nis}</p>
+                  <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
+                    {siswa.nama_lengkap}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(100,116,139,0.8)' }}>
+                    {siswa.kelas} · {siswa.nis}
+                  </p>
                 </motion.div>
               </motion.div>
             )}

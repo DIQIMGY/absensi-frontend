@@ -1416,7 +1416,7 @@ export default function SiswaProfil() {
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
               className="relative"
-              style={{ width: 'min(80vw, 320px)', height: 'min(80vw, 320px)' }}
+              style={{ width: 'min(60vw, 220px)', height: 'min(60vw, 220px)' }}
               onClick={e => e.stopPropagation()}
             >
               {/* Foto */}
