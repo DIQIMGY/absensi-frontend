@@ -43,6 +43,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   const [coverErr, setCoverErr] = useState(false)
   const [isDark,   setIsDark]   = useState(() => document.documentElement.classList.contains('dark'))
   const [musikPlaying, setMusikPlaying] = useState(false)
+  const [showFotoView, setShowFotoView] = useState(false)
   const musikRef = useRef(null)
   const isMe = siswa?.id === myId
 
@@ -119,7 +120,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
           animate={{ opacity:1, y:0, scale:1 }}
           exit={{ opacity:0, y:48, scale:0.96 }}
           transition={{ type:'spring', stiffness:360, damping:32 }}
-          className="w-full sm:max-w-[340px] rounded-t-[24px] sm:rounded-[24px] overflow-hidden"
+          className="relative w-full sm:max-w-[340px] rounded-t-[24px] sm:rounded-[24px] overflow-hidden"
           style={{ background:card, border:`1px solid ${cardBd}`, boxShadow:cardShadow }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -349,7 +350,99 @@ function ProfileCardModal({ siswa, onClose, myId }) {
               <span className="text-[10px]">✨</span>
             </div>
 
+            {/* ── PANAH LIHAT FOTO ── */}
+            {siswa.foto_url && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowFotoView(true)}
+                className="w-full flex flex-col items-center gap-1 pt-1 pb-0.5 opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: metaColor }}>
+                  Lihat Foto Profil
+                </p>
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                >
+                  <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+                    <path d="M1 1L8 8L15 1" stroke={metaColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </motion.div>
+              </motion.button>
+            )}
+
           </div>
+
+          {/* ── FOTO VIEW SLIDE ── */}
+          <AnimatePresence>
+            {showFotoView && (
+              <motion.div
+                key="foto-slide"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-t-[24px] sm:rounded-[24px] overflow-hidden"
+                style={{ background: 'rgba(2,6,23,0.97)', zIndex: 10 }}
+              >
+                {/* Close / back */}
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={() => setShowFotoView(false)}
+                  className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
+                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M10 3L5 8L10 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </motion.button>
+
+                {/* X close modal */}
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={onClose}
+                  className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
+                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+                >
+                  <X size={15} className="text-white"/>
+                </motion.button>
+
+                {/* Nama */}
+                <p className="absolute top-5 left-0 right-0 text-center text-white font-bold text-sm opacity-80 pointer-events-none">
+                  {siswa.nama_lengkap}
+                </p>
+
+                {/* Foto + border besar */}
+                <motion.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.05 }}
+                  className="relative"
+                  style={{ width: 'min(72vw, 260px)', height: 'min(72vw, 260px)' }}
+                >
+                  <div className={`w-full h-full overflow-hidden shadow-2xl ${
+                    siswa.active_badge ? 'rounded-full' : 'rounded-3xl'
+                  }`}>
+                    <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover"/>
+                  </div>
+                  {siswa.active_badge && (
+                    <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="lg"/>
+                  )}
+                </motion.div>
+
+                {/* Info bawah */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="mt-5 text-center"
+                >
+                  <p className="text-white font-black text-base">{siswa.nama_lengkap}</p>
+                  <p className="text-white/50 text-xs mt-0.5">{siswa.kelas} · {siswa.nis}</p>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
     </AnimatePresence>

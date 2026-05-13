@@ -76,6 +76,8 @@ export default function SiswaProfil() {
   const [musikSaving, setMusikSaving] = useState(false)
   const [showMusikEdit, setShowMusikEdit] = useState(false)
   const musikAudioRef = useRef(null)
+  // Foto viewer (WA style)
+  const [showFotoViewer, setShowFotoViewer] = useState(false)
   const [guruList, setGuruList] = useState([])
   const [pesanForm, setPesanForm] = useState({ guru_id: '', judul: '', pesan: '' })
   const [pesanFoto, setPesanFoto] = useState(null)
@@ -537,11 +539,14 @@ export default function SiswaProfil() {
         {/* Avatar overlapping cover */}
         <div className="absolute left-4 sm:left-6 -bottom-10 sm:-bottom-12">
           <div className="relative">
-            <div className={`w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-xl bg-violet-700 ${
-              activeBadge && !editMode
-                ? 'rounded-full ring-0'
-                : 'rounded-2xl ring-4 ring-white dark:ring-slate-900'
-            }`}>
+            <div
+              className={`w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-xl bg-violet-700 ${
+                activeBadge && !editMode
+                  ? 'rounded-full ring-0'
+                  : 'rounded-2xl ring-4 ring-white dark:ring-slate-900'
+              } ${!editMode && avatar ? 'cursor-pointer' : ''}`}
+              onClick={() => { if (!editMode && avatar) setShowFotoViewer(true) }}
+            >
               {avatar
                 ? <img src={avatar} alt={profil?.nama_lengkap} className="w-full h-full object-cover"/>
                 : <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl font-black text-white">{initial}</div>}
@@ -1376,8 +1381,60 @@ export default function SiswaProfil() {
         )}
       </AnimatePresence>
 
-      {/* ── MODAL EDIT MUSIK ── */}
+      {/* ── FOTO VIEWER (WA style) ── */}
       <AnimatePresence>
+        {showFotoViewer && avatar && (
+          <motion.div
+            key="foto-viewer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.95)' }}
+            onClick={() => setShowFotoViewer(false)}
+          >
+            {/* Close button */}
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setShowFotoViewer(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center z-10"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}
+            >
+              <X size={18} className="text-white"/>
+            </motion.button>
+
+            {/* Nama di atas */}
+            <div className="absolute top-4 left-0 right-0 flex justify-center pointer-events-none">
+              <p className="text-white font-bold text-sm opacity-80">{profil?.nama_lengkap}</p>
+            </div>
+
+            {/* Foto + border membesar */}
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              className="relative"
+              style={{ width: 'min(80vw, 320px)', height: 'min(80vw, 320px)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Foto */}
+              <div className={`w-full h-full overflow-hidden shadow-2xl ${
+                activeBadge ? 'rounded-full' : 'rounded-3xl'
+              }`}>
+                <img src={avatar} alt={profil?.nama_lengkap} className="w-full h-full object-cover"/>
+              </div>
+              {/* Border overlay */}
+              {activeBadge && (
+                <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="lg"/>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL EDIT MUSIK ── */}      <AnimatePresence>
         {showMusikEdit && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
