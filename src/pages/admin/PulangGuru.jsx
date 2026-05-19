@@ -18,19 +18,28 @@ const metodeLabel = (m) => ({ fingerprint:'🖐 Sidik Jari', qr_code:'📷 QR Co
 const fmtSelisih = (menit) => {
   if (menit === null || menit === undefined) return '-'
   const abs = Math.abs(menit)
-  if (menit > 0)  return <span className="text-amber-600 dark:text-amber-400 font-semibold">-{abs} mnt lebih awal</span>
-  if (menit < 0)  return <span className="text-emerald-600 dark:text-emerald-400 font-semibold">+{abs} mnt lembur</span>
+  const jam  = Math.floor(abs / 60)
+  const sisa = abs % 60
+  const durasi = jam > 0
+    ? (sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`)
+    : `${abs} menit`
+  if (menit > 0)  return <span className="text-amber-600 dark:text-amber-400 font-semibold">-{durasi} lebih awal</span>
+  if (menit < 0)  return <span className="text-emerald-600 dark:text-emerald-400 font-semibold">+{durasi} lembur</span>
   return <span className="text-slate-500 font-semibold">Tepat waktu</span>
 }
-const statusPulangBadge = (s) => {
+const statusPulangBadge = (s, menit) => {
   if (!s) return <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">Belum Pulang</span>
+  const abs = Math.abs(menit ?? 0)
+  const jam  = Math.floor(abs / 60)
+  const sisa = abs % 60
+  const durasi = jam > 0 ? (sisa > 0 ? `${jam}j ${sisa}m` : `${jam} jam`) : `${abs} mnt`
   const cfg = {
-    cepat:  'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
-    lembur: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
-    tepat:  'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    cepat:  { cls: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',     lbl: `⏩ Cepat ${durasi}` },
+    lembur: { cls: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', lbl: `🌙 Lembur ${durasi}` },
+    tepat:  { cls: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',         lbl: '✅ Tepat Waktu' },
   }
-  const lbl = { cepat:'⏩ Cepat', lembur:'🌙 Lembur', tepat:'✅ Tepat' }
-  return <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${cfg[s]}`}>{lbl[s]}</span>
+  const c = cfg[s] || cfg.tepat
+  return <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${c.cls}`}>{c.lbl}</span>
 }
 
 export default function PulangGuru() {
@@ -215,7 +224,7 @@ export default function PulangGuru() {
     {
       header: 'Status Pulang',
       accessor: 'status_pulang',
-      cell: (row) => statusPulangBadge(row.status_pulang)
+      cell: (row) => statusPulangBadge(row.status_pulang, row.menit_pulang_cepat)
     },
     {
       header: 'Metode Pulang',

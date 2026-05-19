@@ -729,10 +729,16 @@ export default function PublicAbsen() {
                                 {(() => {
                                   const d = pulangResult.data
                                   const selisih = d.menit_pulang_cepat
+                                  const abs = Math.abs(selisih ?? 0)
+                                  const jam  = Math.floor(abs / 60)
+                                  const sisa = abs % 60
+                                  const durasi = jam > 0
+                                    ? (sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`)
+                                    : `${abs} menit`
                                   const selisihLabel = selisih > 0
-                                    ? `${selisih} mnt lebih awal`
+                                    ? `${durasi} lebih awal`
                                     : selisih < 0
-                                      ? `Lembur ${Math.abs(selisih)} mnt`
+                                      ? `Lembur ${durasi}`
                                       : 'Tepat waktu'
                                   const selisihColor = selisih > 0
                                     ? isDark?'text-amber-300':'text-amber-600'

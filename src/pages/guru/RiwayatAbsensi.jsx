@@ -11,11 +11,24 @@ import {
   RefreshCw,
   Sparkles,
   BookOpen,
-  Award
+  Award,
+  LogOut,
+  TrendingDown,
+  TrendingUp,
+  Minus
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import { guruApi } from '../../services/guruService'
 import toast from 'react-hot-toast'
+
+// Helper format selisih waktu
+const fmtSelisih = (menit) => {
+  if (menit === null || menit === undefined) return null
+  const abs  = Math.abs(menit)
+  const jam  = Math.floor(abs / 60)
+  const sisa = abs % 60
+  return jam > 0 ? (sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`) : `${abs} menit`
+}
 
 export default function GuruRiwayatAbsensi() {
   const [riwayat, setRiwayat] = useState([])
@@ -48,13 +61,13 @@ export default function GuruRiwayatAbsensi() {
         tahun: filters.tahun,
       })
       const res = response.data
-      const data = Array.isArray(res?.data) ? res.data : []
+      const data = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : [])
       
       setRiwayat(data)
-      setPagination(res?.pagination || null)
+      setPagination(res?.data?.pagination || res?.pagination || null)
       
-      if (res?.stats) {
-        setStats(res.stats)
+      if (res?.data?.stats || res?.stats) {
+        setStats(res?.data?.stats || res?.stats)
       } else {
         const newStats = {
           total: data.length,
@@ -74,18 +87,33 @@ export default function GuruRiwayatAbsensi() {
 
   const getStatusBadge = (status) => {
     const config = {
-      hadir: { bg: 'bg-emerald-100', text: 'text-emerald-700', darkBg: 'dark:bg-emerald-900/30', darkText: 'dark:text-emerald-300', icon: CheckCircle, label: 'Hadir' },
-      terlambat: { bg: 'bg-amber-100', text: 'text-amber-700', darkBg: 'dark:bg-amber-900/30', darkText: 'dark:text-amber-300', icon: Clock, label: 'Terlambat' },
-      alpha: { bg: 'bg-red-100', text: 'text-red-700', darkBg: 'dark:bg-red-900/30', darkText: 'dark:text-red-300', icon: XCircle, label: 'Alpha' },
+      hadir:     { bg: 'bg-emerald-100', text: 'text-emerald-700', darkBg: 'dark:bg-emerald-900/30', darkText: 'dark:text-emerald-300', icon: CheckCircle, label: 'Hadir' },
+      terlambat: { bg: 'bg-amber-100',   text: 'text-amber-700',   darkBg: 'dark:bg-amber-900/30',   darkText: 'dark:text-amber-300',   icon: Clock,        label: 'Terlambat' },
+      alpha:     { bg: 'bg-red-100',     text: 'text-red-700',     darkBg: 'dark:bg-red-900/30',     darkText: 'dark:text-red-300',     icon: XCircle,      label: 'Alpha' },
+      izin:      { bg: 'bg-blue-100',    text: 'text-blue-700',    darkBg: 'dark:bg-blue-900/30',    darkText: 'dark:text-blue-300',    icon: CheckCircle,  label: 'Izin' },
+      sakit:     { bg: 'bg-purple-100',  text: 'text-purple-700',  darkBg: 'dark:bg-purple-900/30',  darkText: 'dark:text-purple-300',  icon: CheckCircle,  label: 'Sakit' },
     }
-    
-    const cfg = config[status] || config.hadir
+    const cfg  = config[status] || config.hadir
     const Icon = cfg.icon
-    
     return (
-      <span className={`inline-flex items-center px-2.5 py-1 ${cfg.bg} ${cfg.text} ${cfg.darkBg} ${cfg.darkText} rounded-lg text-xs font-medium`}>
-        <Icon size={12} className="mr-1" />
-        {cfg.label}
+      <span className={`inline-flex items-center gap-1 px-2.5 py-1 ${cfg.bg} ${cfg.text} ${cfg.darkBg} ${cfg.darkText} rounded-lg text-xs font-medium`}>
+        <Icon size={11}/>{cfg.label}
+      </span>
+    )
+  }
+
+  const getPulangBadge = (statusPulang, labelPulang, jamPulang) => {
+    if (!jamPulang) return <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+    const cfg = {
+      cepat:  { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',       icon: TrendingDown },
+      lembur: { cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', icon: TrendingUp },
+      tepat:  { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',            icon: Minus },
+    }
+    const c    = cfg[statusPulang] || cfg.tepat
+    const Icon = c.icon
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium ${c.cls}`}>
+        <Icon size={10}/>{labelPulang || 'Tepat waktu'}
       </span>
     )
   }
@@ -96,12 +124,10 @@ export default function GuruRiwayatAbsensi() {
       accessor: 'tanggal',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-purple-600" />
+          <Calendar size={14} className="text-purple-600 flex-shrink-0" />
           <span className="text-sm text-slate-700 dark:text-slate-300">
             {new Date(row.tanggal).toLocaleDateString('id-ID', { 
-              day: '2-digit', 
-              month: 'short', 
-              year: 'numeric' 
+              day: '2-digit', month: 'short', year: 'numeric' 
             })}
           </span>
         </div>
@@ -111,27 +137,48 @@ export default function GuruRiwayatAbsensi() {
       header: 'Jam Masuk',
       accessor: 'jam_masuk',
       cell: (row) => (
-        <div className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300">
-          <Clock size={14} className="text-slate-400" />
-          {row.jam_masuk || '-'}
+        <div className="flex items-center gap-1 text-sm">
+          <Clock size={13} className="text-blue-400 flex-shrink-0" />
+          <span className="font-mono text-slate-700 dark:text-slate-300">{row.jam_masuk || '—'}</span>
         </div>
       ),
     },
     {
-      header: 'Status',
+      header: 'Status Masuk',
       accessor: 'status',
       cell: (row) => getStatusBadge(row.status),
     },
     {
-      header: 'Keterlambatan',
+      header: 'Terlambat',
       accessor: 'menit_keterlambatan',
       cell: (row) => (
-        row.menit_keterlambatan > 0 ? (
-          <span className="text-sm text-amber-700">{row.menit_keterlambatan} menit</span>
-        ) : (
-          <span className="text-sm text-slate-400">-</span>
-        )
+        row.menit_keterlambatan > 0
+          ? (() => {
+              const abs  = row.menit_keterlambatan
+              const jam  = Math.floor(abs / 60)
+              const sisa = abs % 60
+              const teks = jam > 0 ? (sisa > 0 ? `${jam}j ${sisa}m` : `${jam} jam`) : `${abs} mnt`
+              return <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{teks}</span>
+            })()
+          : <span className="text-xs text-slate-400">—</span>
       ),
+    },
+    {
+      header: 'Jam Pulang',
+      accessor: 'jam_pulang',
+      cell: (row) => (
+        <div className="flex items-center gap-1 text-sm">
+          <LogOut size={13} className={`flex-shrink-0 ${row.jam_pulang ? 'text-violet-500' : 'text-slate-300'}`} />
+          <span className={`font-mono ${row.jam_pulang ? 'text-slate-700 dark:text-slate-300 font-semibold' : 'text-slate-400'}`}>
+            {row.jam_pulang || '—'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: 'Status Pulang',
+      accessor: 'status_pulang',
+      cell: (row) => getPulangBadge(row.status_pulang, row.label_pulang, row.jam_pulang),
     },
     {
       header: 'Metode',
@@ -143,18 +190,9 @@ export default function GuruRiwayatAbsensi() {
           manual:      { label: '✍️ Manual',      cls: 'text-slate-600 dark:text-slate-400' },
           sistem:      { label: '⚙️ Sistem',      cls: 'text-slate-500 dark:text-slate-500' },
         }
-        const m = metodeMap[row.metode] || { label: row.metode || '-', cls: 'text-slate-600 dark:text-slate-400' }
+        const m = metodeMap[row.metode] || { label: row.metode || '—', cls: 'text-slate-500' }
         return <span className={`text-xs font-medium ${m.cls}`}>{m.label}</span>
       },
-    },
-    {
-      header: 'Keterangan',
-      accessor: 'keterangan',
-      cell: (row) => (
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          {row.keterangan || '-'}
-        </span>
-      ),
     },
   ]
 
@@ -243,47 +281,29 @@ export default function GuruRiwayatAbsensi() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
       >
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-slate-500">Total</p>
-            <div className="p-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <History size={14} className="text-purple-600" />
+        {[
+          { label:'Total',      val: stats.total,     icon: History,      bg:'bg-purple-50 dark:bg-purple-900/20',  border:'border-purple-200 dark:border-purple-800',  text:'text-purple-700 dark:text-purple-300' },
+          { label:'Hadir',      val: stats.hadir,     icon: CheckCircle,  bg:'bg-emerald-50 dark:bg-emerald-900/20',border:'border-emerald-200 dark:border-emerald-800',text:'text-emerald-700 dark:text-emerald-300' },
+          { label:'Terlambat',  val: stats.terlambat, icon: Clock,        bg:'bg-amber-50 dark:bg-amber-900/20',    border:'border-amber-200 dark:border-amber-800',    text:'text-amber-700 dark:text-amber-300' },
+          { label:'Alpha',      val: stats.alpha,     icon: XCircle,      bg:'bg-red-50 dark:bg-red-900/20',        border:'border-red-200 dark:border-red-800',        text:'text-red-700 dark:text-red-300' },
+          { label:'Sudah Pulang', val: riwayat.filter(r => r.jam_pulang).length, icon: LogOut,
+            bg:'bg-violet-50 dark:bg-violet-900/20', border:'border-violet-200 dark:border-violet-800', text:'text-violet-700 dark:text-violet-300' },
+          { label:'Belum Pulang', val: riwayat.filter(r => !r.jam_pulang && r.status !== 'alpha').length, icon: TrendingDown,
+            bg:'bg-slate-50 dark:bg-slate-800',       border:'border-slate-200 dark:border-slate-700',   text:'text-slate-600 dark:text-slate-400' },
+        ].map((s, i) => (
+          <motion.div key={i} initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay: 0.2 + i*0.05 }}
+            className={`${s.bg} rounded-xl p-3.5 border ${s.border}`}>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className={`text-[11px] font-semibold ${s.text}`}>{s.label}</p>
+              <div className="p-1 bg-white/70 dark:bg-slate-900/40 rounded-lg">
+                <s.icon size={12} className={s.text}/>
+              </div>
             </div>
-          </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-        </div>
-
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-emerald-600">Hadir</p>
-            <div className="p-1.5 bg-white rounded-lg">
-              <CheckCircle size={14} className="text-emerald-600" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-emerald-700">{stats.hadir}</p>
-        </div>
-
-        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-amber-600">Terlambat</p>
-            <div className="p-1.5 bg-white rounded-lg">
-              <Clock size={14} className="text-amber-600" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-amber-700">{stats.terlambat}</p>
-        </div>
-
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-red-600">Alpha</p>
-            <div className="p-1.5 bg-white rounded-lg">
-              <XCircle size={14} className="text-red-600" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-red-700">{stats.alpha}</p>
-        </div>
+            <p className={`text-2xl font-black ${s.text}`}>{s.val}</p>
+          </motion.div>
+        ))}
       </motion.div>
 
       {/* Main Card */}
