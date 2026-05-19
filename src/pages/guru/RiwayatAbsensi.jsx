@@ -136,11 +136,16 @@ export default function GuruRiwayatAbsensi() {
     {
       header: 'Metode',
       accessor: 'metode',
-      cell: (row) => (
-        <span className="text-xs text-slate-600 dark:text-slate-400">
-          {row.metode === 'qr_code' ? 'QR Code' : 'Manual'}
-        </span>
-      ),
+      cell: (row) => {
+        const metodeMap = {
+          fingerprint: { label: '🖐 Sidik Jari', cls: 'text-cyan-700 dark:text-cyan-300' },
+          qr_code:     { label: '📷 QR Code',    cls: 'text-blue-600 dark:text-blue-400' },
+          manual:      { label: '✍️ Manual',      cls: 'text-slate-600 dark:text-slate-400' },
+          sistem:      { label: '⚙️ Sistem',      cls: 'text-slate-500 dark:text-slate-500' },
+        }
+        const m = metodeMap[row.metode] || { label: row.metode || '-', cls: 'text-slate-600 dark:text-slate-400' }
+        return <span className={`text-xs font-medium ${m.cls}`}>{m.label}</span>
+      },
     },
     {
       header: 'Keterangan',

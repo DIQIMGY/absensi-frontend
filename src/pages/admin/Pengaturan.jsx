@@ -1046,7 +1046,7 @@ export default function Pengaturan() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800 dark:text-slate-100">User di Mesin vs Sistem</p>
-                      <p className="text-[11px] text-slate-400">Cek apakah User ID mesin cocok dengan NIS siswa</p>
+                      <p className="text-[11px] text-slate-400">Cek apakah User ID mesin cocok dengan NIS siswa atau NIP guru</p>
                     </div>
                   </div>
                   <button type="button"
@@ -1068,7 +1068,7 @@ export default function Pengaturan() {
                 {fpUsers && (
                   <div className="p-4 space-y-2">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                      Total {fpUsers.total} user di mesin. <span className="text-emerald-600 font-semibold">Hijau</span> = terhubung ke siswa, <span className="text-rose-600 font-semibold">Merah</span> = belum terhubung (User ID belum sesuai NIS).
+                      Total {fpUsers.total} user di mesin. <span className="text-emerald-600 font-semibold">Hijau</span> = terhubung ke siswa/guru, <span className="text-rose-600 font-semibold">Merah</span> = belum terhubung (User ID belum sesuai).
                     </p>
                     {fpUsers.users?.map((u, i) => (
                       <div key={i} className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
@@ -1081,8 +1081,16 @@ export default function Pengaturan() {
                             ? <CheckCircle size={14} className="text-emerald-500 flex-shrink-0" />
                             : <XCircle size={14} className="text-rose-500 flex-shrink-0" />}
                           <div>
-                            <p className="font-semibold text-slate-800 dark:text-slate-100">
-                              {u.nama_mesin} <span className="font-normal text-slate-400">(UID mesin: {u.uid_mesin})</span>
+                            <p className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                              {u.nama_mesin}
+                              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                u.tipe === 'guru'
+                                  ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300'
+                                  : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                              }`}>
+                                {u.tipe === 'guru' ? '👨‍🏫 Guru' : '🎓 Siswa'}
+                              </span>
+                              <span className="font-normal text-slate-400">(UID: {u.uid_mesin})</span>
                             </p>
                             <p className="text-slate-500 dark:text-slate-400">
                               User ID di mesin: <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded font-mono">{u.userid}</code>
@@ -1091,13 +1099,23 @@ export default function Pengaturan() {
                         </div>
                         <div className="text-right">
                           {u.terhubung ? (
-                            <div>
-                              <p className="font-semibold text-emerald-700 dark:text-emerald-300">{u.siswa_db?.nama_lengkap}</p>
-                              <p className="text-emerald-600 dark:text-emerald-400">NIS: {u.siswa_db?.nis}</p>
-                            </div>
+                            u.tipe === 'guru' ? (
+                              <div>
+                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">{u.guru_db?.nama_lengkap}</p>
+                                <p className="text-emerald-600 dark:text-emerald-400">NIP: {u.guru_db?.nip}</p>
+                              </div>
+                            ) : (
+                              <div>
+                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">{u.siswa_db?.nama_lengkap}</p>
+                                <p className="text-emerald-600 dark:text-emerald-400">NIS: {u.siswa_db?.nis}</p>
+                              </div>
+                            )
                           ) : (
                             <p className="text-rose-600 dark:text-rose-400 font-medium">
-                              ⚠ Ubah User ID di mesin<br/>menjadi NIS siswa
+                              {u.tipe === 'guru'
+                                ? <span>⚠ Ubah User ID<br/>menjadi <code className="font-mono">G-NIP</code></span>
+                                : <span>⚠ Ubah User ID<br/>menjadi NIS siswa</span>
+                              }
                             </p>
                           )}
                         </div>
@@ -1114,9 +1132,10 @@ export default function Pengaturan() {
                   <div className="space-y-1.5 text-xs text-cyan-700 dark:text-cyan-300">
                     <p className="font-bold text-sm">Cara Kerja Fingerprint</p>
                     <p>1. Daftarkan siswa ke mesin ZKTeco dengan <strong>User ID = NIS siswa</strong></p>
-                    <p>2. Siswa scan jari di mesin → log tersimpan di mesin</p>
-                    <p>3. Klik <strong>Sync Sekarang</strong> atau aktifkan Auto Sync untuk tarik data ke sistem</p>
-                    <p>4. Data absensi otomatis masuk dengan metode <strong>🖐 Sidik Jari</strong></p>
+                    <p>2. Daftarkan guru ke mesin ZKTeco dengan <strong>User ID = G-NIP</strong> (contoh: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded font-mono">G-198501012010011001</code>)</p>
+                    <p>3. Siswa/guru scan jari di mesin → log tersimpan di mesin</p>
+                    <p>4. Klik <strong>Sync Sekarang</strong> atau aktifkan Auto Sync untuk tarik data ke sistem</p>
+                    <p>5. Data absensi otomatis masuk dengan metode <strong>🖐 Sidik Jari</strong></p>
                     <p className="pt-1 text-cyan-600 dark:text-cyan-400 font-medium">
                       ⚡ Auto Sync butuh cron job: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded">* * * * * php artisan schedule:run</code>
                     </p>

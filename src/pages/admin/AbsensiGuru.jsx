@@ -404,11 +404,20 @@ export default function AbsensiGuru() {
     {
       header: 'Metode',
       accessor: 'metode',
-      cell: (row) => (
-        <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-[#1F3A44]/60 rounded-lg text-slate-600 dark:text-slate-400">
-          {row.metode_label}
-        </span>
-      )
+      cell: (row) => {
+        const metodeMap = {
+          fingerprint: { label: '🖐 Sidik Jari', cls: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300' },
+          qr_code:     { label: '📷 QR Code',    cls: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+          manual:      { label: '✍️ Manual',      cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' },
+          sistem:      { label: '⚙️ Sistem',      cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' },
+        }
+        const m = metodeMap[row.metode] || { label: row.metode_label || row.metode, cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' }
+        return (
+          <span className={`text-xs px-2 py-1 rounded-lg font-medium ${m.cls}`}>
+            {m.label}
+          </span>
+        )
+      }
     }
   ]
 
@@ -552,6 +561,7 @@ export default function AbsensiGuru() {
                             <option value="">Semua Metode</option>
                             <option value="manual">Manual</option>
                             <option value="qr_code">QR Code</option>
+                            <option value="fingerprint">Sidik Jari</option>
                           </select>
                         </div>
                         <div>

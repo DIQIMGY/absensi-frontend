@@ -89,6 +89,7 @@ function FotoCard({ src, label, index, onClick }) {
         src={src}
         alt=""
         draggable={false}
+        loading="lazy"
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         onError={e => { e.target.parentElement.style.display = 'none' }}
       />
