@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   User, Hash, QrCode, Camera, CheckCircle, AlertCircle, X, Clock, Calendar,
   Loader, School, ScanLine, Fingerprint, ArrowRight, Info, Sparkles, Shield,
-  FileText, Moon, Sun, GraduationCap, Zap, TrendingUp, Star, Activity
+  FileText, Moon, Sun, GraduationCap, Zap, TrendingUp, Star, Activity, LogOut
 } from 'lucide-react'
 import { publicApi } from '../services/publicApi'
 import QrScanner from '../components/QrScanner'
@@ -20,9 +20,12 @@ export default function PublicAbsen() {
   const [loading, setLoading] = useState(false)
   const [loadingPengaturan, setLoadingPengaturan] = useState(true)
   const [showScanner, setShowScanner] = useState(false)
-  const [formData, setFormData] = useState({ nisn: '', nip: '' })
+  const [showScannerPulang, setShowScannerPulang] = useState(false)
+  const [pulangSubTab, setPulangSubTab] = useState('manual') // 'manual' | 'qr'
+  const [formData, setFormData] = useState({ nisn: '', nip: '', nipPulang: '' })
   const [errors, setErrors] = useState({})
   const [absenResult, setAbsenResult] = useState(null)
+  const [pulangResult, setPulangResult] = useState(null)
   const [waktu, setWaktu] = useState(new Date())
   const [jamMasuk, setJamMasuk] = useState('07:15')
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
@@ -148,10 +151,85 @@ export default function PublicAbsen() {
     } finally { setLoading(false) }
   }
 
+  // ── Handler absen PULANG guru ──────────────────────────────────────
+  const handlePulangManual = async (e) => {
+    e.preventDefault()
+    const nip = formData.nipPulang?.trim()
+    if (!nip || nip.length < 4) {
+      setErrors(p => ({ ...p, nipPulang: 'NIP wajib diisi (min 4 karakter)' }))
+      return
+    }
+    setLoading(true); setPulangResult(null)
+    try {
+      const res = await publicApi.absenGuruPulangManual({ nip, keterangan: getKet() })
+      const d   = res.data.data
+      setPulangResult({ success: true, data: d, message: res.data.message })
+      setFormData(p => ({ ...p, nipPulang: '' }))
+      playSuccessSound()
+      const selisih = d.menit_pulang_cepat
+      if (selisih > 0) {
+        await showWarning('Pulang Lebih Awal', `Anda pulang ${selisih} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`)
+      } else if (selisih < 0) {
+        showSuccess('Terima Kasih!', `Anda lembur ${Math.abs(selisih)} menit. Terima kasih atas dedikasinya!`)
+      } else {
+        showSuccess('Absen Pulang Berhasil', 'Anda pulang tepat waktu.')
+      }
+    } catch (err) {
+      const r = err.response?.data
+      const msg = r?.message || 'Terjadi kesalahan'
+      setPulangResult({ success: false, message: msg })
+      playErrorSound()
+      if (msg.includes('belum melakukan absen masuk') || msg.includes('belum absen masuk')) {
+        await showWarning('Belum Absen Masuk', 'Anda belum tercatat absen masuk hari ini. Tidak bisa absen pulang.')
+      } else if (msg.includes('sudah melakukan absen pulang') || msg.includes('sudah absen pulang')) {
+        playAlreadyAbsenSound()
+        await showWarning('Sudah Absen Pulang', 'Anda sudah tercatat absen pulang hari ini.')
+      } else if (msg.includes('tidak ditemukan') || msg.includes('tidak terdaftar')) {
+        showError('NIP Tidak Ditemukan', 'NIP tidak terdaftar di sistem. Hubungi admin.')
+      } else {
+        showError('Gagal', msg)
+      }
+    } finally { setLoading(false) }
+  }
+
+  const handleQrPulang = async (qrCode) => {
+    setLoading(true); setShowScannerPulang(false); playScanSound()
+    try {
+      const res = await publicApi.absenGuruPulangQr({ qr_code: qrCode, keterangan: getKet() })
+      const d   = res.data.data
+      setPulangResult({ success: true, data: d, message: res.data.message })
+      playSuccessSound()
+      const selisih = d.menit_pulang_cepat
+      if (selisih > 0) {
+        await showWarning('Pulang Lebih Awal', `Anda pulang ${selisih} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`)
+      } else if (selisih < 0) {
+        showSuccess('Terima Kasih!', `Lembur ${Math.abs(selisih)} menit. Terima kasih!`)
+      } else {
+        showSuccess('Absen Pulang Berhasil', 'Pulang tepat waktu.')
+      }
+    } catch (err) {
+      const r = err.response?.data
+      const msg = r?.message || 'Terjadi kesalahan'
+      setPulangResult({ success: false, message: msg })
+      playErrorSound()
+      if (msg.includes('belum melakukan absen masuk') || msg.includes('belum absen masuk')) {
+        await showWarning('Belum Absen Masuk', 'Anda belum tercatat absen masuk hari ini. Tidak bisa absen pulang.')
+      } else if (msg.includes('sudah melakukan absen pulang') || msg.includes('sudah absen pulang')) {
+        playAlreadyAbsenSound()
+        await showWarning('Sudah Absen Pulang', 'Anda sudah tercatat absen pulang hari ini.')
+      } else if (msg.includes('tidak valid') || msg.includes('tidak terdaftar')) {
+        showError('QR Tidak Valid', 'QR Code tidak dikenali atau tidak terdaftar.')
+      } else {
+        showError('Gagal', msg)
+      }
+    } finally { setLoading(false) }
+  }
+
   const tabs = [
     { key: 'manual', label: 'Manual', icon: Fingerprint },
     { key: 'qr', label: 'QR Code', icon: ScanLine },
     ...(userRole === 'siswa' ? [{ key: 'izin', label: 'Izin/Sakit', icon: FileText }] : []),
+    ...(userRole === 'guru'  ? [{ key: 'pulang', label: 'Pulang', icon: LogOut }] : []),
   ]
 
   return (
@@ -262,7 +340,7 @@ export default function PublicAbsen() {
                 { key: 'guru', label: 'Guru', icon: User, sub: 'NIP' },
               ].map(r => (
                 <motion.button key={r.key} whileTap={{ scale: 0.97 }}
-                  onClick={() => { setUserRole(r.key); setAbsenResult(null); setErrors({}); setFormData({ nisn:'', nip:'' }); if (r.key==='guru' && activeTab==='izin') setActiveTab('manual') }}
+                  onClick={() => { setUserRole(r.key); setAbsenResult(null); setErrors({}); setFormData({ nisn:'', nip:'', nipPulang:'' }); setPulangResult(null); setPulangSubTab('manual'); setShowScannerPulang(false); if (r.key==='guru' && activeTab==='izin') setActiveTab('manual') }}
                   className={`flex-1 flex items-center gap-2.5 px-4 py-3 rounded-2xl border-2 transition-all ${
                     userRole === r.key
                       ? 'bg-white border-white text-emerald-800 shadow-xl shadow-emerald-900/50'
@@ -441,7 +519,7 @@ export default function PublicAbsen() {
               <div className={`flex gap-1 p-1 rounded-xl sm:rounded-2xl mb-4 sm:mb-5 ${isDark?'bg-white/5':'bg-slate-100'}`}>
                 {tabs.map(t => (
                   <button key={t.key}
-                    onClick={() => { setActiveTab(t.key); setAbsenResult(null); setErrors({}) }}
+                    onClick={() => { setActiveTab(t.key); setAbsenResult(null); setErrors({}); setPulangResult(null); setShowScannerPulang(false) }}
                     className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all ${
                       activeTab===t.key
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
@@ -535,6 +613,150 @@ export default function PublicAbsen() {
                 {activeTab==='izin' && userRole==='siswa' && (
                   <motion.div key="izin" initial={{opacity:0,x:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-10}} transition={{duration:0.15}}>
                     <FormIzin/>
+                  </motion.div>
+                )}
+
+                {activeTab==='pulang' && userRole==='guru' && (
+                  <motion.div key="pulang" initial={{opacity:0,x:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-10}} transition={{duration:0.15}}
+                    className="space-y-4">
+
+                    {/* Info banner */}
+                    <div className={`flex items-start gap-3 p-3.5 rounded-2xl border ${isDark?'bg-violet-500/10 border-violet-500/20':'bg-violet-50 border-violet-200'}`}>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-violet-500/20':'bg-violet-100'}`}>
+                        <LogOut size={15} className={isDark?'text-violet-400':'text-violet-600'}/>
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${isDark?'text-violet-300':'text-violet-800'}`}>Absen Pulang Guru</p>
+                        <p className={`text-[11px] mt-0.5 ${isDark?'text-violet-400/70':'text-violet-600'}`}>
+                          Jam pulang sekolah: <span className="font-black">{pengaturan.jam_pulang?.substring(0,5) || '-'}</span>
+                          {' · '}Hanya guru yang sudah absen masuk yang bisa absen pulang.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Sub-tabs: Manual / QR */}
+                    <div className={`flex gap-1 p-1 rounded-xl ${isDark?'bg-white/5':'bg-slate-100'}`}>
+                      {[
+                        { key:'manual', label:'✍️ Manual NIP', icon: Hash },
+                        { key:'qr',     label:'📷 QR Code',    icon: QrCode },
+                      ].map(st => (
+                        <button key={st.key}
+                          onClick={() => { setPulangSubTab(st.key); setErrors({}); setPulangResult(null); setShowScannerPulang(false) }}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-bold transition-all ${
+                            pulangSubTab === st.key
+                              ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30'
+                              : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+                          }`}>
+                          <st.icon size={11}/>{st.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Manual NIP form */}
+                    {pulangSubTab === 'manual' && (
+                      <form onSubmit={handlePulangManual} className="space-y-3">
+                        <div>
+                          <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>NIP</label>
+                          <div className="relative">
+                            <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-xl flex items-center justify-center ${isDark?'bg-violet-500/20':'bg-violet-50'}`}>
+                              <Hash size={13} className="text-violet-500"/>
+                            </div>
+                            <input
+                              type="text"
+                              name="nipPulang"
+                              value={formData.nipPulang}
+                              onChange={e => { setFormData(p=>({...p,nipPulang:e.target.value})); setErrors(p=>({...p,nipPulang:''})) }}
+                              disabled={loading}
+                              autoComplete="off"
+                              placeholder="Masukkan NIP untuk absen pulang"
+                              className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 ${
+                                errors.nipPulang
+                                  ? 'border-red-400 focus:ring-red-400/20'
+                                  : isDark
+                                    ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-violet-500 focus:ring-violet-500/20'
+                                    : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-violet-400 focus:ring-violet-400/20 focus:bg-white'
+                              } ${loading?'opacity-40 cursor-not-allowed':''}`}
+                            />
+                          </div>
+                          {errors.nipPulang && (
+                            <p className="mt-1.5 text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={10}/>{errors.nipPulang}</p>
+                          )}
+                        </div>
+
+                        <motion.button whileTap={{scale:0.99}} type="submit" disabled={loading}
+                          className="w-full py-4 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-black rounded-2xl shadow-lg shadow-violet-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm tracking-wide">
+                          {loading
+                            ? <><Loader size={15} className="animate-spin"/>Memproses...</>
+                            : <><LogOut size={15}/>Absen Pulang Sekarang</>}
+                        </motion.button>
+                      </form>
+                    )}
+
+                    {/* QR Scanner pulang */}
+                    {pulangSubTab === 'qr' && (
+                      <div className={`rounded-2xl border-2 border-dashed p-7 text-center ${isDark?'border-white/10 bg-white/3':'border-violet-200 bg-violet-50/50'}`}>
+                        <motion.div animate={{scale:[1,1.04,1]}} transition={{duration:2.5,repeat:Infinity}}
+                          className={`w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-3 ${isDark?'bg-violet-500/15':'bg-white shadow-lg shadow-violet-100'}`}>
+                          <QrCode size={28} className="text-violet-500"/>
+                        </motion.div>
+                        <p className={`text-sm font-black mb-1 ${isDark?'text-white':'text-slate-700'}`}>Scan QR Code Pulang</p>
+                        <p className={`text-xs mb-4 ${isDark?'text-slate-500':'text-slate-400'}`}>Aktifkan kamera untuk scan QR Code absen pulang</p>
+                        <motion.button whileTap={{scale:0.97}}
+                          onClick={() => { setPulangResult(null); setShowScannerPulang(true) }}
+                          disabled={loading}
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-2xl text-sm font-black shadow-lg shadow-violet-500/30 disabled:opacity-40 transition-all">
+                          <Camera size={14}/>Buka Kamera
+                        </motion.button>
+                      </div>
+                    )}
+
+                    {/* Result pulang */}
+                    <AnimatePresence>
+                      {pulangResult && (
+                        <motion.div initial={{opacity:0,y:8,scale:0.98}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8}}
+                          className={`rounded-2xl border-2 overflow-hidden ${pulangResult.success ? isDark?'bg-violet-500/10 border-violet-500/25':'bg-violet-50 border-violet-200' : isDark?'bg-red-500/10 border-red-500/25':'bg-red-50 border-red-200'}`}>
+                          <div className={`px-4 py-2.5 flex items-center justify-between ${pulangResult.success?'bg-gradient-to-r from-violet-500 to-purple-600':'bg-gradient-to-r from-red-500 to-rose-600'}`}>
+                            <div className="flex items-center gap-2">
+                              {pulangResult.success?<CheckCircle size={13} className="text-white"/>:<X size={13} className="text-white"/>}
+                              <span className="text-white text-xs font-black">{pulangResult.success?'Absen Pulang Berhasil!':'Absen Pulang Gagal'}</span>
+                            </div>
+                            <button onClick={()=>setPulangResult(null)} className="text-white/60 hover:text-white"><X size={12}/></button>
+                          </div>
+                          <div className="p-4">
+                            <p className={`text-xs mb-3 ${isDark?'text-slate-300':'text-slate-600'}`}>{pulangResult.message}</p>
+                            {pulangResult.success && pulangResult.data && (
+                              <div className={`rounded-xl p-3 grid grid-cols-2 gap-2.5 ${isDark?'bg-white/5':'bg-white border border-slate-100'}`}>
+                                {(() => {
+                                  const d = pulangResult.data
+                                  const selisih = d.menit_pulang_cepat
+                                  const selisihLabel = selisih > 0
+                                    ? `${selisih} mnt lebih awal`
+                                    : selisih < 0
+                                      ? `Lembur ${Math.abs(selisih)} mnt`
+                                      : 'Tepat waktu'
+                                  const selisihColor = selisih > 0
+                                    ? isDark?'text-amber-300':'text-amber-600'
+                                    : selisih < 0
+                                      ? isDark?'text-emerald-300':'text-emerald-600'
+                                      : isDark?'text-blue-300':'text-blue-600'
+                                  return [
+                                    { label:'Nama',          value: d.guru?.nama },
+                                    { label:'Jam Pulang',    value: d.absensi?.jam_pulang ? String(d.absensi.jam_pulang).substring(0,5) : '-', mono: true },
+                                    { label:'Jam Sekolah',   value: d.jam_pulang_sekolah, mono: true },
+                                    { label:'Selisih',       value: selisihLabel, color: selisihColor },
+                                  ].map((item,i) => (
+                                    <div key={i}>
+                                      <p className={`text-[9px] uppercase font-black mb-0.5 tracking-widest ${isDark?'text-slate-600':'text-slate-400'}`}>{item.label}</p>
+                                      <p className={`text-xs font-bold truncate ${item.mono?'font-mono':''} ${item.color || (isDark?'text-white':'text-slate-800')}`}>{item.value}</p>
+                                    </div>
+                                  ))
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -662,7 +884,7 @@ export default function PublicAbsen() {
         <div className="flex gap-2 max-w-sm mx-auto">
           {[{ key:'siswa', label:'Siswa', icon:GraduationCap },{ key:'guru', label:'Guru', icon:User }].map(r => (
             <button key={r.key}
-              onClick={() => { setUserRole(r.key); setAbsenResult(null); setErrors({}); setFormData({nisn:'',nip:''}); if(r.key==='guru'&&activeTab==='izin') setActiveTab('manual') }}
+              onClick={() => { setUserRole(r.key); setAbsenResult(null); setErrors({}); setFormData({nisn:'',nip:'',nipPulang:''}); setPulangResult(null); setPulangSubTab('manual'); setShowScannerPulang(false); if(r.key==='guru'&&activeTab==='izin') setActiveTab('manual') }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black transition-all ${
                 userRole===r.key ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : isDark?'bg-white/5 text-slate-500':'bg-slate-100 text-slate-400'
               }`}>
@@ -676,6 +898,14 @@ export default function PublicAbsen() {
         {showScanner && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
             <QrScanner onScan={handleQr} onError={(e)=>showError('Kamera Error',e)} onClose={()=>setShowScanner(false)}/>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showScannerPulang && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+            <QrScanner onScan={handleQrPulang} onError={(e)=>showError('Kamera Error',e)} onClose={()=>setShowScannerPulang(false)}/>
           </motion.div>
         )}
       </AnimatePresence>
