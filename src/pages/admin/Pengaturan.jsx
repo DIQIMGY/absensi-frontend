@@ -1112,10 +1112,7 @@ export default function Pengaturan() {
                             )
                           ) : (
                             <p className="text-rose-600 dark:text-rose-400 font-medium">
-                              {u.tipe === 'guru'
-                                ? <span>⚠ Ubah User ID<br/>menjadi <code className="font-mono">G-NIP</code></span>
-                                : <span>⚠ Ubah User ID<br/>menjadi NIS siswa</span>
-                              }
+                              ⚠ User ID tidak cocok<br/>dengan NIS/NISN/NIP
                             </p>
                           )}
                         </div>
@@ -1132,10 +1129,11 @@ export default function Pengaturan() {
                   <div className="space-y-1.5 text-xs text-cyan-700 dark:text-cyan-300">
                     <p className="font-bold text-sm">Cara Kerja Fingerprint</p>
                     <p>1. Daftarkan siswa ke mesin ZKTeco dengan <strong>User ID = NIS siswa</strong></p>
-                    <p>2. Daftarkan guru ke mesin ZKTeco dengan <strong>User ID = G-NIP</strong> (contoh: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded font-mono">G-198501012010011001</code>)</p>
-                    <p>3. Siswa/guru scan jari di mesin → log tersimpan di mesin</p>
-                    <p>4. Klik <strong>Sync Sekarang</strong> atau aktifkan Auto Sync untuk tarik data ke sistem</p>
-                    <p>5. Data absensi otomatis masuk dengan metode <strong>🖐 Sidik Jari</strong></p>
+                    <p>2. Daftarkan guru ke mesin ZKTeco dengan <strong>User ID = NIP guru</strong> (contoh: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded font-mono">12341234</code>)</p>
+                    <p>3. Sistem otomatis membedakan siswa vs guru — jika NIP tidak bentrok dengan NIS, tidak perlu prefix apapun</p>
+                    <p>4. Siswa/guru scan jari di mesin → log tersimpan di mesin</p>
+                    <p>5. Klik <strong>Sync Sekarang</strong> atau aktifkan Auto Sync untuk tarik data ke sistem</p>
+                    <p>6. Data absensi otomatis masuk dengan metode <strong>🖐 Sidik Jari</strong></p>
                     <p className="pt-1 text-cyan-600 dark:text-cyan-400 font-medium">
                       ⚡ Auto Sync butuh cron job: <code className="bg-cyan-100 dark:bg-cyan-900/40 px-1 rounded">* * * * * php artisan schedule:run</code>
                     </p>

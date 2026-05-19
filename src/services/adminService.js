@@ -194,6 +194,13 @@ export const adminApi = {
   syncFingerprint: (params) => api.post('/admin/fingerprint/sync', params),
   clearFingerprintLogs: () => api.delete('/admin/fingerprint/logs'),
 
+  // Absensi Pulang Guru
+  getAbsensiGuruPulang: (params) => api.get('/admin/absensi-guru-pulang', { params }),
+  getAbsensiGuruPulangStatistik: (params) => api.get('/admin/absensi-guru-pulang/statistik', { params }),
+  absenGuruPulangManual: (data) => api.post('/admin/absensi-guru-pulang/manual', data),
+  absenGuruPulangQr: (data) => api.post('/admin/absensi-guru-pulang/qr', data),
+  exportAbsensiGuruPulang: (params) => api.get('/admin/absensi-guru-pulang/export', { params, responseType: 'blob' }),
+
   // Rekomendasi Tidak Naik Kelas dari Guru
   getRekomendasiNaikKelas: (params) => api.get('/admin/rekomendasi-naik-kelas', { params }),
   updateStatusRekomendasi: (id, data) => api.put(`/admin/rekomendasi-naik-kelas/${id}/status`, data),
