@@ -18,6 +18,12 @@ export const publicApi = {
 
   // Absen Pulang Guru - QR Code
   absenGuruPulangQr: (data) => api.post('/public/absen-guru-pulang/qr', data),
+
+  // Absen Pulang Siswa - Manual (NIS/NISN)
+  absenSiswaPulangManual: (data) => api.post('/public/absen-siswa-pulang/manual', data),
+
+  // Absen Pulang Siswa - QR Code
+  absenSiswaPulangQr: (data) => api.post('/public/absen-siswa-pulang/qr', data),
   
   // Cek data siswa (untuk validasi)
   cekSiswa: (nisn) => api.post('/public/cek-siswa', { nisn }),

@@ -34,6 +34,7 @@ const menuGroups = [
       { path: '/admin/absensis',     icon: ClipboardList, label: 'Absensi Siswa' },
       { path: '/admin/absensi-guru', icon: UserCheck,     label: 'Absensi Masuk Guru' },
       { path: '/admin/pulang-guru',  icon: LogOut,        label: 'Absensi Pulang Guru' },
+      { path: '/admin/pulang-siswa', icon: LogOut,        label: 'Absensi Pulang Siswa' },
       { path: '/admin/ranking',      icon: Trophy,        label: 'Ranking' },
       { path: '/admin/izins',        icon: AlertCircle,   label: 'Izin' },
     ],

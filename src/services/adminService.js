@@ -201,6 +201,13 @@ export const adminApi = {
   absenGuruPulangQr: (data) => api.post('/admin/absensi-guru-pulang/qr', data),
   exportAbsensiGuruPulang: (params) => api.get('/admin/absensi-guru-pulang/export', { params, responseType: 'blob' }),
 
+  // Absensi Pulang Siswa
+  getAbsensiSiswaPulang: (params) => api.get('/admin/absensi-siswa-pulang', { params }),
+  getAbsensiSiswaPulangStatistik: (params) => api.get('/admin/absensi-siswa-pulang/statistik', { params }),
+  absenSiswaPulangManual: (data) => api.post('/admin/absensi-siswa-pulang/manual', data),
+  absenSiswaPulangQr: (data) => api.post('/admin/absensi-siswa-pulang/qr', data),
+  exportAbsensiSiswaPulang: (params) => api.get('/admin/absensi-siswa-pulang/export', { params, responseType: 'blob' }),
+
   // Rekomendasi Tidak Naik Kelas dari Guru
   getRekomendasiNaikKelas: (params) => api.get('/admin/rekomendasi-naik-kelas', { params }),
   updateStatusRekomendasi: (id, data) => api.put(`/admin/rekomendasi-naik-kelas/${id}/status`, data),

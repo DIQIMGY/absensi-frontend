@@ -17,13 +17,27 @@ import {
   Sparkles,
   BookOpen,
   TrendingUp,
-  Award
+  TrendingDown,
+  Minus,
+  Award,
+  LogOut
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import { siswaApi } from '../../services/siswaService'
 import toast from 'react-hot-toast'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+
+// Helper format selisih waktu pulang
+const fmtSelisihPulang = (menit) => {
+  if (menit === null || menit === undefined) return null
+  const abs = Math.abs(menit)
+  const jam = Math.floor(abs / 60), sisa = abs % 60
+  const dur = jam > 0 ? (sisa > 0 ? `${jam}j ${sisa}m` : `${jam} jam`) : `${abs} mnt`
+  if (menit > 0) return { label: `-${dur} lebih awal`, cls: 'text-amber-600 dark:text-amber-400', icon: TrendingDown }
+  if (menit < 0) return { label: `+${dur} lembur`, cls: 'text-emerald-600 dark:text-emerald-400', icon: TrendingUp }
+  return { label: 'Tepat waktu', cls: 'text-blue-600 dark:text-blue-400', icon: Minus }
+}
 
 export default function SiswaRiwayat() {
   const [riwayat, setRiwayat] = useState([])
@@ -163,6 +177,33 @@ export default function SiswaRiwayat() {
           <span className="hidden lg:block text-slate-400 text-xs sm:text-sm">-</span>
         )
       ),
+    },
+    {
+      header: 'Jam Pulang',
+      accessor: 'jam_pulang',
+      cell: (row) => (
+        <div className="flex items-center gap-1 text-xs sm:text-sm">
+          <LogOut size={12} className={`flex-shrink-0 ${row.jam_pulang ? 'text-emerald-500' : 'text-slate-300'}`}/>
+          <span className={`font-mono ${row.jam_pulang ? 'text-slate-700 dark:text-slate-300 font-semibold' : 'text-slate-400'}`}>
+            {row.jam_pulang ? row.jam_pulang.substring(0,5) : '—'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: 'Selisih Pulang',
+      accessor: 'menit_pulang_cepat',
+      cell: (row) => {
+        if (!row.jam_pulang) return <span className="text-slate-400 text-xs">—</span>
+        const s = fmtSelisihPulang(row.menit_pulang_cepat)
+        if (!s) return <span className="text-slate-400 text-xs">—</span>
+        const Icon = s.icon
+        return (
+          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${s.cls}`}>
+            <Icon size={11}/>{s.label}
+          </span>
+        )
+      },
     },
     {
       header: 'Metode',

@@ -151,77 +151,59 @@ export default function PublicAbsen() {
     } finally { setLoading(false) }
   }
 
-  // ── Handler absen PULANG guru ──────────────────────────────────────
+  // ── Handler absen PULANG (siswa & guru) ───────────────────────────
   const handlePulangManual = async (e) => {
     e.preventDefault()
-    const nip = formData.nipPulang?.trim()
-    if (!nip || nip.length < 4) {
-      setErrors(p => ({ ...p, nipPulang: 'NIP wajib diisi (min 4 karakter)' }))
-      return
-    }
+    const val = formData.nipPulang?.trim()
+    const label = userRole === 'guru' ? 'NIP' : 'NIS/NISN'
+    if (!val || val.length < 4) { setErrors(p => ({ ...p, nipPulang: `${label} wajib diisi (min 4 karakter)` })); return }
     setLoading(true); setPulangResult(null)
     try {
-      const res = await publicApi.absenGuruPulangManual({ nip, keterangan: getKet() })
-      const d   = res.data.data
+      const res = userRole === 'guru'
+        ? await publicApi.absenGuruPulangManual({ nip: val, keterangan: getKet() })
+        : await publicApi.absenSiswaPulangManual({ nisn: val, keterangan: getKet() })
+      const d = res.data.data
       setPulangResult({ success: true, data: d, message: res.data.message })
       setFormData(p => ({ ...p, nipPulang: '' }))
       playSuccessSound()
-      const selisih = d.menit_pulang_cepat
-      if (selisih > 0) {
-        await showWarning('Pulang Lebih Awal', `Anda pulang ${selisih} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`)
-      } else if (selisih < 0) {
-        showSuccess('Terima Kasih!', `Anda lembur ${Math.abs(selisih)} menit. Terima kasih atas dedikasinya!`)
-      } else {
-        showSuccess('Absen Pulang Berhasil', 'Anda pulang tepat waktu.')
-      }
+      const s = d.menit_pulang_cepat
+      if (s > 0)      { await showWarning('Pulang Lebih Awal', `Pulang ${Math.abs(s)} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`) }
+      else if (s < 0) { showSuccess('Terima Kasih!', `Lembur ${Math.abs(s)} menit. Terima kasih!`) }
+      else            { showSuccess('Absen Pulang Berhasil', 'Pulang tepat waktu.') }
     } catch (err) {
-      const r = err.response?.data
-      const msg = r?.message || 'Terjadi kesalahan'
+      const msg = err.response?.data?.message || 'Terjadi kesalahan'
       setPulangResult({ success: false, message: msg })
       playErrorSound()
-      if (msg.includes('belum melakukan absen masuk') || msg.includes('belum absen masuk')) {
-        await showWarning('Belum Absen Masuk', 'Anda belum tercatat absen masuk hari ini. Tidak bisa absen pulang.')
-      } else if (msg.includes('sudah melakukan absen pulang') || msg.includes('sudah absen pulang')) {
-        playAlreadyAbsenSound()
-        await showWarning('Sudah Absen Pulang', 'Anda sudah tercatat absen pulang hari ini.')
-      } else if (msg.includes('tidak ditemukan') || msg.includes('tidak terdaftar')) {
-        showError('NIP Tidak Ditemukan', 'NIP tidak terdaftar di sistem. Hubungi admin.')
-      } else {
-        showError('Gagal', msg)
-      }
+      if (msg.includes('belum') && msg.includes('masuk'))       { await showWarning('Belum Absen Masuk', 'Kamu belum tercatat absen masuk hari ini.') }
+      else if (msg.includes('sudah') && msg.includes('pulang')) { playAlreadyAbsenSound(); await showWarning('Sudah Absen Pulang', 'Kamu sudah tercatat absen pulang hari ini.') }
+      else if (msg.toLowerCase().includes('alpha'))             { await showWarning('Tidak Bisa Absen Pulang', 'Kamu tercatat Alpha hari ini.') }
+      else if (msg.includes('tidak ditemukan') || msg.includes('tidak terdaftar')) { showError('Tidak Ditemukan', `${label} tidak terdaftar di sistem.`) }
+      else { showError('Gagal', msg) }
     } finally { setLoading(false) }
   }
 
   const handleQrPulang = async (qrCode) => {
     setLoading(true); setShowScannerPulang(false); playScanSound()
     try {
-      const res = await publicApi.absenGuruPulangQr({ qr_code: qrCode, keterangan: getKet() })
-      const d   = res.data.data
+      const res = userRole === 'guru'
+        ? await publicApi.absenGuruPulangQr({ qr_code: qrCode, keterangan: getKet() })
+        : await publicApi.absenSiswaPulangQr({ qr_code: qrCode, keterangan: getKet() })
+      const d = res.data.data
       setPulangResult({ success: true, data: d, message: res.data.message })
       playSuccessSound()
-      const selisih = d.menit_pulang_cepat
-      if (selisih > 0) {
-        await showWarning('Pulang Lebih Awal', `Anda pulang ${selisih} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`)
-      } else if (selisih < 0) {
-        showSuccess('Terima Kasih!', `Lembur ${Math.abs(selisih)} menit. Terima kasih!`)
-      } else {
-        showSuccess('Absen Pulang Berhasil', 'Pulang tepat waktu.')
-      }
+      const s = d.menit_pulang_cepat
+      if (s > 0)      { await showWarning('Pulang Lebih Awal', `Pulang ${Math.abs(s)} menit lebih awal dari jam pulang sekolah (${d.jam_pulang_sekolah}).`) }
+      else if (s < 0) { showSuccess('Terima Kasih!', `Lembur ${Math.abs(s)} menit. Terima kasih!`) }
+      else            { showSuccess('Absen Pulang Berhasil', 'Pulang tepat waktu.') }
     } catch (err) {
-      const r = err.response?.data
-      const msg = r?.message || 'Terjadi kesalahan'
+      const msg = err.response?.data?.message || 'Terjadi kesalahan'
       setPulangResult({ success: false, message: msg })
       playErrorSound()
-      if (msg.includes('belum melakukan absen masuk') || msg.includes('belum absen masuk')) {
-        await showWarning('Belum Absen Masuk', 'Anda belum tercatat absen masuk hari ini. Tidak bisa absen pulang.')
-      } else if (msg.includes('sudah melakukan absen pulang') || msg.includes('sudah absen pulang')) {
-        playAlreadyAbsenSound()
-        await showWarning('Sudah Absen Pulang', 'Anda sudah tercatat absen pulang hari ini.')
-      } else if (msg.includes('tidak valid') || msg.includes('tidak terdaftar')) {
-        showError('QR Tidak Valid', 'QR Code tidak dikenali atau tidak terdaftar.')
-      } else {
-        showError('Gagal', msg)
-      }
+      if (msg.includes('belum') && msg.includes('masuk'))       { await showWarning('Belum Absen Masuk', 'Kamu belum tercatat absen masuk hari ini.') }
+      else if (msg.includes('sudah') && msg.includes('pulang')) { playAlreadyAbsenSound(); await showWarning('Sudah Absen Pulang', 'Kamu sudah tercatat absen pulang hari ini.') }
+      else if (msg.toLowerCase().includes('alpha'))             { await showWarning('Tidak Bisa Absen Pulang', 'Kamu tercatat Alpha hari ini.') }
+      else if (msg.includes('tidak valid') || msg.includes('tidak terdaftar')) { showError('QR Tidak Valid', 'QR Code tidak dikenali.') }
+      else { showError('Gagal', msg) }
     } finally { setLoading(false) }
   }
 
@@ -229,6 +211,7 @@ export default function PublicAbsen() {
     { key: 'manual', label: 'Manual', icon: Fingerprint },
     { key: 'qr', label: 'QR Code', icon: ScanLine },
     ...(userRole === 'siswa' ? [{ key: 'izin', label: 'Izin/Sakit', icon: FileText }] : []),
+    ...(userRole === 'siswa' ? [{ key: 'pulang', label: 'Pulang', icon: LogOut }] : []),
     ...(userRole === 'guru'  ? [{ key: 'pulang', label: 'Pulang', icon: LogOut }] : []),
   ]
 

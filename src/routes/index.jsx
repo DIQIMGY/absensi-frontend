@@ -25,6 +25,7 @@ import MataPelajarans from '../pages/admin/MataPelajarans'
 import Absensis from '../pages/admin/Absensis'
 import AbsensiGuru from '../pages/admin/AbsensiGuru'
 import PulangGuru from '../pages/admin/PulangGuru'
+import PulangSiswa from '../pages/admin/PulangSiswa'
 import Izins from '../pages/admin/Izins'
 import Pengaturan from '../pages/admin/Pengaturan'
 import Laporan from '../pages/admin/Laporan'
@@ -99,6 +100,7 @@ export const router = createBrowserRouter([
       { path: 'absensis',         element: <Absensis /> },
       { path: 'absensi-guru',     element: <AbsensiGuru /> },
       { path: 'pulang-guru',      element: <PulangGuru /> },
+      { path: 'pulang-siswa',     element: <PulangSiswa /> },
       { path: 'izins',            element: <Izins /> },
       { path: 'pengaturan',       element: <Pengaturan /> },
       { path: 'laporan',          element: <Laporan /> },
