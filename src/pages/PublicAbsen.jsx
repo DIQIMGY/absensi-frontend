@@ -599,20 +599,22 @@ export default function PublicAbsen() {
                   </motion.div>
                 )}
 
-                {activeTab==='pulang' && userRole==='guru' && (
+                {activeTab==='pulang' && (
                   <motion.div key="pulang" initial={{opacity:0,x:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-10}} transition={{duration:0.15}}
                     className="space-y-4">
 
-                    {/* Info banner */}
-                    <div className={`flex items-start gap-3 p-3.5 rounded-2xl border ${isDark?'bg-violet-500/10 border-violet-500/20':'bg-violet-50 border-violet-200'}`}>
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-violet-500/20':'bg-violet-100'}`}>
-                        <LogOut size={15} className={isDark?'text-violet-400':'text-violet-600'}/>
+                    {/* Info banner — emerald */}
+                    <div className={`flex items-start gap-3 p-3.5 rounded-2xl border ${isDark?'bg-emerald-500/10 border-emerald-500/20':'bg-emerald-50 border-emerald-200'}`}>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-emerald-500/20':'bg-emerald-100'}`}>
+                        <LogOut size={15} className={isDark?'text-emerald-400':'text-emerald-600'}/>
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${isDark?'text-violet-300':'text-violet-800'}`}>Absen Pulang Guru</p>
-                        <p className={`text-[11px] mt-0.5 ${isDark?'text-violet-400/70':'text-violet-600'}`}>
+                        <p className={`text-xs font-bold ${isDark?'text-emerald-300':'text-emerald-800'}`}>
+                          {userRole==='guru' ? 'Absen Pulang Guru' : 'Absen Pulang Siswa'}
+                        </p>
+                        <p className={`text-[11px] mt-0.5 ${isDark?'text-emerald-400/70':'text-emerald-700'}`}>
                           Jam pulang sekolah: <span className="font-black">{pengaturan.jam_pulang?.substring(0,5) || '-'}</span>
-                          {' · '}Hanya guru yang sudah absen masuk yang bisa absen pulang.
+                          {' · '}Hanya yang sudah absen masuk yang bisa absen pulang.
                         </p>
                       </div>
                     </div>
@@ -620,14 +622,14 @@ export default function PublicAbsen() {
                     {/* Sub-tabs: Manual / QR */}
                     <div className={`flex gap-1 p-1 rounded-xl ${isDark?'bg-white/5':'bg-slate-100'}`}>
                       {[
-                        { key:'manual', label:'✍️ Manual NIP', icon: Hash },
-                        { key:'qr',     label:'📷 QR Code',    icon: QrCode },
+                        { key:'manual', label: userRole==='guru' ? '✍️ Manual NIP' : '✍️ Manual NIS', icon: Hash },
+                        { key:'qr',     label:'📷 QR Code', icon: QrCode },
                       ].map(st => (
                         <button key={st.key}
                           onClick={() => { setPulangSubTab(st.key); setErrors({}); setPulangResult(null); setShowScannerPulang(false) }}
                           className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-bold transition-all ${
                             pulangSubTab === st.key
-                              ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
                               : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
                           }`}>
                           <st.icon size={11}/>{st.label}
@@ -635,14 +637,16 @@ export default function PublicAbsen() {
                       ))}
                     </div>
 
-                    {/* Manual NIP form */}
+                    {/* Manual form */}
                     {pulangSubTab === 'manual' && (
                       <form onSubmit={handlePulangManual} className="space-y-3">
                         <div>
-                          <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>NIP</label>
+                          <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>
+                            {userRole==='guru' ? 'NIP' : 'NIS / NISN'}
+                          </label>
                           <div className="relative">
-                            <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-xl flex items-center justify-center ${isDark?'bg-violet-500/20':'bg-violet-50'}`}>
-                              <Hash size={13} className="text-violet-500"/>
+                            <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-xl flex items-center justify-center ${isDark?'bg-emerald-500/20':'bg-emerald-50'}`}>
+                              <Hash size={13} className="text-emerald-500"/>
                             </div>
                             <input
                               type="text"
@@ -651,13 +655,13 @@ export default function PublicAbsen() {
                               onChange={e => { setFormData(p=>({...p,nipPulang:e.target.value})); setErrors(p=>({...p,nipPulang:''})) }}
                               disabled={loading}
                               autoComplete="off"
-                              placeholder="Masukkan NIP untuk absen pulang"
+                              placeholder={userRole==='guru' ? 'Masukkan NIP untuk absen pulang' : 'Masukkan NIS/NISN untuk absen pulang'}
                               className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 ${
                                 errors.nipPulang
                                   ? 'border-red-400 focus:ring-red-400/20'
                                   : isDark
-                                    ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-violet-500 focus:ring-violet-500/20'
-                                    : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-violet-400 focus:ring-violet-400/20 focus:bg-white'
+                                    ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-emerald-500 focus:ring-emerald-500/20'
+                                    : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20 focus:bg-white'
                               } ${loading?'opacity-40 cursor-not-allowed':''}`}
                             />
                           </div>
@@ -667,7 +671,7 @@ export default function PublicAbsen() {
                         </div>
 
                         <motion.button whileTap={{scale:0.99}} type="submit" disabled={loading}
-                          className="w-full py-4 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-black rounded-2xl shadow-lg shadow-violet-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm tracking-wide">
+                          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm tracking-wide">
                           {loading
                             ? <><Loader size={15} className="animate-spin"/>Memproses...</>
                             : <><LogOut size={15}/>Absen Pulang Sekarang</>}
@@ -677,17 +681,17 @@ export default function PublicAbsen() {
 
                     {/* QR Scanner pulang */}
                     {pulangSubTab === 'qr' && (
-                      <div className={`rounded-2xl border-2 border-dashed p-7 text-center ${isDark?'border-white/10 bg-white/3':'border-violet-200 bg-violet-50/50'}`}>
+                      <div className={`rounded-2xl border-2 border-dashed p-7 text-center ${isDark?'border-white/10 bg-white/3':'border-emerald-200 bg-emerald-50/50'}`}>
                         <motion.div animate={{scale:[1,1.04,1]}} transition={{duration:2.5,repeat:Infinity}}
-                          className={`w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-3 ${isDark?'bg-violet-500/15':'bg-white shadow-lg shadow-violet-100'}`}>
-                          <QrCode size={28} className="text-violet-500"/>
+                          className={`w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-3 ${isDark?'bg-emerald-500/15':'bg-white shadow-lg shadow-emerald-100'}`}>
+                          <QrCode size={28} className="text-emerald-500"/>
                         </motion.div>
                         <p className={`text-sm font-black mb-1 ${isDark?'text-white':'text-slate-700'}`}>Scan QR Code Pulang</p>
                         <p className={`text-xs mb-4 ${isDark?'text-slate-500':'text-slate-400'}`}>Aktifkan kamera untuk scan QR Code absen pulang</p>
                         <motion.button whileTap={{scale:0.97}}
                           onClick={() => { setPulangResult(null); setShowScannerPulang(true) }}
                           disabled={loading}
-                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-2xl text-sm font-black shadow-lg shadow-violet-500/30 disabled:opacity-40 transition-all">
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl text-sm font-black shadow-lg shadow-emerald-500/30 disabled:opacity-40 transition-all">
                           <Camera size={14}/>Buka Kamera
                         </motion.button>
                       </div>
@@ -697,8 +701,8 @@ export default function PublicAbsen() {
                     <AnimatePresence>
                       {pulangResult && (
                         <motion.div initial={{opacity:0,y:8,scale:0.98}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8}}
-                          className={`rounded-2xl border-2 overflow-hidden ${pulangResult.success ? isDark?'bg-violet-500/10 border-violet-500/25':'bg-violet-50 border-violet-200' : isDark?'bg-red-500/10 border-red-500/25':'bg-red-50 border-red-200'}`}>
-                          <div className={`px-4 py-2.5 flex items-center justify-between ${pulangResult.success?'bg-gradient-to-r from-violet-500 to-purple-600':'bg-gradient-to-r from-red-500 to-rose-600'}`}>
+                          className={`rounded-2xl border-2 overflow-hidden ${pulangResult.success ? isDark?'bg-emerald-500/10 border-emerald-500/25':'bg-emerald-50 border-emerald-200' : isDark?'bg-red-500/10 border-red-500/25':'bg-red-50 border-red-200'}`}>
+                          <div className={`px-4 py-2.5 flex items-center justify-between ${pulangResult.success?'bg-gradient-to-r from-emerald-500 to-teal-600':'bg-gradient-to-r from-red-500 to-rose-600'}`}>
                             <div className="flex items-center gap-2">
                               {pulangResult.success?<CheckCircle size={13} className="text-white"/>:<X size={13} className="text-white"/>}
                               <span className="text-white text-xs font-black">{pulangResult.success?'Absen Pulang Berhasil!':'Absen Pulang Gagal'}</span>
@@ -713,26 +717,18 @@ export default function PublicAbsen() {
                                   const d = pulangResult.data
                                   const selisih = d.menit_pulang_cepat
                                   const abs = Math.abs(selisih ?? 0)
-                                  const jam  = Math.floor(abs / 60)
-                                  const sisa = abs % 60
-                                  const durasi = jam > 0
-                                    ? (sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`)
-                                    : `${abs} menit`
-                                  const selisihLabel = selisih > 0
-                                    ? `${durasi} lebih awal`
-                                    : selisih < 0
-                                      ? `Lembur ${durasi}`
-                                      : 'Tepat waktu'
-                                  const selisihColor = selisih > 0
-                                    ? isDark?'text-amber-300':'text-amber-600'
-                                    : selisih < 0
-                                      ? isDark?'text-emerald-300':'text-emerald-600'
-                                      : isDark?'text-blue-300':'text-blue-600'
+                                  const jam  = Math.floor(abs / 60), sisa = abs % 60
+                                  const durasi = jam > 0 ? (sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`) : `${abs} menit`
+                                  const selisihLabel = selisih > 0 ? `${durasi} lebih awal` : selisih < 0 ? `Lembur ${durasi}` : 'Tepat waktu'
+                                  const selisihColor = selisih > 0 ? isDark?'text-amber-300':'text-amber-600' : selisih < 0 ? isDark?'text-emerald-300':'text-emerald-600' : isDark?'text-blue-300':'text-blue-600'
+                                  const nama = userRole==='guru' ? d.guru?.nama : d.siswa?.nama
+                                  const extra = userRole==='siswa' && d.siswa?.kelas ? [{ label:'Kelas', value: d.siswa.kelas }] : []
                                   return [
-                                    { label:'Nama',          value: d.guru?.nama },
-                                    { label:'Jam Pulang',    value: d.absensi?.jam_pulang ? String(d.absensi.jam_pulang).substring(0,5) : '-', mono: true },
-                                    { label:'Jam Sekolah',   value: d.jam_pulang_sekolah, mono: true },
-                                    { label:'Selisih',       value: selisihLabel, color: selisihColor },
+                                    { label:'Nama',        value: nama },
+                                    ...extra,
+                                    { label:'Jam Pulang',  value: d.absensi?.jam_pulang ? String(d.absensi.jam_pulang).substring(0,5) : '-', mono: true },
+                                    { label:'Jam Sekolah', value: d.jam_pulang_sekolah, mono: true },
+                                    { label:'Selisih',     value: selisihLabel, color: selisihColor },
                                   ].map((item,i) => (
                                     <div key={i}>
                                       <p className={`text-[9px] uppercase font-black mb-0.5 tracking-widest ${isDark?'text-slate-600':'text-slate-400'}`}>{item.label}</p>
