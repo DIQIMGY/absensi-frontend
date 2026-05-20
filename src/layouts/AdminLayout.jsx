@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Users, GraduationCap, UserCheck, School, BookOpen,
   Calendar, BookMarked, ClipboardList, Settings, FileText, Trophy,
   AlertCircle, Activity, BarChart3, TrendingUp, Shield, LogOut,
+  UserCog, ClipboardCheck, DoorOpen, DoorClosed, History,
 } from 'lucide-react'
 import { adminApi } from '../services/adminService'
 import { useThemeStore } from '../stores/themeStore'
@@ -19,8 +20,8 @@ const menuGroups = [
     items: [
       { path: '/admin/users',           icon: Users,        label: 'Pengguna' },
       { path: '/admin/siswas',          icon: GraduationCap,label: 'Siswa' },
-      { path: '/admin/gurus',           icon: UserCheck,    label: 'Guru' },
-      { path: '/admin/alumni',          icon: GraduationCap,label: 'Alumni' },
+      { path: '/admin/gurus',           icon: UserCog,      label: 'Guru' },
+      { path: '/admin/alumni',          icon: History,      label: 'Alumni' },
       { path: '/admin/naik-kelas',      icon: TrendingUp,   label: 'Naik Kelas' },
       { path: '/admin/kelas',           icon: School,       label: 'Kelas' },
       { path: '/admin/jurusans',        icon: BookOpen,     label: 'Jurusan' },
@@ -31,12 +32,12 @@ const menuGroups = [
   {
     title: 'Operasional',
     items: [
-      { path: '/admin/absensis',     icon: ClipboardList, label: 'Absensi Siswa' },
-      { path: '/admin/absensi-guru', icon: UserCheck,     label: 'Absensi Masuk Guru' },
-      { path: '/admin/pulang-guru',  icon: LogOut,        label: 'Absensi Pulang Guru' },
-      { path: '/admin/pulang-siswa', icon: LogOut,        label: 'Absensi Pulang Siswa' },
-      { path: '/admin/ranking',      icon: Trophy,        label: 'Ranking' },
-      { path: '/admin/izins',        icon: AlertCircle,   label: 'Izin' },
+      { path: '/admin/absensis',     icon: ClipboardList,  label: 'Absensi Siswa' },
+      { path: '/admin/absensi-guru', icon: ClipboardCheck, label: 'Absensi Masuk Guru' },
+      { path: '/admin/pulang-guru',  icon: DoorOpen,       label: 'Absensi Pulang Guru' },
+      { path: '/admin/pulang-siswa', icon: DoorClosed,     label: 'Absensi Pulang Siswa' },
+      { path: '/admin/ranking',      icon: Trophy,         label: 'Ranking' },
+      { path: '/admin/izins',        icon: AlertCircle,    label: 'Izin' },
     ],
   },
   {
