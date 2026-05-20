@@ -46,6 +46,7 @@ import GuruDataSiswa from '../pages/guru/DataSiswa'
 import GuruIzins from '../pages/guru/Izins'
 import GuruRiwayatAbsensi from '../pages/guru/RiwayatAbsensi'
 import GuruNaikKelas from '../pages/guru/NaikKelas'
+import GuruPulangSiswa from '../pages/guru/PulangSiswa'
 
 // Siswa Pages
 import SiswaDashboard from '../pages/siswa/Dashboard'
@@ -129,6 +130,7 @@ export const router = createBrowserRouter([
       { path: 'izins',            element: <GuruIzins /> },
       { path: 'riwayat-absensi',  element: <GuruRiwayatAbsensi /> },
       { path: 'naik-kelas',       element: <GuruNaikKelas /> },
+      { path: 'pulang-siswa',     element: <GuruPulangSiswa /> },
       { path: 'profil',           element: <GuruProfil /> },
     ],
   },
