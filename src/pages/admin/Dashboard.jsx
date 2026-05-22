@@ -763,7 +763,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest">Perlu Perhatian</p>
                 <div className="flex items-center gap-1">
-                  {rankingAlpha.slice(0, 3).map((s, i) => (
+                  {rankingAlpha.slice(0, 5).map((s, i) => (
                     <div key={i} className="w-6 h-6 rounded-full ring-1 ring-red-400/50 overflow-hidden bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center text-white text-[9px] font-bold">
                       <Avatar src={s.foto_url} name={s.nama_lengkap} size={24} className="bg-transparent text-white" />
                     </div>
