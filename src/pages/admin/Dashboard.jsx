@@ -734,7 +734,7 @@ export default function AdminDashboard() {
             className="hidden sm:flex flex-col gap-2">
             <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Siswa Terbaik Bulan Ini</p>
             <div className="flex items-center gap-1">
-              {rankingRajin.slice(0, 5).map((s, i) => (
+              {rankingRajin.slice(0, 7).map((s, i) => (
                 <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.35 + i * 0.06, type: 'spring', stiffness: 300 }}
                   className="relative group cursor-default"
                   style={{ zIndex: 5 - i }}>
