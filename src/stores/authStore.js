@@ -47,6 +47,8 @@ export const useAuthStore = create(
         } catch (error) {
           console.error('Logout error:', error)
         } finally {
+          // Stop musik sebelum reset state
+          window.dispatchEvent(new CustomEvent('musik-stop'))
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
           setApiToken(null)
           toast.success('Logout berhasil')

@@ -3,6 +3,8 @@ import { LayoutDashboard, Camera, History, User, GraduationCap, Trophy } from 'l
 import { siswaApi } from '../services/siswaService'
 import PulangNotification from '../components/PulangNotification'
 import SantaiDirumahNotification from '../components/SantaiDirumahNotification'
+import { MusicPlayerProvider } from '../components/MusicPlayerContext'
+import MusicPlayerButton from '../components/MusicPlayerButton'
 
 const menuGroups = [
   {
@@ -57,7 +59,7 @@ async function siswaNotifLoader() {
 
 export default function SiswaLayout() {
   return (
-    <>
+    <MusicPlayerProvider>
       <PulangNotification/>
       <SantaiDirumahNotification/>
       <AppLayout
@@ -68,7 +70,8 @@ export default function SiswaLayout() {
         notifLoader={siswaNotifLoader}
         notifMarkRead={(id) => saveReadId('siswaNotifRead', id)}
         notifMarkAll={() => {}}
+        extraTopbarRight={<MusicPlayerButton accentColor={accent.color}/>}
       />
-    </>
+    </MusicPlayerProvider>
   )
 }

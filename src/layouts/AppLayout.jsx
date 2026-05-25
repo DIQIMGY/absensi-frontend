@@ -205,7 +205,7 @@ function SidebarContent({
   )
 }
 
-export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'Panel', roleIcon = null, extraSidebarTop = null, notifLoader = null, notifMarkRead = null, notifMarkAll = null }) {
+export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'Panel', roleIcon = null, extraSidebarTop = null, notifLoader = null, notifMarkRead = null, notifMarkAll = null, extraTopbarRight = null }) {
   const allItems = menuGroups.flatMap(g => g.items)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [localCollapsed, setLocalCollapsed] = useState(false)
@@ -443,6 +443,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
               className="hidden sm:flex p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               {isDark ? <Sun size={15}/> : <Moon size={15}/>}
             </button>
+
+            {/* Extra topbar right slot (e.g. music player for siswa) */}
+            {extraTopbarRight}
 
             {notifLoader && (
               <div className="relative" ref={notifRef}>

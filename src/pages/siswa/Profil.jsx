@@ -171,6 +171,8 @@ export default function SiswaProfil() {
       toast.success('Musik favorit disimpan!')
       setShowMusikEdit(false)
       fetchProfil()
+      // Beritahu MusicPlayerContext di layout untuk refresh
+      window.dispatchEvent(new CustomEvent('musik-changed'))
     } catch (e) { toast.error(e.response?.data?.message || 'Gagal menyimpan') }
     finally { setMusikSaving(false) }
   }
@@ -182,6 +184,8 @@ export default function SiswaProfil() {
       setShowMusikEdit(false)
       setMusikPlaying(false)
       fetchProfil()
+      // Beritahu MusicPlayerContext di layout untuk stop & reset
+      window.dispatchEvent(new CustomEvent('musik-changed'))
     } catch { toast.error('Gagal menghapus') }
   }
 
