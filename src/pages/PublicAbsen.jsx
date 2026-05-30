@@ -856,8 +856,8 @@ export default function PublicAbsen() {
           </div>
 
           {/* ── INFO CARDS: Jadwal + Cara Absen ── */}
-          {/* Desktop: grid 2 kolom | Mobile: horizontal scroll */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Mobile: 1 kolom atas-bawah | Desktop: 2 kolom */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             {/* Jadwal */}
             <div className={`relative rounded-2xl overflow-hidden border ${isDark?'border-white/8':'border-slate-100 shadow-sm'}`}>
