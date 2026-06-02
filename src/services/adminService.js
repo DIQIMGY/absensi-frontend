@@ -145,6 +145,8 @@ export const adminApi = {
   
   // Laporan Guru
   getLaporanGuruBulanan: (params) => api.get('/admin/laporan-guru/bulanan', { params }),
+  getLaporanLemburGuru: (params) => api.get('/admin/laporan-guru/lembur', { params }),
+  exportLemburGuruExcel: (params) => api.get('/admin/laporan-guru/lembur/export-excel', { params, responseType: 'blob' }),
   exportGuruPdf: (params) => api.get('/admin/laporan-guru/export-pdf', { 
     params,
     responseType: 'blob' 

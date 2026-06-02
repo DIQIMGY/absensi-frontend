@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, GraduationCap, UserCheck, School, BookOpen,
   Calendar, BookMarked, ClipboardList, Settings, FileText, Trophy,
   AlertCircle, Activity, BarChart3, TrendingUp, Shield, LogOut,
-  UserCog, ClipboardCheck, DoorOpen, DoorClosed, History,
+  UserCog, ClipboardCheck, DoorOpen, DoorClosed, History, Timer,
 } from 'lucide-react'
 import { adminApi } from '../services/adminService'
 import { useThemeStore } from '../stores/themeStore'
@@ -43,9 +43,10 @@ const menuGroups = [
   {
     title: 'Laporan & Log',
     items: [
-      { path: '/admin/laporan',      icon: FileText,  label: 'Laporan Siswa' },
-      { path: '/admin/laporan-guru', icon: BarChart3, label: 'Laporan Guru' },
-      { path: '/admin/logging',      icon: Activity,  label: 'Log Aktivitas' },
+      { path: '/admin/laporan',             icon: FileText,  label: 'Laporan Siswa' },
+      { path: '/admin/laporan-guru',        icon: BarChart3, label: 'Laporan Guru' },
+      { path: '/admin/laporan-lembur-guru', icon: Timer,     label: 'Lembur Guru' },
+      { path: '/admin/logging',             icon: Activity,  label: 'Log Aktivitas' },
     ],
   },
   {

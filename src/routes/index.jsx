@@ -30,6 +30,7 @@ import Izins from '../pages/admin/Izins'
 import Pengaturan from '../pages/admin/Pengaturan'
 import Laporan from '../pages/admin/Laporan'
 import LaporanGuru from '../pages/admin/LaporanGuru'
+import LaporanLemburGuru from '../pages/admin/LaporanLemburGuru'
 import Ranking from '../pages/admin/Ranking'
 import Logging from '../pages/admin/Logging'
 import Alumni from '../pages/admin/Alumni'
@@ -106,6 +107,7 @@ export const router = createBrowserRouter([
       { path: 'pengaturan',       element: <Pengaturan /> },
       { path: 'laporan',          element: <Laporan /> },
       { path: 'laporan-guru',     element: <LaporanGuru /> },
+      { path: 'laporan-lembur-guru', element: <LaporanLemburGuru /> },
       { path: 'ranking',          element: <Ranking /> },
       { path: 'logging',          element: <Logging /> },
       { path: 'alumni',           element: <Alumni /> },
