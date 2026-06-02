@@ -143,6 +143,12 @@ export const adminApi = {
     responseType: 'blob' 
   }),
   
+  // Libur Sekolah (per bulan, 7 slot)
+  getLiburSekolah: (params) => api.get('/admin/libur-sekolah', { params }),
+  saveLiburSekolah: (data) => api.post('/admin/libur-sekolah/save', data),
+  deleteLiburSlot: (data) => api.delete('/admin/libur-sekolah/slot', { data }),
+  getKalenderLibur: (params) => api.get('/admin/libur-sekolah/kalender', { params }),
+
   // Laporan Guru
   getLaporanGuruBulanan: (params) => api.get('/admin/laporan-guru/bulanan', { params }),
   getLaporanLemburGuru: (params) => api.get('/admin/laporan-guru/lembur', { params }),

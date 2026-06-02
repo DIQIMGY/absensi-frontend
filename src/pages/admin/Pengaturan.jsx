@@ -14,6 +14,251 @@ import Select from 'react-select'
 import { usePengaturanStore } from '../../stores/pengaturanStore'
 import { useState as useLocalState, useEffect as useLocalEffect } from 'react'
 
+// ─── LIBUR BULAN PANEL ───────────────────────────────────────
+const BULAN_OPTS = [
+  'Januari','Februari','Maret','April','Mei','Juni',
+  'Juli','Agustus','September','Oktober','November','Desember'
+]
+
+function LiburBulanPanel() {
+  const today        = new Date()
+  const [bulan, setBulan]     = useLocalState(today.getMonth() + 1)
+  const [tahun, setTahun]     = useLocalState(today.getFullYear())
+  const [slots, setSlots]     = useLocalState(Array.from({length:7},(_,i)=>({ slot:i+1, tanggal_mulai:'', tanggal_selesai:'', keterangan:'', jumlah_hari:0 })))
+  const [loading, setLoading] = useLocalState(false)
+  const [saving, setSaving]   = useLocalState(false)
+  const [namaBulan, setNamaBulan] = useLocalState('')
+  const [totalLibur, setTotalLibur] = useLocalState(0)
+  const [showKalender, setShowKalender] = useLocalState(false)
+  const [kalender, setKalender]         = useLocalState([])
+
+  useLocalEffect(() => {
+    fetchSlots()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulan, tahun])
+
+  async function fetchSlots() {
+    setLoading(true)
+    try {
+      const res = await adminApi.getLiburSekolah({ bulan, tahun })
+      const d   = res.data.data
+      const filled = d.slots.map(s => ({
+        slot:            s.slot,
+        tanggal_mulai:   s.tanggal_mulai   || '',
+        tanggal_selesai: s.tanggal_selesai || '',
+        keterangan:      s.keterangan      || '',
+        jumlah_hari:     s.jumlah_hari     || 0,
+      }))
+      setSlots(filled)
+      setNamaBulan(d.nama_bulan)
+      setTotalLibur(d.total_hari_libur)
+    } catch { toast.error('Gagal memuat jadwal libur') }
+    finally { setLoading(false) }
+  }
+
+  function updateSlot(idx, field, val) {
+    setSlots(prev => prev.map((s,i) => i === idx ? { ...s, [field]: val } : s))
+  }
+
+  function clearSlot(idx) {
+    setSlots(prev => prev.map((s,i) => i === idx
+      ? { slot:s.slot, tanggal_mulai:'', tanggal_selesai:'', keterangan:'', jumlah_hari:0 }
+      : s))
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const res = await adminApi.saveLiburSekolah({ bulan, tahun, slots })
+      const d   = res.data.data
+      const filled = d.slots.map(s => ({
+        slot: s.slot, tanggal_mulai: s.tanggal_mulai||'',
+        tanggal_selesai: s.tanggal_selesai||'', keterangan: s.keterangan||'',
+        jumlah_hari: s.jumlah_hari||0,
+      }))
+      setSlots(filled); setNamaBulan(d.nama_bulan); setTotalLibur(d.total_hari_libur)
+      toast.success(`Jadwal libur ${d.nama_bulan} disimpan!`)
+    } catch (e) { toast.error(e.response?.data?.message || 'Gagal menyimpan') }
+    finally { setSaving(false) }
+  }
+
+  async function loadKalender() {
+    setShowKalender(v => !v)
+    if (!showKalender && kalender.length === 0) {
+      try {
+        const res = await adminApi.getKalenderLibur({ tahun })
+        setKalender(res.data.data.bulan)
+      } catch { /* silent */ }
+    }
+  }
+
+  function hitungHari(mulai, selesai) {
+    if (!mulai) return 0
+    const m = new Date(mulai), s = selesai ? new Date(selesai) : new Date(mulai)
+    return Math.floor((s - m) / 86400000) + 1
+  }
+
+  const slotIsi = slots.filter(s => s.tanggal_mulai).length
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-900/10">
+        <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+          <CalendarDays size={15} className="text-amber-600 dark:text-amber-400"/>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Jadwal Libur Sekolah Per Bulan</p>
+          <p className="text-[11px] text-slate-400">Isi 7 slot libur sekaligus — tersimpan permanen per bulan, tidak perlu isi ulang</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {slotIsi > 0 && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400">
+              {slotIsi}/7 slot terisi
+            </span>
+          )}
+          <button type="button" onClick={loadKalender}
+            className="text-[10px] text-slate-400 hover:text-amber-500 transition-colors font-medium flex items-center gap-1">
+            <Calendar size={11}/> {showKalender ? 'Tutup' : 'Lihat'} kalender
+          </button>
+        </div>
+      </div>
+
+      {/* Mini kalender tahunan */}
+      <AnimatePresence>
+        {showKalender && kalender.length > 0 && (
+          <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}}
+            className="overflow-hidden border-b border-slate-100 dark:border-slate-800">
+            <div className="px-5 py-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
+              {kalender.map(b => (
+                <button key={b.bulan} type="button"
+                  onClick={() => { setBulan(b.bulan); setShowKalender(false) }}
+                  className={`px-2 py-1.5 rounded-lg text-center text-[10px] font-semibold transition-all border ${
+                    b.bulan === bulan
+                      ? 'bg-amber-500 text-white border-amber-600'
+                      : b.total_hari_libur > 0
+                        ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/40 hover:bg-amber-100'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                  }`}>
+                  <p>{b.nama_bulan.substring(0,3)}</p>
+                  {b.total_hari_libur > 0 && <p className="text-[8px] opacity-80">{b.total_hari_libur}hr</p>}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="p-5 space-y-4">
+        {/* Pilih bulan / tahun */}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[130px]">
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Bulan</label>
+            <select value={bulan} onChange={e => setBulan(+e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+              {BULAN_OPTS.map((b,i) => <option key={i} value={i+1}>{b}</option>)}
+            </select>
+          </div>
+          <div className="w-24">
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Tahun</label>
+            <input type="number" value={tahun} onChange={e => setTahun(+e.target.value)}
+              min={2020} max={2100}
+              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"/>
+          </div>
+          {namaBulan && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
+              <span className="text-sm">📅</span>
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{namaBulan}</span>
+              {totalLibur > 0 && <span className="text-[10px] text-amber-500">· {totalLibur} hari libur</span>}
+            </div>
+          )}
+        </div>
+
+        {/* 7 slot */}
+        {loading ? (
+          <div className="py-6 text-center">
+            <div className="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"/>
+            <p className="text-xs text-slate-400 mt-2">Memuat jadwal...</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {slots.map((s, idx) => {
+              const hasMulai = !!s.tanggal_mulai
+              const jml = hasMulai ? hitungHari(s.tanggal_mulai, s.tanggal_selesai) : 0
+              return (
+                <div key={s.slot}
+                  className={`rounded-xl border transition-all ${
+                    hasMulai
+                      ? 'border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-900/10'
+                      : 'border-slate-200 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/30'
+                  }`}>
+                  <div className="flex items-center gap-2 p-3">
+                    {/* Nomor slot */}
+                    <div className={`w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center text-[10px] font-black ${
+                      hasMulai ? 'bg-amber-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+                    }`}>
+                      {s.slot}
+                    </div>
+
+                    {/* Fields */}
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input type="date" value={s.tanggal_mulai}
+                        onChange={e => {
+                          updateSlot(idx,'tanggal_mulai',e.target.value)
+                          if (!s.tanggal_selesai) updateSlot(idx,'tanggal_selesai',e.target.value)
+                        }}
+                        className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                        placeholder="Tanggal mulai"/>
+                      <input type="date" value={s.tanggal_selesai}
+                        min={s.tanggal_mulai}
+                        onChange={e => updateSlot(idx,'tanggal_selesai',e.target.value)}
+                        className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                        placeholder="Tanggal selesai"/>
+                      <input type="text" value={s.keterangan}
+                        onChange={e => updateSlot(idx,'keterangan',e.target.value)}
+                        placeholder="Nama libur (opsional)"
+                        className="px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"/>
+                    </div>
+
+                    {/* Info hari + hapus */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {hasMulai && (
+                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                          {jml}hr
+                        </span>
+                      )}
+                      {hasMulai && (
+                        <button type="button" onClick={() => clearSlot(idx)}
+                          className="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                          <Trash2 size={12}/>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Ringkasan + Tombol Simpan */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+          <div className="text-[11px] text-slate-400 space-y-0.5">
+            <p>💡 Data libur per bulan <strong className="text-slate-600 dark:text-slate-300">tersimpan permanen</strong> — bulan lain tidak terpengaruh</p>
+            <p>📊 Dipakai otomatis di <strong className="text-slate-600 dark:text-slate-300">Laporan Lembur Guru</strong> untuk hitung jam wajib efektif</p>
+          </div>
+          <button type="button" onClick={handleSave} disabled={saving || loading}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-500/25 transition-all disabled:opacity-50 flex-shrink-0">
+            {saving
+              ? <><RefreshCw size={14} className="animate-spin"/> Menyimpan...</>
+              : <><Save size={14}/> Simpan Jadwal Libur</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── BORDER WINDOW PANEL ──────────────────────────────────────
 const LIMITED_OPTIONS = [
   { id:'blackpink',   name:'BLACKPINK',              emoji:'🎤' },
@@ -1156,6 +1401,9 @@ export default function Pengaturan() {
           {activeTab === 'libur' && (
             <motion.div key="libur" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }}
               transition={{ duration:0.2 }} className="space-y-4">
+
+              {/* ── JADWAL LIBUR PER BULAN (SISTEM BARU) ── */}
+              <LiburBulanPanel />
 
               {/* Toggle Card */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
