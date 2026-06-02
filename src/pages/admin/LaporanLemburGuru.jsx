@@ -7,18 +7,27 @@ import {
   Search, Filter, BarChart3, Timer, Building2,
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
-import { usePengaturanStore } from '../../stores/pengaturanStore'
 import toast from 'react-hot-toast'
 
 // ── Helpers ──────────────────────────────────────────────────────────
+// Format menit → "95j 30m" atau "0j 45m"
 const mntToJam = (m) => {
   const abs = Math.abs(m)
   const j = Math.floor(abs / 60)
   const s = abs % 60
+  if (s === 0) return `${j}j`
   return `${j}j ${s}m`
 }
 
-const fmt2 = (n) => Number(n || 0).toFixed(2)
+// Format jam desimal → "95j 30m" (dari backend yang kirim jam float)
+const jamToStr = (jam) => {
+  const totalMenit = Math.round(Number(jam || 0) * 60)
+  const j = Math.floor(totalMenit / 60)
+  const m = totalMenit % 60
+  if (m === 0) return `${j}j`
+  return `${j}j ${m}m`
+}
+
 
 const BULAN_LIST = [
   'Januari','Februari','Maret','April','Mei','Juni',
@@ -28,15 +37,16 @@ const BULAN_LIST = [
 const TAHUN_LIST = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i)
 
 // ── StatusBadge ──────────────────────────────────────────────────────
-function StatusBadge({ status, selisihJam }) {
+function StatusBadge({ status, selisihMenit }) {
+  const selisihStr = mntToJam(Math.abs(selisihMenit))
   if (status === 'lembur') return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
-      <TrendingUp size={10} /> LEMBUR +{fmt2(selisihJam)}j
+      <TrendingUp size={10} /> LEMBUR +{selisihStr}
     </span>
   )
   if (status === 'kurang') return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
-      <TrendingDown size={10} /> KURANG -{fmt2(selisihJam)}j
+      <TrendingDown size={10} /> KURANG -{selisihStr}
     </span>
   )
   return (
@@ -64,10 +74,13 @@ function DetailRow({ detail }) {
     terlambat:'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
     alpha:    'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
   }
-  const tgl = new Date(detail.tanggal)
+  // Bug fix: pakai string langsung bukan new Date() agar tidak timezone shift
+  const parts  = (detail.tanggal || '').split('-')
+  const tgl    = parts.length === 3 ? new Date(+parts[0], +parts[1]-1, +parts[2]) : new Date()
   const namaHari = tgl.toLocaleDateString('id-ID', { weekday: 'short' })
   const tglFmt   = tgl.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
   const selisih  = detail.selisih_hari ?? 0
+  const sign     = selisih > 0 ? '+' : ''
 
   return (
     <tr className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -78,25 +91,47 @@ function DetailRow({ detail }) {
         </span>
       </td>
       <td className="py-1.5 px-2 text-[10px] text-slate-700 dark:text-slate-300 text-center font-mono">
-        {detail.jam_masuk?.substring(0,5) ?? '-'}
+        {detail.jam_masuk ?? '-'}
       </td>
       <td className="py-1.5 px-2 text-[10px] text-slate-700 dark:text-slate-300 text-center font-mono">
-        {detail.jam_pulang?.substring(0,5) ?? '-'}
+        {detail.jam_pulang ?? '-'}
       </td>
       <td className="py-1.5 px-2 text-[10px] text-center font-mono text-slate-600 dark:text-slate-400">
         {detail.menit_aktual > 0 ? mntToJam(detail.menit_aktual) : '-'}
       </td>
       <td className={`py-1.5 px-2 text-[10px] text-center font-bold font-mono ${selisih > 0 ? 'text-emerald-600' : selisih < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-        {selisih > 0 ? '+' : ''}{mntToJam(selisih)}
+        {sign}{mntToJam(selisih)}
       </td>
     </tr>
+  )
+}
+
+// ── GuruAvatar ───────────────────────────────────────────────────────
+function GuruAvatar({ item, size = 'md' }) {
+  const [imgErr, setImgErr] = useState(false)
+  const dim = size === 'md' ? 'w-9 h-9 text-sm' : 'w-8 h-8 text-xs'
+
+  if (item.foto_url && !imgErr) {
+    return (
+      <img
+        src={item.foto_url}
+        alt={item.nama_lengkap}
+        onError={() => setImgErr(true)}
+        className={`${dim} flex-shrink-0 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm`}
+      />
+    )
+  }
+  return (
+    <div className={`${dim} flex-shrink-0 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold shadow-sm`}>
+      {(item.nama_lengkap || '?')[0].toUpperCase()}
+    </div>
   )
 }
 
 // ── GuruCard ─────────────────────────────────────────────────────────
 function GuruCard({ item, idx }) {
   const [open, setOpen] = useState(false)
-  const pct = item.jam_wajib > 0 ? Math.min((item.jam_aktual / item.jam_wajib) * 100, 999) : 0
+  const pct = item.jam_wajib > 0 ? Math.min((item.jam_aktual / item.jam_wajib) * 100, 150) : 0
 
   return (
     <motion.div
@@ -112,10 +147,8 @@ function GuruCard({ item, idx }) {
           {idx + 1}
         </div>
 
-        {/* Avatar inisial */}
-        <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-          {(item.nama_lengkap || '?')[0].toUpperCase()}
-        </div>
+        {/* Avatar foto/inisial */}
+        <GuruAvatar item={item} />
 
         {/* Info guru */}
         <div className="flex-1 min-w-0">
@@ -140,17 +173,17 @@ function GuruCard({ item, idx }) {
           </div>
           <div>
             <p className="text-[9px] text-slate-400">Jam Aktual</p>
-            <p className="text-sm font-bold text-slate-700 dark:text-white">{fmt2(item.jam_aktual)}j</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-white font-mono">{jamToStr(item.jam_aktual)}</p>
           </div>
           <div>
             <p className="text-[9px] text-slate-400">Wajib</p>
-            <p className="text-sm font-bold text-slate-500">{fmt2(item.jam_wajib)}j</p>
+            <p className="text-sm font-bold text-slate-500 font-mono">{jamToStr(item.jam_wajib)}</p>
           </div>
         </div>
 
         {/* Badge status */}
         <div className="flex-shrink-0 ml-1">
-          <StatusBadge status={item.status_lembur} selisihJam={item.selisih_jam} />
+          <StatusBadge status={item.status_lembur} selisihMenit={item.selisih_menit} />
         </div>
 
         {/* Toggle detail */}
@@ -168,8 +201,8 @@ function GuruCard({ item, idx }) {
           { label: 'Hadir', val: item.total_hadir, color: 'text-emerald-600' },
           { label: 'Telat', val: item.total_terlambat, color: 'text-amber-500' },
           { label: 'Alpha', val: item.total_alpha, color: 'text-rose-500' },
-          { label: 'Aktual', val: fmt2(item.jam_aktual)+'j', color: 'text-slate-700 dark:text-white' },
-          { label: 'Wajib', val: fmt2(item.jam_wajib)+'j', color: 'text-slate-500' },
+          { label: 'Aktual', val: jamToStr(item.jam_aktual), color: 'text-slate-700 dark:text-white font-mono' },
+          { label: 'Wajib', val: jamToStr(item.jam_wajib), color: 'text-slate-500 font-mono' },
         ].map((s) => (
           <div key={s.label} className="flex-1">
             <p className="text-[8px] text-slate-400">{s.label}</p>
@@ -217,7 +250,6 @@ function GuruCard({ item, idx }) {
 // ── Main Page ────────────────────────────────────────────────────────
 export default function LaporanLemburGuru() {
   const today = new Date()
-  const { pengaturan } = usePengaturanStore()
 
   const [bulan, setBulan]         = useState(today.getMonth() + 1)
   const [tahun, setTahun]         = useState(today.getFullYear())
@@ -225,10 +257,10 @@ export default function LaporanLemburGuru() {
   const [loading, setLoading]     = useState(false)
   const [exporting, setExporting] = useState(false)
   const [search, setSearch]       = useState('')
-  const [filterStatus, setFilter] = useState('semua') // semua | lembur | kurang | tepat
-  const [sortBy, setSortBy]       = useState('nama')  // nama | jam_aktual | selisih_jam
+  const [filterStatus, setFilter] = useState('semua')
+  const [sortBy, setSortBy]       = useState('nama')
 
-  const fetch = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const res = await adminApi.getLaporanLemburGuru({ bulan, tahun })
@@ -240,7 +272,7 @@ export default function LaporanLemburGuru() {
     }
   }, [bulan, tahun])
 
-  useEffect(() => { fetch() }, [fetch])
+  useEffect(() => { loadData() }, [loadData])
 
   const handleExport = async () => {
     setExporting(true)
@@ -349,7 +381,7 @@ export default function LaporanLemburGuru() {
             </select>
           </div>
           {/* Refresh */}
-          <button onClick={fetch} disabled={loading}
+          <button onClick={loadData} disabled={loading}
             className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm shadow-teal-500/30 disabled:opacity-50">
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             Tampilkan
@@ -371,8 +403,8 @@ export default function LaporanLemburGuru() {
             {[
               { label: 'Jam Masuk', val: peng.jam_masuk || '-', icon: '🕐' },
               { label: 'Jam Pulang', val: peng.jam_pulang || '-', icon: '🕓' },
-              { label: 'Jam/Hari', val: `${fmt2(peng.jam_per_hari)} jam`, icon: '⏱️' },
-              { label: 'Jam Wajib/Bulan', val: `${fmt2(ringkasan.jam_wajib)} jam`, icon: '📋' },
+              { label: 'Jam/Hari', val: jamToStr(peng.jam_per_hari), icon: '⏱️' },
+              { label: 'Jam Wajib/Bulan', val: jamToStr(ringkasan.jam_wajib), icon: '📋' },
             ].map(s => (
               <div key={s.label} className="bg-white dark:bg-slate-800/60 rounded-lg px-3 py-2 border border-teal-100 dark:border-teal-900/40">
                 <p className="text-[9px] text-teal-600 dark:text-teal-400 font-medium">{s.icon} {s.label}</p>
@@ -408,12 +440,14 @@ export default function LaporanLemburGuru() {
             { label:'Lembur', val: stats.lembur, icon: TrendingUp, color:'from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30', text:'text-emerald-700 dark:text-emerald-300', border:'border-emerald-200 dark:border-emerald-800' },
             { label:'Jam Kurang', val: stats.kurang, icon: TrendingDown, color:'from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30', text:'text-rose-700 dark:text-rose-300', border:'border-rose-200 dark:border-rose-800' },
             { label:'Tepat Waktu', val: stats.tepat, icon: CheckCircle, color:'from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30', text:'text-blue-700 dark:text-blue-300', border:'border-blue-200 dark:border-blue-800' },
-            { label:'Total Jam Wajib', val: `${fmt2(stats.totalJamWajib)}j`, icon: Timer, color:'from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30', text:'text-amber-700 dark:text-amber-300', border:'border-amber-200 dark:border-amber-800' },
-            { label:'Total Jam Aktual', val: `${fmt2(stats.totalJamAktual)}j`, icon: BarChart3,
+            { label:'Total Jam Wajib', val: jamToStr(stats.totalJamWajib), icon: Timer, color:'from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30', text:'text-amber-700 dark:text-amber-300', border:'border-amber-200 dark:border-amber-800' },
+            { label:'Total Jam Aktual', val: jamToStr(stats.totalJamAktual), icon: BarChart3,
               color: selisihTotal >= 0 ? 'from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30' : 'from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30',
               text:  selisihTotal >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300',
               border:selisihTotal >= 0 ? 'border-emerald-200 dark:border-emerald-800' : 'border-rose-200 dark:border-rose-800',
-              sub: selisihTotal >= 0 ? `+${fmt2(selisihTotal)}j lembur` : `${fmt2(selisihTotal)}j kurang`,
+              sub: selisihTotal >= 0
+                ? `+${jamToStr(selisihTotal)} lembur`
+                : `${jamToStr(Math.abs(selisihTotal))} kurang`,
             },
           ].map((s, i) => (
             <div key={i} className={`bg-gradient-to-br ${s.color} border ${s.border} rounded-xl p-3 sm:p-4 shadow-sm`}>
