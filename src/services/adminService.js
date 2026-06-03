@@ -149,6 +149,10 @@ export const adminApi = {
   deleteLiburSlot: (data) => api.delete('/admin/libur-sekolah/slot', { data }),
   getKalenderLibur: (params) => api.get('/admin/libur-sekolah/kalender', { params }),
 
+  // Laporan Rekap Siswa
+  getLaporanRekapSiswa: (params) => api.get('/admin/laporan-siswa/rekap', { params }),
+  exportRekapSiswaExcel: (params) => api.get('/admin/laporan-siswa/rekap/export-excel', { params, responseType: 'blob' }),
+
   // Laporan Guru
   getLaporanGuruBulanan: (params) => api.get('/admin/laporan-guru/bulanan', { params }),
   getLaporanLemburGuru: (params) => api.get('/admin/laporan-guru/lembur', { params }),
