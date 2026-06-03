@@ -347,8 +347,8 @@ const EnhancedStatCard = ({
         <BarChart data={d} margin={{top:2,right:0,left:0,bottom:0}} barCategoryGap="20%">
           <defs>
             <linearGradient id={`mc-b-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.8}/>
-              <stop offset="100%" stopColor={color} stopOpacity={0.3}/>
+              <stop offset="0%" stopColor={color} stopOpacity={0.9}/>
+              <stop offset="100%" stopColor={color} stopOpacity={0.35}/>
             </linearGradient>
           </defs>
           <Bar dataKey="value" fill={`url(#mc-b-${uid})`} radius={[2,2,0,0]} maxBarSize={8} />
@@ -378,16 +378,18 @@ const EnhancedStatCard = ({
       transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -3, transition: { duration: 0.15 } }}
     >
-      <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-shadow"
-        style={{ height: 110 }}>
-        <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${gradient} opacity-70`} />
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.04] pointer-events-none`} />
+      <div className="relative overflow-hidden rounded-xl bg-slate-900/80 border border-slate-700/50 hover:border-slate-600 transition-all"
+        style={{ height: 110, boxShadow: `0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px ${color}15 inset` }}>
+        {/* Color top accent */}
+        <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${gradient}`} />
+        {/* Subtle glow bg */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at 80% 20%, ${color}12 0%, transparent 60%)` }} />
 
-        <div className="relative z-10 flex items-center justify-between h-full px-4">
+        <div className="relative z-10 flex items-center justify-between h-full px-3.5">
           {/* Left: icon + mini chart */}
-          <div className="flex flex-col justify-between h-full py-3.5 w-[60px]">
-            <div className={`p-1.5 rounded-xl bg-gradient-to-br ${gradient} w-fit shadow-sm`}>
-              <Icon className="w-3.5 h-3.5 text-white" />
+          <div className="flex flex-col justify-between h-full py-3.5 w-[56px]">
+            <div className={`p-1.5 rounded-lg bg-gradient-to-br ${gradient} w-fit shadow-md`}>
+              <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
             <div className="h-[28px] w-full">
               {renderMiniChart()}
@@ -396,12 +398,12 @@ const EnhancedStatCard = ({
 
           {/* Right: value + label */}
           <div className="text-right flex-1 pl-2">
-            <p className="text-3xl font-black text-slate-800 dark:text-white tabular-nums leading-none">{value}</p>
-            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">{title}</p>
-            {subtitle && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
+            <p className="text-3xl font-black text-white tabular-nums leading-none">{value}</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{title}</p>
+            {subtitle && <p className="text-[9px] text-slate-500 mt-0.5">{subtitle}</p>}
             {trend && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold mt-0.5 ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {trendUp ? <ArrowUpRight size={9}/> : <ArrowDownRight size={9}/>}{trend}
+              <span className={`inline-flex items-center gap-0.5 text-[9px] font-black mt-0.5 px-1.5 py-0.5 rounded-md ${trendUp ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}`}>
+                {trendUp ? <ArrowUpRight size={8}/> : <ArrowDownRight size={8}/>}{trend}
               </span>
             )}
           </div>
@@ -668,71 +670,80 @@ export default function AdminDashboard() {
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden rounded-2xl shadow-2xl"
-        style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 35%, #0f766e 65%, #0e7490 100%)' }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-2xl"
+        style={{ background: 'linear-gradient(120deg, #022c22 0%, #064e3b 40%, #065f46 70%, #0d766b 100%)', boxShadow: '0 4px 32px rgba(6,78,59,0.45), 0 1px 0 rgba(52,211,153,0.15) inset' }}
       >
-        {/* Decorative blobs */}
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.25) 0%, transparent 70%)' }}/>
-        <div className="absolute -bottom-12 left-1/3 w-56 h-56 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.2) 0%, transparent 70%)' }}/>
-        <div className="absolute top-0 left-0 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)' }}/>
-        {/* Dot grid */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]">
-          <defs><pattern id="wb-dots" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.5" fill="white"/></pattern></defs>
-          <rect width="100%" height="100%" fill="url(#wb-dots)"/>
+        {/* Hard diagonal stripe accent top-right */}
+        <div className="absolute top-0 right-0 w-72 h-72 pointer-events-none overflow-hidden">
+          <div style={{ position:'absolute', top:'-40px', right:'-40px', width:'200px', height:'200px', background:'linear-gradient(135deg, rgba(52,211,153,0.18) 0%, transparent 60%)', borderRadius:'50%' }}/>
+        </div>
+        {/* Geometric lines */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.07]" preserveAspectRatio="none">
+          <defs>
+            <pattern id="wb-grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.6"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#wb-grid)"/>
         </svg>
-        {/* Top shine */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"/>
+        {/* Bottom border glow */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent pointer-events-none"/>
+        {/* Top border */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500/0 via-emerald-400/60 to-emerald-500/0 pointer-events-none"/>
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-6">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-5 sm:p-6">
           {/* Avatar */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 220 }}
             className="relative flex-shrink-0"
           >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ring-4 ring-white/25 overflow-hidden shadow-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+            <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center"
+              style={{ boxShadow: '0 0 0 2px rgba(52,211,153,0.5), 0 8px 24px rgba(0,0,0,0.3)' }}>
               {(user?.foto_url || user?.foto) ? (
-                <Avatar src={user.foto_url || user.foto} name={user?.name} size={80} className="w-full h-full" />
+                <Avatar src={user.foto_url || user.foto} name={user?.name} size={72} className="w-full h-full" />
               ) : (
                 <span className="text-2xl sm:text-3xl font-black text-white">{(user?.name || 'A').charAt(0).toUpperCase()}</span>
               )}
             </div>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-white flex items-center justify-center">
-              <Shield size={9} className="text-white"/>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-lg border-2 border-[#022c22] flex items-center justify-center shadow-lg">
+              <Shield size={9} className="text-emerald-900"/>
             </div>
           </motion.div>
 
           {/* Welcome text */}
           <div className="flex-1 min-w-0">
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-              <p className="text-emerald-300 text-xs font-semibold uppercase tracking-widest mb-0.5">
+            <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+              <p className="text-emerald-400/80 text-[10px] font-bold uppercase tracking-[0.18em] mb-1 flex items-center gap-2">
+                <span className="w-3 h-px bg-emerald-400/60 inline-block"/>
                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
-              <h2 className="text-xl sm:text-2xl font-black text-white leading-tight mb-1">
+              <h2 className="text-xl sm:text-[22px] font-black text-white leading-tight mb-1 tracking-tight">
                 Selamat datang, <span className="text-emerald-300">{user?.name?.split(' ')[0] || 'Admin'}</span> 👋
               </h2>
-              <p className="text-white/50 text-xs">Administrator · Sistem Absensi Digital</p>
+              <p className="text-white/40 text-[11px] font-medium tracking-wide">Administrator · Sistem Absensi Digital</p>
             </motion.div>
           </div>
 
           {/* Center: kehadiran rate big */}
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }}
-            className="hidden sm:flex flex-col items-center gap-1 px-3 sm:px-6 py-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-sm">
-            <p className="text-4xl font-black text-white tabular-nums leading-none">{kehadiranRate}%</p>
-            <p className="text-emerald-300 text-[10px] font-semibold uppercase tracking-wider">Kehadiran Hari Ini</p>
-            <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mt-1">
+            className="hidden sm:flex flex-col items-center gap-1.5 px-5 py-3.5 rounded-xl border border-white/10 backdrop-blur-sm"
+            style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <p className="text-4xl sm:text-5xl font-black text-white tabular-nums leading-none tracking-tight">{kehadiranRate}%</p>
+            <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-[0.15em]">Kehadiran Hari Ini</p>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mt-0.5">
               <motion.div initial={{ width: 0 }} animate={{ width: `${kehadiranRate}%` }} transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
-                className="h-full bg-gradient-to-r from-emerald-300 to-teal-300 rounded-full"/>
+                className="h-full rounded-full" style={{ background: 'linear-gradient(90deg, #34d399, #2dd4bf)' }}/>
             </div>
-            <p className="text-white/40 text-[9px]">{siswaHadir + siswaTerlambat} / {totalSiswa} siswa</p>
+            <p className="text-white/35 text-[9px] font-mono">{siswaHadir + siswaTerlambat} / {totalSiswa} siswa</p>
           </motion.div>
 
           {/* Right: featured member avatars (ranking rajin) */}
           <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
             className="hidden sm:flex flex-col gap-2">
-            <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Siswa Terbaik Bulan Ini</p>
+            <p className="text-white/35 text-[9px] font-bold uppercase tracking-[0.15em]">Siswa Terbaik Bulan Ini</p>
             <div className="flex items-center gap-1">
               {rankingRajin.slice(0, 5).map((s, i) => (
                 <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.35 + i * 0.06, type: 'spring', stiffness: 300 }}
@@ -800,7 +811,7 @@ export default function AdminDashboard() {
       >
         {/* Left: view tabs */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border border-emerald-500/20 shadow-sm">
+          <div className="flex items-center gap-1 p-1.5 bg-white dark:bg-slate-900 backdrop-blur-sm rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm">
             {[
               { key: 'overview', label: 'Ringkasan', icon: BarChart3 },
               { key: 'details', label: 'Detail', icon: Eye },
@@ -808,31 +819,31 @@ export default function AdminDashboard() {
             ].map(({ key, label, icon: Icon }) => (
               <motion.button
                 key={key}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setSelectedView(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                   selectedView === key
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-600'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600'
                 }`}
               >
-                <Icon size={12} />
+                <Icon size={13} strokeWidth={2.5} />
                 <span className="hidden sm:inline">{label}</span>
               </motion.button>
             ))}
           </div>
 
           {/* Status badge */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Live</span>
+          <div className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-700/40 rounded-xl">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Live</span>
           </div>
         </div>
 
         {/* Right: period + actions */}
         <div className="flex items-center gap-2">
           {/* Period selector desktop */}
-          <div className="hidden sm:flex items-center gap-1 p-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border border-emerald-500/20 shadow-sm">
+          <div className="hidden sm:flex items-center gap-1 p-1.5 bg-white dark:bg-slate-900 backdrop-blur-sm rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm">
             {[
               { key: 'today', label: 'Hari Ini' },
               { key: 'week', label: '7 Hari' },
@@ -841,12 +852,12 @@ export default function AdminDashboard() {
             ].map(({ key, label }) => (
               <motion.button
                 key={key}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setTimeRange(key)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`flex items-center gap-1 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                   timeRange === key
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
                 {label}
@@ -859,7 +870,7 @@ export default function AdminDashboard() {
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="sm:hidden px-3 py-2 bg-white dark:bg-slate-800 rounded-xl border border-emerald-500/20 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-sm"
+            className="sm:hidden px-3 py-2 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-sm"
           >
             <option value="today">Hari Ini</option>
             <option value="week">7 Hari</option>
@@ -870,12 +881,12 @@ export default function AdminDashboard() {
           {/* Toggle stats visibility */}
           <motion.button
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.93 }}
             onClick={() => setShowStats(!showStats)}
-            className="p-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border border-emerald-500/20 text-slate-500 hover:text-emerald-500 transition-all shadow-sm"
+            className="p-2.5 bg-white dark:bg-slate-900 backdrop-blur-sm rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-emerald-600 hover:border-emerald-300 transition-all shadow-sm"
             title={showStats ? 'Sembunyikan statistik' : 'Tampilkan statistik'}
           >
-            {showStats ? <Eye size={16} /> : <EyeOff size={16} />}
+            {showStats ? <Eye size={16} strokeWidth={2.5} /> : <EyeOff size={16} strokeWidth={2.5} />}
           </motion.button>
 
           {/* Refresh */}
@@ -884,9 +895,9 @@ export default function AdminDashboard() {
             whileTap={{ scale: 0.95 }}
             onClick={fetchDashboard}
             disabled={loading}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 text-xs"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-xl shadow-emerald-500/30 transition-all disabled:opacity-50 text-xs uppercase tracking-wide"
           >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} strokeWidth={2.5} className={loading ? 'animate-spin' : ''} />
             <span className="hidden sm:inline">Refresh</span>
           </motion.button>
         </div>
@@ -899,30 +910,34 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 p-4 sm:p-5 shadow-sm"
+          className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 p-4 sm:p-5 shadow-sm"
         >
-          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-emerald-400 to-teal-400" />
-          <div className="relative z-10">
+          {/* Left accent bar */}
+          <div className="absolute inset-y-0 left-0 w-1 rounded-l-2xl bg-gradient-to-b from-emerald-400 to-teal-500" />
+          <div className="relative z-10 pl-2">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tingkat Kehadiran {periodLabel}</p>
-              <span className={`flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full
-                ${kehadiranRate >= 80 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'}`}>
-                {kehadiranRate >= 80 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Tingkat Kehadiran {periodLabel}</p>
+              <span className={`flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-lg border
+                ${kehadiranRate >= 80
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700/40'
+                  : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-700/40'}`}>
+                {kehadiranRate >= 80 ? <TrendingUp size={11} strokeWidth={2.5} /> : <TrendingDown size={11} strokeWidth={2.5} />}
                 {kehadiranRate >= 80 ? 'Baik' : 'Perlu Perhatian'}
               </span>
             </div>
-            <div className="flex items-end gap-2 mb-3">
-              <span className="text-4xl sm:text-5xl font-black text-slate-800 dark:text-white tabular-nums">{kehadiranRate}%</span>
+            <div className="flex items-end gap-3 mb-3">
+              <span className="text-5xl sm:text-6xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{kehadiranRate}%</span>
             </div>
-            <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${kehadiranRate}%` }}
                 transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
-                className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #10b981, #0d9488)' }}
               />
             </div>
-            <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-1.5">{siswaHadir + siswaTerlambat} dari {totalSiswa} siswa hadir</p>
+            <p className="text-slate-500 dark:text-slate-400 text-[11px] font-semibold mt-2">{siswaHadir + siswaTerlambat} dari {totalSiswa} siswa hadir</p>
           </div>
         </motion.div>
 
@@ -932,24 +947,24 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 p-4 shadow-sm cursor-pointer group hover:shadow-md transition-shadow"
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border-2 border-amber-200 dark:border-amber-700/40 p-4 shadow-sm cursor-pointer group hover:shadow-lg hover:border-amber-400 dark:hover:border-amber-500/60 transition-all"
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => navigate('/admin/izins')}
           >
-            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-7 h-7 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center">
-                  <Bell size={13} className="text-amber-500" />
+            <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #f59e0b, #fb923c)' }} />
+            <div className="relative z-10 pt-1">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-700/40 flex items-center justify-center shadow-sm">
+                  <Bell size={15} strokeWidth={2.5} className="text-amber-600 dark:text-amber-400" />
                 </div>
-                <span className="text-[9px] bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full font-semibold border border-amber-100 dark:border-amber-800/40">Aksi</span>
+                <span className="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-md font-black uppercase tracking-wide border border-amber-200 dark:border-amber-700/40">Aksi</span>
               </div>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{izinPending}</p>
-              <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-0.5">Izin Pending</p>
-              <div className="mt-1.5 flex items-center gap-1 text-[9px] text-amber-500 group-hover:text-amber-600 font-semibold transition-colors">
+              <p className="text-3xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{izinPending}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] font-semibold mt-1">Izin Pending</p>
+              <div className="mt-2 flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 group-hover:text-amber-700 font-black uppercase tracking-wide transition-colors">
                 <span>Kelola</span>
-                <ChevronRight size={9} className="group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={10} strokeWidth={3} className="group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           </motion.div>
@@ -958,24 +973,24 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 p-4 shadow-sm cursor-pointer group hover:shadow-md transition-shadow"
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border-2 border-rose-200 dark:border-rose-700/40 p-4 shadow-sm cursor-pointer group hover:shadow-lg hover:border-rose-400 dark:hover:border-rose-500/60 transition-all"
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => navigate('/admin/absensis')}
           >
-            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-rose-400 to-red-400" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-7 h-7 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/40 flex items-center justify-center">
-                  <AlertTriangle size={13} className="text-rose-500" />
+            <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #ef4444, #f43f5e)' }} />
+            <div className="relative z-10 pt-1">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-900/20 border-2 border-rose-200 dark:border-rose-700/40 flex items-center justify-center shadow-sm">
+                  <AlertTriangle size={15} strokeWidth={2.5} className="text-rose-600 dark:text-rose-400" />
                 </div>
-                <span className="text-[9px] bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-full font-semibold border border-rose-100 dark:border-rose-800/40">Hari ini</span>
+                <span className="text-[9px] bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 px-2 py-0.5 rounded-md font-black uppercase tracking-wide border border-rose-200 dark:border-rose-700/40">Hari ini</span>
               </div>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{siswaAlpha}</p>
-              <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-0.5">Siswa Alpha</p>
-              <div className="mt-1.5 flex items-center gap-1 text-[9px] text-rose-500 group-hover:text-rose-600 font-semibold transition-colors">
+              <p className="text-3xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{siswaAlpha}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] font-semibold mt-1">Siswa Alpha</p>
+              <div className="mt-2 flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 group-hover:text-rose-700 font-black uppercase tracking-wide transition-colors">
                 <span>Detail</span>
-                <ChevronRight size={9} className="group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={10} strokeWidth={3} className="group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           </motion.div>
@@ -989,42 +1004,35 @@ export default function AdminDashboard() {
           className="grid grid-cols-4 gap-2"
         >
           {[
-            { label: 'Absensi', icon: CheckCircle, to: '/admin/absensis', color: 'emerald' },
-            { label: 'Siswa', icon: Users2, to: '/admin/siswas', color: 'blue' },
-            { label: 'Guru', icon: UserCheck, to: '/admin/gurus', color: 'violet' },
-            { label: 'Izin', icon: FileText, to: '/admin/izins', color: 'amber' },
-            { label: 'Kelas', icon: School, to: '/admin/kelas', color: 'cyan' },
-            { label: 'Laporan', icon: BarChart3, to: '/admin/laporan', color: 'pink' },
-            { label: 'Ranking', icon: Award, to: '/admin/ranking', color: 'orange' },
-            { label: 'Setting', icon: Gauge, to: '/admin/pengaturan', color: 'slate' },
-          ].map((item, i) => {
-            const colorMap = {
-              emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20',
-              blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20',
-              violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20 hover:bg-violet-500/20',
-              amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20',
-              cyan: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/20',
-              pink: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20 hover:bg-pink-500/20',
-              orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20',
-              slate: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20 hover:bg-slate-500/20',
-            }
-            return (
-              <motion.div key={item.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25 + i * 0.03 }}
-                whileHover={{ y: -2, scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            { label: 'Absensi', icon: CheckCircle, to: '/admin/absensis', solid: '#10b981', light: '#d1fae5', darkLight: 'rgba(16,185,129,0.15)', border: '#a7f3d0' },
+            { label: 'Siswa', icon: Users2, to: '/admin/siswas', solid: '#3b82f6', light: '#dbeafe', darkLight: 'rgba(59,130,246,0.15)', border: '#bfdbfe' },
+            { label: 'Guru', icon: UserCheck, to: '/admin/gurus', solid: '#8b5cf6', light: '#ede9fe', darkLight: 'rgba(139,92,246,0.15)', border: '#ddd6fe' },
+            { label: 'Izin', icon: FileText, to: '/admin/izins', solid: '#f59e0b', light: '#fef3c7', darkLight: 'rgba(245,158,11,0.15)', border: '#fde68a' },
+            { label: 'Kelas', icon: School, to: '/admin/kelas', solid: '#06b6d4', light: '#cffafe', darkLight: 'rgba(6,182,212,0.15)', border: '#a5f3fc' },
+            { label: 'Laporan', icon: BarChart3, to: '/admin/laporan', solid: '#ec4899', light: '#fce7f3', darkLight: 'rgba(236,72,153,0.15)', border: '#fbcfe8' },
+            { label: 'Ranking', icon: Award, to: '/admin/ranking', solid: '#f97316', light: '#ffedd5', darkLight: 'rgba(249,115,22,0.15)', border: '#fed7aa' },
+            { label: 'Setting', icon: Gauge, to: '/admin/pengaturan', solid: '#64748b', light: '#f1f5f9', darkLight: 'rgba(100,116,139,0.15)', border: '#e2e8f0' },
+          ].map((item, i) => (
+            <motion.div key={item.label}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25 + i * 0.03, type: 'spring', stiffness: 200 }}
+              whileHover={{ y: -3, scale: 1.06 }}
+              whileTap={{ scale: 0.93 }}
+            >
+              <Link to={item.to}
+                className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all duration-200 group"
+                style={{
+                  background: item.light,
+                  borderColor: item.border,
+                  color: item.solid,
+                }}
               >
-                <Link to={item.to}
-                  className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border ${colorMap[item.color]} transition-all duration-200`}
-                >
-                  <item.icon size={16} />
-                  <span className="text-[9px] font-semibold leading-tight text-center">{item.label}</span>
-                </Link>
-              </motion.div>
-            )
-          })}
+                <item.icon size={17} strokeWidth={2.5} />
+                <span className="text-[9px] font-black leading-tight text-center uppercase tracking-wide">{item.label}</span>
+              </Link>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
 
@@ -1037,42 +1045,29 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            {/* Outer container · aurora mesh background */}
-            <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-2xl"
-              style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #1e40af 60%, #0f766e 100%)' }}>
+            {/* Outer container · clean dark panel */}
+            <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 border-2 border-slate-800 dark:border-slate-700"
+              style={{ background: 'linear-gradient(160deg, #0f172a 0%, #111827 50%, #0f1f17 100%)', boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(52,211,153,0.08) inset' }}>
 
-              {/* Aurora blobs */}
-              <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }} />
-              <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }} />
-              <div className="absolute -top-10 right-1/4 w-56 h-56 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, transparent 70%)' }} />
-              <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%)' }} />
+              {/* Subtle left emerald glow */}
+              <div className="absolute top-0 left-0 w-48 h-48 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)' }} />
+              {/* Subtle right purple glow */}
+              <div className="absolute bottom-0 right-0 w-40 h-40 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)' }} />
 
-              {/* Noise texture overlay */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]">
-                <filter id="noise">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-                  <feColorMatrix type="saturate" values="0"/>
-                </filter>
-                <rect width="100%" height="100%" filter="url(#noise)"/>
-              </svg>
-
-              {/* Subtle grid lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.08]">
+              {/* Fine grid lines */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.05]">
                 <defs>
-                  <pattern id="grid" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
-                    <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5"/>
+                  <pattern id="stat-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+                    <path d="M 24 0 L 0 0 0 24" fill="none" stroke="white" strokeWidth="0.5"/>
                   </pattern>
                 </defs>
-                <rect width="100%" height="100%" fill="url(#grid)"/>
+                <rect width="100%" height="100%" fill="url(#stat-grid)"/>
               </svg>
 
-              {/* Top highlight */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"/>
-              <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"/>
+              {/* Top accent line */}
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500/0 via-emerald-400/50 to-emerald-500/0 pointer-events-none"/>
 
               <div className="relative grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
                 {stats.map((stat) => (
@@ -1133,20 +1128,29 @@ export default function AdminDashboard() {
       </AnimatePresence>
 
       {/* Video ambient · di kanan sebagai aksen */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 flex items-stretch">
+      <div className="relative overflow-hidden rounded-2xl border-2 border-slate-800 dark:border-slate-700 flex items-stretch"
+        style={{ background: 'linear-gradient(120deg, #0f172a 0%, #111827 60%, #0d1f17 100%)' }}>
         {/* Teks kiri */}
-        <div className="flex-1 p-5 flex flex-col justify-center gap-2 z-10">
+        <div className="flex-1 p-5 flex flex-col justify-center gap-2.5 z-10">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"/></span>
-            <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Live Dashboard</span>
+            <div className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"/>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"/>
+            </div>
+            <span className="text-emerald-400 text-[10px] font-black uppercase tracking-[0.18em]">Live Dashboard</span>
           </div>
-          <p className="text-white font-bold text-base sm:text-lg leading-snug">Pantau Aktivitas<br/>Sekolah Real-time</p>
-          <p className="text-slate-400 text-xs">Data absensi diperbarui otomatis setiap hari</p>
+          <p className="text-white font-black text-base sm:text-lg leading-snug tracking-tight">Pantau Aktivitas<br/><span className="text-emerald-400">Sekolah</span> Real-time</p>
+          <p className="text-slate-500 text-xs font-medium">Data absensi diperbarui otomatis setiap hari</p>
         </div>
         {/* Video kanan */}
         <div className="w-48 sm:w-64 lg:w-80 flex-shrink-0 relative">
           <DashboardVideo className="h-full min-h-[100px] rounded-none rounded-r-2xl"/>
-          <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-900 to-transparent pointer-events-none"/>
+          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0f172a] to-transparent pointer-events-none"/>
+          {/* LIVE badge */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-600/90 border border-red-500/50 shadow-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"/>
+            <span className="text-white text-[9px] font-black uppercase tracking-widest">LIVE</span>
+          </div>
         </div>
       </div>
 
