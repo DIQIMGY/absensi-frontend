@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,7 +25,7 @@ const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0)
 const fmtTime = (d) => d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 const fmtDate = (d) => d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-// ΓöÇΓöÇΓöÇ DayDot: absensi guru 7 hari ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ─── DayDot: absensi guru 7 hari ─────────────────────────────────────────────
 const DayDot = ({ item }) => {
   const s = item?.status?.toLowerCase() || 'belum'
   const cfg = {
@@ -33,8 +33,8 @@ const DayDot = ({ item }) => {
     terlambat: { bg: 'bg-amber-500',   letter: 'T', tc: 'text-amber-600' },
     alpha:     { bg: 'bg-rose-500',    letter: 'A', tc: 'text-rose-600' },
     izin:      { bg: 'bg-blue-500',    letter: 'I', tc: 'text-blue-600' },
-    belum:     { bg: 'bg-slate-200 dark:bg-slate-700', letter: '┬╖', tc: 'text-slate-400' },
-  }[s] || { bg: 'bg-slate-200 dark:bg-slate-700', letter: '┬╖', tc: 'text-slate-400' }
+    belum:     { bg: 'bg-slate-200 dark:bg-slate-700', letter: '·', tc: 'text-slate-400' },
+  }[s] || { bg: 'bg-slate-200 dark:bg-slate-700', letter: '·', tc: 'text-slate-400' }
   const isToday = item?.tanggal === new Date().toISOString().split('T')[0]
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -47,13 +47,13 @@ const DayDot = ({ item }) => {
       </motion.div>
       {item?.jam_masuk
         ? <span className="text-[8px] text-slate-400 font-mono">{item.jam_masuk.slice(0,5)}</span>
-        : <span className="text-[8px] text-slate-300 dark:text-slate-600">ΓÇö</span>
+        : <span className="text-[8px] text-slate-300 dark:text-slate-600">—</span>
       }
     </div>
   )
 }
 
-// ΓöÇΓöÇΓöÇ RankRow ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ─── RankRow ─────────────────────────────────────────────────────────────────
 const RANK_COLORS = {
   rajin: [
     { numC:'#92400e', rowBg:'bg-amber-50 dark:bg-amber-900/20', rowBorder:'border-amber-200 dark:border-amber-800/40', barC:'#fde68a', countBg:'bg-amber-100 dark:bg-amber-900/40', countC:'text-amber-700 dark:text-amber-300', ring:'#f59e0b' },
@@ -98,7 +98,7 @@ const RankRow = ({ s, i, valKey, colors }) => {
         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{s.nama_lengkap}</p>
         <p className="text-[10px] text-slate-400 truncate">{s.kelas?.nama_kelas || s.kelas || '-'}</p>
       </div>
-      <div className={`relative z-10 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums flex-shrink-0 ${a.countBg} ${a.countC}`}>{s[valKey]}├ù</div>
+      <div className={`relative z-10 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums flex-shrink-0 ${a.countBg} ${a.countC}`}>{s[valKey]}×</div>
     </motion.div>
   )
 }
@@ -205,10 +205,10 @@ export default function GuruDashboard() {
   return (
     <div className="pb-8">
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          WELCOME BANNER ΓÇö inspirasi referensi: banner besar dengan gradient
+      {/* ══════════════════════════════════════════════════════════════════
+          WELCOME BANNER — inspirasi referensi: banner besar dengan gradient
           dan dekorasi, info guru + status + quick stats
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      ══════════════════════════════════════════════════════════════════ */}
       <div className="relative overflow-hidden mx-4 sm:mx-6 mt-4 rounded-3xl shadow-xl"
         style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B73FF 100%)' }}>
         {/* Dekorasi blob */}
@@ -246,7 +246,7 @@ export default function GuruDashboard() {
                   <button onClick={() => navigate('/guru/profil')}
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white ring-2 ring-white/30 ${cfgStatus.bg} hover:opacity-90 transition-opacity shadow-sm`}>
                     {cfgStatus.label}
-                    {absensiHariIni?.jam_masuk && <span className="opacity-70">┬╖ {absensiHariIni.jam_masuk}</span>}
+                    {absensiHariIni?.jam_masuk && <span className="opacity-70">· {absensiHariIni.jam_masuk}</span>}
                   </button>
                   {rekapKelas.slice(0,3).map(k => (
                     <span key={k.kelas_id} className="inline-flex items-center gap-1 bg-white/15 text-white/80 text-[10px] px-2 py-0.5 rounded-full border border-white/20">
@@ -325,9 +325,9 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECTION 2 ΓÇö STAT CARDS (4 col) + ABSENSI GURU + STATISTIK
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ══════════════════════════════════════════════════════════════════
+          SECTION 2 — STAT CARDS (4 col) + ABSENSI GURU + STATISTIK
+      ══════════════════════════════════════════════════════════════════ */}
       <div className="px-4 sm:px-6 mt-5 space-y-4">
 
         {/* Libur + Event Countdown */}
@@ -448,7 +448,7 @@ export default function GuruDashboard() {
                 <span className="text-3xl font-black text-white tabular-nums leading-none">{statGuru.persentase_kehadiran || 0}</span>
                 <span className="text-white/60 text-sm mb-0.5">%</span>
                 <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${(statGuru.persentase_kehadiran||0) >= 80 ? 'bg-emerald-400/25 text-emerald-200' : 'bg-rose-400/25 text-rose-200'}`}>
-                  {(statGuru.persentase_kehadiran||0) >= 80 ? 'Γ£ô Baik' : 'ΓÜá Perlu'}
+                  {(statGuru.persentase_kehadiran||0) >= 80 ? '✓ Baik' : '⚠ Perlu'}
                 </span>
               </div>
               <div className="mt-2.5 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
@@ -460,7 +460,7 @@ export default function GuruDashboard() {
               {[
                 { label:'Hadir',    val:statGuru.total_hadir||0,                  color:'text-emerald-600 dark:text-emerald-400', bg:'bg-emerald-50 dark:bg-emerald-900/20', border:'border-emerald-100 dark:border-emerald-800/40', dot:'bg-emerald-500' },
                 { label:'Terlambat',val:statGuru.total_terlambat||0,             color:'text-amber-600 dark:text-amber-400',   bg:'bg-amber-50 dark:bg-amber-900/20',   border:'border-amber-100 dark:border-amber-800/40',   dot:'bg-amber-500' },
-                { label:'Menit ┬▒',  val:`${statGuru.total_menit_terlambat||0}m`, color:'text-rose-600 dark:text-rose-400',     bg:'bg-rose-50 dark:bg-rose-900/20',     border:'border-rose-100 dark:border-rose-800/40',     dot:'bg-rose-500' },
+                { label:'Menit ±',  val:`${statGuru.total_menit_terlambat||0}m`, color:'text-rose-600 dark:text-rose-400',     bg:'bg-rose-50 dark:bg-rose-900/20',     border:'border-rose-100 dark:border-rose-800/40',     dot:'bg-rose-500' },
               ].map(s => (
                 <div key={s.label} className={`${s.bg} ${s.border} border rounded-2xl p-3 text-center`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${s.dot} mx-auto mb-1.5`} />
@@ -621,9 +621,9 @@ export default function GuruDashboard() {
         )}
       </div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECTION 3 ΓÇö GRAFIK TREN + RANKING SISWA
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ══════════════════════════════════════════════════════════════════
+          SECTION 3 — GRAFIK TREN + RANKING SISWA
+      ══════════════════════════════════════════════════════════════════ */}
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
 
         {/* Grafik Tren Kehadiran */}
@@ -778,9 +778,9 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECTION 4 ΓÇö IZIN PENDING + ABSENSI TERBARU + RINGKASAN BULAN
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ══════════════════════════════════════════════════════════════════
+          SECTION 4 — IZIN PENDING + ABSENSI TERBARU + RINGKASAN BULAN
+      ══════════════════════════════════════════════════════════════════ */}
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Izin Pending */}
@@ -951,9 +951,9 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECTION 5 ΓÇö MENU CEPAT
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ══════════════════════════════════════════════════════════════════
+          SECTION 5 — MENU CEPAT
+      ══════════════════════════════════════════════════════════════════ */}
       <div className="px-4 sm:px-6 mt-4">
         {(pengaturan?.prestasi_siswa || []).some(s => s?.nama) && (
           <div className="mb-4">
