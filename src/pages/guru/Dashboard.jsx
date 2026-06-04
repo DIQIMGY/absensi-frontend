@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,7 +25,7 @@ const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0)
 const fmtTime = (d) => d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 const fmtDate = (d) => d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-// ─── DayDot: absensi guru 7 hari ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ DayDot: absensi guru 7 hari ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const DayDot = ({ item }) => {
   const s = item?.status?.toLowerCase() || 'belum'
   const cfg = {
@@ -33,8 +33,8 @@ const DayDot = ({ item }) => {
     terlambat: { bg: 'bg-amber-500',   letter: 'T', tc: 'text-amber-600' },
     alpha:     { bg: 'bg-rose-500',    letter: 'A', tc: 'text-rose-600' },
     izin:      { bg: 'bg-blue-500',    letter: 'I', tc: 'text-blue-600' },
-    belum:     { bg: 'bg-slate-200 dark:bg-slate-700', letter: '·', tc: 'text-slate-400' },
-  }[s] || { bg: 'bg-slate-200 dark:bg-slate-700', letter: '·', tc: 'text-slate-400' }
+    belum:     { bg: 'bg-slate-200 dark:bg-slate-700', letter: '┬╖', tc: 'text-slate-400' },
+  }[s] || { bg: 'bg-slate-200 dark:bg-slate-700', letter: '┬╖', tc: 'text-slate-400' }
   const isToday = item?.tanggal === new Date().toISOString().split('T')[0]
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -47,13 +47,13 @@ const DayDot = ({ item }) => {
       </motion.div>
       {item?.jam_masuk
         ? <span className="text-[8px] text-slate-400 font-mono">{item.jam_masuk.slice(0,5)}</span>
-        : <span className="text-[8px] text-slate-300 dark:text-slate-600">—</span>
+        : <span className="text-[8px] text-slate-300 dark:text-slate-600">ΓÇö</span>
       }
     </div>
   )
 }
 
-// ─── RankRow ─────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ RankRow ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const RANK_COLORS = {
   rajin: [
     { numC:'#92400e', rowBg:'bg-amber-50 dark:bg-amber-900/20', rowBorder:'border-amber-200 dark:border-amber-800/40', barC:'#fde68a', countBg:'bg-amber-100 dark:bg-amber-900/40', countC:'text-amber-700 dark:text-amber-300', ring:'#f59e0b' },
@@ -98,7 +98,7 @@ const RankRow = ({ s, i, valKey, colors }) => {
         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{s.nama_lengkap}</p>
         <p className="text-[10px] text-slate-400 truncate">{s.kelas?.nama_kelas || s.kelas || '-'}</p>
       </div>
-      <div className={`relative z-10 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums flex-shrink-0 ${a.countBg} ${a.countC}`}>{s[valKey]}×</div>
+      <div className={`relative z-10 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums flex-shrink-0 ${a.countBg} ${a.countC}`}>{s[valKey]}├ù</div>
     </motion.div>
   )
 }
@@ -205,23 +205,23 @@ export default function GuruDashboard() {
   return (
     <div className="pb-8">
 
-      {/* ══════════════════════════════════════════════════════════════════
-          WELCOME BANNER — inspirasi referensi: banner besar dengan gradient
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+          WELCOME BANNER ΓÇö inspirasi referensi: banner besar dengan gradient
           dan dekorasi, info guru + status + quick stats
-      ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative overflow-hidden mx-4 sm:mx-6 mt-4 rounded-2xl"
-        style={{ background: 'linear-gradient(120deg, #0f172a 0%, #1e293b 50%, #0f1f17 100%)', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-        {/* Top accent border */}
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
-        {/* Grid pattern */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      <div className="relative overflow-hidden mx-4 sm:mx-6 mt-4 rounded-3xl shadow-xl"
+        style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B73FF 100%)' }}>
+        {/* Dekorasi blob */}
+        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #a78bfa 0%, transparent 70%)' }} />
+        <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)' }} />
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage:'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize:'18px 18px' }} />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="relative z-10 p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
@@ -229,25 +229,24 @@ export default function GuruDashboard() {
             {/* Kiri: Avatar + info */}
             <div className="flex items-center gap-4 flex-1">
               <div className="relative flex-shrink-0">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-white/20"
-                  style={{ boxShadow: '0 0 0 2px rgba(129,140,248,0.5), 0 8px 20px rgba(0,0,0,0.3)' }}>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-2xl bg-white/20">
                   {fotoUrl
                     ? <img src={fotoUrl} alt={guru.nama} className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl font-black text-white/80">{guru.nama?.charAt(0) || 'G'}</div>}
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md border-2 border-white shadow-sm ${cfgStatus.dot}`} />
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white shadow-sm ${cfgStatus.dot}`} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-white/60 text-xs font-medium">{fmtDate(now)}</span>
                 </div>
-                <h1 className="text-white font-black text-lg sm:text-2xl leading-tight truncate tracking-tight">{guru.nama || 'Guru'}</h1>
+                <h1 className="text-white font-black text-lg sm:text-2xl leading-tight truncate">{guru.nama || 'Guru'}</h1>
                 <p className="text-white/50 text-xs truncate mb-2">{guru.nip || '-'}</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => navigate('/guru/profil')}
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white ring-2 ring-white/30 ${cfgStatus.bg} hover:opacity-90 transition-opacity shadow-sm`}>
                     {cfgStatus.label}
-                    {absensiHariIni?.jam_masuk && <span className="opacity-70">· {absensiHariIni.jam_masuk}</span>}
+                    {absensiHariIni?.jam_masuk && <span className="opacity-70">┬╖ {absensiHariIni.jam_masuk}</span>}
                   </button>
                   {rekapKelas.slice(0,3).map(k => (
                     <span key={k.kelas_id} className="inline-flex items-center gap-1 bg-white/15 text-white/80 text-[10px] px-2 py-0.5 rounded-full border border-white/20">
@@ -261,7 +260,7 @@ export default function GuruDashboard() {
             {/* Kanan: Jam + refresh + kehadiran % */}
             <div className="hidden sm:flex flex-col items-end gap-3 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 bg-slate-700/80 rounded-lg px-3 py-1.5 border border-white/20">
+                <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/20">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
@@ -277,7 +276,7 @@ export default function GuruDashboard() {
               <div className="text-right">
                 <p className="text-white/50 text-xs mb-0.5">Kehadiran Siswa Hari Ini</p>
                 <div className="flex items-end gap-1 justify-end">
-                  <span className="text-5xl font-black text-white tabular-nums leading-none tracking-tight">{pctHadir}</span>
+                  <span className="text-4xl font-black text-white tabular-nums leading-none">{pctHadir}</span>
                   <span className="text-white/60 text-lg mb-0.5">%</span>
                 </div>
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden mt-1.5">
@@ -292,7 +291,7 @@ export default function GuruDashboard() {
 
           {/* Mobile: jam + kehadiran */}
           <div className="flex items-center justify-between mt-4 sm:hidden">
-            <div className="flex items-center gap-1.5 bg-slate-700/80 rounded-lg px-3 py-1.5 border border-white/20">
+            <div className="flex items-center gap-1.5 bg-white/15 rounded-full px-3 py-1.5 border border-white/20">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
@@ -312,12 +311,12 @@ export default function GuruDashboard() {
           {/* Quick stat pills di bawah banner */}
           <div className="grid grid-cols-4 gap-2 mt-4">
             {[
-              { label:'Hadir',     val:totalHadir,     color:'text-emerald-200', bg:'bg-emerald-500/20 border-2 border-emerald-400/40' },
-              { label:'Terlambat', val:totalTerlambat, color:'text-amber-200',   bg:'bg-amber-500/20 border-2 border-amber-400/40' },
-              { label:'Izin',      val:totalIzin,      color:'text-blue-200',    bg:'bg-blue-500/20 border-2 border-blue-400/40' },
-              { label:'Alpha',     val:totalAlpha,     color:'text-rose-200',    bg:'bg-rose-500/20 border-2 border-rose-400/40' },
+              { label:'Hadir',     val:totalHadir,     color:'text-emerald-200', bg:'bg-emerald-500/20 border-emerald-400/30' },
+              { label:'Terlambat', val:totalTerlambat, color:'text-amber-200',   bg:'bg-amber-500/20 border-amber-400/30' },
+              { label:'Izin',      val:totalIzin,      color:'text-blue-200',    bg:'bg-blue-500/20 border-blue-400/30' },
+              { label:'Alpha',     val:totalAlpha,     color:'text-rose-200',    bg:'bg-rose-500/20 border-rose-400/30' },
             ].map(s => (
-              <div key={s.label} className={`${s.bg} rounded-xl p-2.5 text-center backdrop-blur-sm`}>
+              <div key={s.label} className={`${s.bg} border rounded-2xl p-2.5 text-center backdrop-blur-sm`}>
                 <p className={`text-xl font-black ${s.color} tabular-nums leading-none`}>{s.val}</p>
                 <p className="text-white/50 text-[9px] mt-0.5 font-medium">{s.label}</p>
               </div>
@@ -326,9 +325,9 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          SECTION 2 — STAT CARDS (4 col) + ABSENSI GURU + STATISTIK
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+          SECTION 2 ΓÇö STAT CARDS (4 col) + ABSENSI GURU + STATISTIK
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <div className="px-4 sm:px-6 mt-5 space-y-4">
 
         {/* Libur + Event Countdown */}
@@ -353,18 +352,18 @@ export default function GuruDashboard() {
             return (
               <motion.div key={s.label} initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
                 transition={{ delay: i*0.07, type:'spring', stiffness:120 }}
-                className={`relative overflow-hidden bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md transition-all duration-200 group cursor-default`}>
-                <div className="absolute inset-x-0 top-0 h-1" style={{ background:s.color }} />
+                className={`relative overflow-hidden bg-white dark:bg-slate-900 border ${s.border} rounded-2xl shadow-sm hover:shadow-lg transition-all duration-200 group cursor-default`}>
+                <div className="absolute inset-x-0 top-0 h-0.5" style={{ background:`linear-gradient(90deg, ${s.color}, ${s.color}88)` }} />
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${s.iconBg} group-hover:scale-110 transition-transform`}>
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${s.iconBg} group-hover:scale-110 transition-transform`}>
                       <s.icon size={18} style={{ color: s.color }} />
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums leading-none">{s.val}</p>
                     </div>
                   </div>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${s.tc} mb-2`}>{s.label}</p>
+                  <p className={`text-xs font-semibold ${s.tc} mb-2`}>{s.label}</p>
                   <div className="h-8 -mx-1">
                     <ResponsiveContainer width="100%" height="100%">
                       {s.chartType === 'bar' ? (
@@ -400,10 +399,10 @@ export default function GuruDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
           {/* Absensi Guru 7 Hari */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
                   <Calendar size={15} className="text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
@@ -432,22 +431,24 @@ export default function GuruDashboard() {
           </div>
 
           {/* Statistik Guru */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5 shadow-sm">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
                 <Activity size={15} className="text-violet-600 dark:text-violet-400" />
               </div>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Statistik Saya</p>
             </div>
             {/* Kehadiran % highlight */}
-            <div className="relative overflow-hidden rounded-lg p-4 mb-4 border-l-4 border-white/30"
+            <div className="relative overflow-hidden rounded-2xl p-4 mb-4"
               style={{ background:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/10" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <p className="text-[10px] text-white/60 font-semibold uppercase tracking-wide">Kehadiran Saya</p>
               <div className="flex items-end gap-1 mt-0.5">
-                <span className="text-5xl font-black text-white tabular-nums leading-none tracking-tight">{statGuru.persentase_kehadiran || 0}</span>
+                <span className="text-3xl font-black text-white tabular-nums leading-none">{statGuru.persentase_kehadiran || 0}</span>
                 <span className="text-white/60 text-sm mb-0.5">%</span>
                 <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${(statGuru.persentase_kehadiran||0) >= 80 ? 'bg-emerald-400/25 text-emerald-200' : 'bg-rose-400/25 text-rose-200'}`}>
-                  {(statGuru.persentase_kehadiran||0) >= 80 ? '✓ Baik' : '⚠ Perlu'}
+                  {(statGuru.persentase_kehadiran||0) >= 80 ? 'Γ£ô Baik' : 'ΓÜá Perlu'}
                 </span>
               </div>
               <div className="mt-2.5 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
@@ -459,9 +460,9 @@ export default function GuruDashboard() {
               {[
                 { label:'Hadir',    val:statGuru.total_hadir||0,                  color:'text-emerald-600 dark:text-emerald-400', bg:'bg-emerald-50 dark:bg-emerald-900/20', border:'border-emerald-100 dark:border-emerald-800/40', dot:'bg-emerald-500' },
                 { label:'Terlambat',val:statGuru.total_terlambat||0,             color:'text-amber-600 dark:text-amber-400',   bg:'bg-amber-50 dark:bg-amber-900/20',   border:'border-amber-100 dark:border-amber-800/40',   dot:'bg-amber-500' },
-                { label:'Menit ±',  val:`${statGuru.total_menit_terlambat||0}m`, color:'text-rose-600 dark:text-rose-400',     bg:'bg-rose-50 dark:bg-rose-900/20',     border:'border-rose-100 dark:border-rose-800/40',     dot:'bg-rose-500' },
+                { label:'Menit ┬▒',  val:`${statGuru.total_menit_terlambat||0}m`, color:'text-rose-600 dark:text-rose-400',     bg:'bg-rose-50 dark:bg-rose-900/20',     border:'border-rose-100 dark:border-rose-800/40',     dot:'bg-rose-500' },
               ].map(s => (
-                <div key={s.label} className={`${s.bg} ${s.border} border rounded-xl p-3 text-center`}>
+                <div key={s.label} className={`${s.bg} ${s.border} border rounded-2xl p-3 text-center`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${s.dot} mx-auto mb-1.5`} />
                   <p className={`text-base font-black tabular-nums leading-none ${s.color}`}>{s.val}</p>
                   <p className="text-[9px] text-slate-400 mt-1 font-medium">{s.label}</p>
@@ -474,15 +475,16 @@ export default function GuruDashboard() {
           <div className="flex flex-col gap-3">
             <motion.button whileHover={{ y:-2, scale:1.01 }} whileTap={{ scale:0.97 }}
               onClick={() => navigate('/guru/izins')}
-              className="relative overflow-hidden rounded-xl p-4 text-left flex-1 shadow-lg"
+              className="relative overflow-hidden rounded-2xl p-4 text-left flex-1 shadow-lg"
               style={{ background:'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-              <div className="absolute inset-x-0 top-0 h-[3px] bg-white/20" />
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/10" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-black text-white tabular-nums leading-none">{totalIzin}</p>
                   <p className="text-amber-100 text-[11px] font-semibold mt-1">Izin Pending</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center">
                   <Bell size={20} className="text-white" />
                 </div>
               </div>
@@ -492,15 +494,16 @@ export default function GuruDashboard() {
             </motion.button>
             <motion.button whileHover={{ y:-2, scale:1.01 }} whileTap={{ scale:0.97 }}
               onClick={() => navigate('/guru/absensi')}
-              className="relative overflow-hidden rounded-xl p-4 text-left flex-1 shadow-lg"
+              className="relative overflow-hidden rounded-2xl p-4 text-left flex-1 shadow-lg"
               style={{ background:'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
-              <div className="absolute inset-x-0 top-0 h-[3px] bg-white/20" />
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/10" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-black text-white tabular-nums leading-none">{totalAlpha}</p>
                   <p className="text-red-100 text-[11px] font-semibold mt-1">Alpha Hari Ini</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center">
                   <AlertTriangle size={20} className="text-white" />
                 </div>
               </div>
@@ -515,10 +518,10 @@ export default function GuruDashboard() {
         {rekapKelas.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             {/* Kelas cards */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
                     <BookOpen size={15} className="text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
@@ -546,8 +549,8 @@ export default function GuruDashboard() {
                   return (
                     <motion.div key={k.kelas_id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
                       transition={{ delay:i*0.05 }}
-                      className="relative overflow-hidden bg-slate-50 dark:bg-slate-800/60 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
-                      <div className="absolute inset-x-0 top-0 h-1 rounded-t-xl" style={{ background:accentColor }} />
+                      className="relative overflow-hidden bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4">
+                      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl" style={{ background:accentColor }} />
                       <div className="flex items-center justify-between mb-3">
                         <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{k.nama_kelas}</p>
                         <span className="text-xs font-black px-2.5 py-0.5 rounded-full"
@@ -574,9 +577,9 @@ export default function GuruDashboard() {
             </div>
 
             {/* Distribusi stacked bar */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-              <div className="flex items-center gap-2.5 px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
-                <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2.5 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center">
                   <BarChart2 size={15} className="text-teal-600 dark:text-teal-400" />
                 </div>
                 <div>
@@ -618,19 +621,20 @@ export default function GuruDashboard() {
         )}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          SECTION 3 — GRAFIK TREN + RANKING SISWA
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+          SECTION 3 ΓÇö GRAFIK TREN + RANKING SISWA
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
 
         {/* Grafik Tren Kehadiran */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
           <div className="relative overflow-hidden px-5 pt-4 pb-3"
             style={{ background:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-            <div className="absolute inset-x-0 top-0 h-[3px] bg-white/20 pointer-events-none" />
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
             <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
                   <TrendingUp size={15} className="text-white" />
                 </div>
                 <div>
@@ -708,8 +712,8 @@ export default function GuruDashboard() {
         </div>
 
         {/* Ranking Panel */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-          <div className="h-1 transition-all duration-500"
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+          <div className="h-0.5 transition-all duration-500"
             style={{ background: activeTab==='rajin'
               ? 'linear-gradient(90deg, transparent, #667eea, transparent)'
               : activeTab==='terlambat'
@@ -774,16 +778,16 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          SECTION 4 — IZIN PENDING + ABSENSI TERBARU + RINGKASAN BULAN
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+          SECTION 4 ΓÇö IZIN PENDING + ABSENSI TERBARU + RINGKASAN BULAN
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Izin Pending */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                 <FileText size={15} className="text-amber-600 dark:text-amber-400" />
               </div>
               <div>
@@ -833,10 +837,10 @@ export default function GuruDashboard() {
         </div>
 
         {/* Absensi Terbaru Siswa */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
                 <Activity size={15} className="text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
@@ -889,9 +893,9 @@ export default function GuruDashboard() {
         </div>
 
         {/* Ringkasan Bulan Ini */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
-            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
               <Target size={15} className="text-violet-600 dark:text-violet-400" />
             </div>
             <div>
@@ -947,9 +951,9 @@ export default function GuruDashboard() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          SECTION 5 — MENU CEPAT
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+          SECTION 5 ΓÇö MENU CEPAT
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <div className="px-4 sm:px-6 mt-4">
         {(pengaturan?.prestasi_siswa || []).some(s => s?.nama) && (
           <div className="mb-4">
