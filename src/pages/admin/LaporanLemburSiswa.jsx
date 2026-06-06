@@ -10,18 +10,22 @@ import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 
 // ── Helpers ───────────────────────────────────────────────────────────
+// Format menit → "2j 30m" atau "45m" — simple, tidak pakai desimal
 const mntToJam = (m) => {
-  const abs = Math.abs(m)
-  const j   = Math.floor(abs / 60)
-  const s   = abs % 60
+  const abs = Math.round(Math.abs(m))
+  const j = Math.floor(abs / 60)
+  const s = abs % 60
+  if (j === 0) return `${s}m`
   if (s === 0) return `${j}j`
   return `${j}j ${s}m`
 }
 
+// Format jam desimal → "2j 30m"
 const jamToStr = (jam) => {
   const totalMenit = Math.round(Number(jam || 0) * 60)
   const j = Math.floor(totalMenit / 60)
   const m = totalMenit % 60
+  if (j === 0) return `${m}m`
   if (m === 0) return `${j}j`
   return `${j}j ${m}m`
 }
