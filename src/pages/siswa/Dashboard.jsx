@@ -252,6 +252,9 @@ export default function SiswaDashboard() {
     alpha:     { list:ranking?.kelas?.siswa_alpha||[],     valKey:'total_alpha',     label:'Alpha',     color:'#ef4444', posisi:ranking?.kelas?.posisi_ranking?.alpha },
   }
   const activeRank = rankData[rankTab]
+  // Angkatan data helper
+  const angkatanData = ranking?.angkatan
+  const angkatanTingkat = angkatanData?.tingkat
 
   const streakMilestones = [1, 20, 50, 75]
   const nextMilestone = streakMilestones.find(m => streak < m) || 75
@@ -1010,6 +1013,52 @@ export default function SiswaDashboard() {
                           </div>
                         ))}
                       </div>
+
+                      {/* ── Ranking Angkatan ── */}
+                      {angkatanData && angkatanTingkat && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wide">🏆 Top 5 Angkatan {angkatanTingkat}</p>
+                          </div>
+                          <div className="space-y-1">
+                            {((rankTab==='rajin'?angkatanData.siswa_rajin:rankTab==='terlambat'?angkatanData.siswa_terlambat:angkatanData.siswa_alpha)||[]).slice(0,5).map((s,i)=>{
+                              const isMe = s.id===myId
+                              const medals = ['🥇','🥈','🥉']
+                              const angValKey = rankTab==='rajin'?'total_hadir':rankTab==='terlambat'?'total_terlambat':'total_alpha'
+                              const angColor  = rankTab==='rajin'?'#f59e0b':rankTab==='terlambat'?'#f97316':'#ef4444'
+                              return (
+                                <div key={s.id||i} className={`flex items-center gap-2 px-2 py-1.5 rounded-xl border transition-all ${
+                                  isMe?'bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40'
+                                  :i===0?'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/30'
+                                  :'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/40'}`}>
+                                  <span className="w-4 text-center flex-shrink-0 text-xs font-black">
+                                    {i<3?medals[i]:<span className="text-[9px] text-slate-400">#{i+1}</span>}
+                                  </span>
+                                  <RankAvatar siswa={s} size={26}/>
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-[10px] font-bold truncate ${isMe?'text-violet-700 dark:text-violet-300':'text-slate-700 dark:text-slate-200'}`}>
+                                      {s.nama_lengkap}{isMe&&<span className="ml-1 text-[8px] text-violet-400">(Kamu)</span>}
+                                    </p>
+                                    <p className="text-[8px] text-slate-400 truncate">{s.kelas||'-'}</p>
+                                  </div>
+                                  <span className="text-xs font-black tabular-nums flex-shrink-0" style={{color:angColor}}>{s[angValKey]}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                          {/* Posisi di angkatan */}
+                          <div className="mt-2 grid grid-cols-3 gap-1">
+                            {[{label:'Rajin',pos:angkatanData.posisi_ranking?.rajin,color:'text-amber-600 dark:text-amber-400',bg:'bg-amber-50 dark:bg-amber-900/20',border:'border-amber-100 dark:border-amber-800/40'},
+                              {label:'Terlambat',pos:angkatanData.posisi_ranking?.terlambat,color:'text-orange-600 dark:text-orange-400',bg:'bg-orange-50 dark:bg-orange-900/20',border:'border-orange-100 dark:border-orange-800/40'},
+                              {label:'Alpha',pos:angkatanData.posisi_ranking?.alpha,color:'text-rose-600 dark:text-rose-400',bg:'bg-rose-50 dark:bg-rose-900/20',border:'border-rose-100 dark:border-rose-800/40'}].map((item,i)=>(
+                              <div key={i} className={`rounded-xl px-2 py-1.5 ${item.bg} border ${item.border} text-center`}>
+                                <p className="text-[8px] text-slate-400 mb-0.5">{item.label}</p>
+                                <p className={`text-sm font-black ${item.color}`}>{item.pos?`#${item.pos}`:'—'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

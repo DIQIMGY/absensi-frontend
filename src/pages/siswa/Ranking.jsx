@@ -588,6 +588,7 @@ function Pagination({ page, lastPage, total, perPage, onPage, color }) {
 // ─── MAIN PAGE ────────────────────────────────────────────────
 export default function SiswaRankingPage() {
   const [tab, setTab]                     = useState('hadir')
+  const [tingkat, setTingkat]             = useState('')
   const [data, setData]                   = useState(null)
   const [loading, setLoading]             = useState(true)
   const [page, setPage]                   = useState(1)
@@ -595,34 +596,31 @@ export default function SiswaRankingPage() {
   const [selectedSiswa, setSelectedSiswa] = useState(null)
   const listRef = useRef(null)
 
-  const fetchRanking = useCallback(async (pg=1, sort=tab, isRefresh=false) => {
+  const fetchRanking = useCallback(async (pg=1, sort=tab, tk=tingkat, isRefresh=false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true)
     try {
-      const res = await siswaApi.getRankingSekolah({ page:pg, sort })
+      const params = { page:pg, sort }
+      if (tk) params.tingkat = tk
+      const res = await siswaApi.getRankingSekolah(params)
       setData(res.data.data)
       setPage(pg)
     } catch { /* silent */ }
     finally { setLoading(false); setRefreshing(false) }
-  }, [tab])
+  }, [tab, tingkat])
 
-  useEffect(() => { fetchRanking(1, tab) }, [tab])
+  useEffect(() => { fetchRanking(1, tab, tingkat) }, [tab, tingkat])
 
   // Badge ganti → update list instan
   useEffect(() => {
     const onBadgeChanged = (e) => {
       const newBadge = e.detail?.activeBadge ?? null
-      // 1. Patch list data
       setData(prev => {
         if (!prev) return prev
         const myId = prev.my_id
         const patch = (list) => list?.map(s => s.id===myId ? { ...s, active_badge:newBadge } : s) ?? []
         return { ...prev, data:patch(prev.data) }
       })
-      // 2. Patch modal jika sedang terbuka untuk user yang sama
-      setSelectedSiswa(prev => {
-        if (!prev) return prev
-        return { ...prev, active_badge: newBadge }
-      })
+      setSelectedSiswa(prev => prev ? { ...prev, active_badge: newBadge } : prev)
     }
     window.addEventListener('badge-changed', onBadgeChanged)
     return () => window.removeEventListener('badge-changed', onBadgeChanged)
@@ -630,7 +628,7 @@ export default function SiswaRankingPage() {
 
   const handleTab  = (key) => { setTab(key); setPage(1) }
   const handlePage = (pg) => {
-    fetchRanking(pg, tab)
+    fetchRanking(pg, tab, tingkat)
     setTimeout(() => listRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 80)
   }
 
@@ -644,6 +642,13 @@ export default function SiswaRankingPage() {
   const valKey    = tab==='hadir' ? 'total_hadir' : tab==='terlambat' ? 'total_terlambat' : 'total_alpha'
   const maxVal    = items[0]?.[valKey] || 1
 
+  const TINGKAT_OPTS = [
+    { value: '', label: 'Semua', emoji: '🏫' },
+    { value: '10', label: 'Kelas 10', emoji: '1️⃣0️⃣' },
+    { value: '11', label: 'Kelas 11', emoji: '1️⃣1️⃣' },
+    { value: '12', label: 'Kelas 12', emoji: '1️⃣2️⃣' },
+  ]
+
   return (
     <div className="max-w-2xl lg:max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 pb-10">
 
@@ -653,7 +658,7 @@ export default function SiswaRankingPage() {
       )}
 
       {/* HEADER */}
-      <div className="flex items-start justify-between mb-5">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:activeTab.gradFull }}>
@@ -664,13 +669,31 @@ export default function SiswaRankingPage() {
           <p className="text-[11px] sm:text-xs text-slate-400 ml-10">
             {data?.bulan ? `Bulan ${data.bulan}/${data.tahun} · ` : ''}
             <span className="font-semibold text-slate-500 dark:text-slate-300">{total} siswa</span>
+            {tingkat && <span className="ml-1 text-violet-500 font-semibold">· Kelas {tingkat}</span>}
           </p>
         </div>
         <motion.button whileTap={{ scale:0.9 }}
-          onClick={() => fetchRanking(page, tab, true)} disabled={refreshing}
+          onClick={() => fetchRanking(page, tab, tingkat, true)} disabled={refreshing}
           className="mt-1 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
           <RefreshCw size={14} className={refreshing?'animate-spin':''}/>
         </motion.button>
+      </div>
+
+      {/* FILTER ANGKATAN */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1">
+        {TINGKAT_OPTS.map(opt => (
+          <motion.button key={opt.value} whileTap={{ scale: 0.92 }}
+            onClick={() => { setTingkat(opt.value); setPage(1) }}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
+              tingkat === opt.value
+                ? 'text-white shadow-lg'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+            style={tingkat === opt.value ? { background: activeTab.gradFull } : {}}>
+            <span>{opt.emoji}</span>
+            <span>{opt.label}</span>
+          </motion.button>
+        ))}
       </div>
 
       {/* TABS */}
