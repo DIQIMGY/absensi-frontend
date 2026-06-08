@@ -537,6 +537,8 @@ export default function SiswaProfil() {
             </div>
           ))}
         </div>
+      </div>
+
       {/* TABS */}
       <div className="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-700/60 overflow-x-auto">
         <div className="flex min-w-max">
