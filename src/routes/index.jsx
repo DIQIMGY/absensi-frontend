@@ -36,6 +36,7 @@ import Ranking from '../pages/admin/Ranking'
 import Logging from '../pages/admin/Logging'
 import Alumni from '../pages/admin/Alumni'
 import NaikKelas from '../pages/admin/NaikKelas'
+import AdminProfil from '../pages/admin/Profil'
 
 // Guru Pages
 import GuruDashboard from '../pages/guru/Dashboard'
@@ -114,6 +115,7 @@ export const router = createBrowserRouter([
       { path: 'logging',          element: <Logging /> },
       { path: 'alumni',           element: <Alumni /> },
       { path: 'naik-kelas',       element: <NaikKelas /> },
+      { path: 'profil',           element: <AdminProfil /> },
     ],
   },
   {

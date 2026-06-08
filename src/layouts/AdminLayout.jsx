@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, GraduationCap, UserCheck, School, BookOpen,
   Calendar, BookMarked, ClipboardList, Settings, FileText, Trophy,
   AlertCircle, Activity, BarChart3, TrendingUp, Shield, LogOut,
-  UserCog, ClipboardCheck, DoorOpen, DoorClosed, History, Timer, BookCheck,
+  UserCog, ClipboardCheck, DoorOpen, DoorClosed, History, Timer, BookCheck, User,
 } from 'lucide-react'
 import { adminApi } from '../services/adminService'
 import { useThemeStore } from '../stores/themeStore'
@@ -54,6 +54,7 @@ const menuGroups = [
     title: 'Pengaturan',
     items: [
       { path: '/admin/pengaturan', icon: Settings, label: 'Pengaturan' },
+      { path: '/admin/profil',     icon: User,     label: 'Profil Saya' },
     ],
   },
 ]
