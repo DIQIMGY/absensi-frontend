@@ -389,9 +389,7 @@ export default function AdminProfil() {
                         <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: strength.w.replace('w-', '').includes('/') ? `${eval(strength.w.replace('w-', '').replace('/', '/'))*100}%` : '100%' }}
-                            className={`h-full rounded-full transition-all ${strength.color}`}
-                            style={{ width: { 'w-1/5': '20%', 'w-2/5': '40%', 'w-3/5': '60%', 'w-4/5': '80%', 'w-full': '100%' }[strength.w] }}
+                          style={{ width: { 'w-1/5': '20%', 'w-2/5': '40%', 'w-3/5': '60%', 'w-4/5': '80%', 'w-full': '100%' }[strength.w] }}
                           />
                         </div>
                         <p className={`text-[10px] font-semibold mt-1 ${strength.text}`}>{strength.label}</p>
