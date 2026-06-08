@@ -7,7 +7,6 @@ import {
   GraduationCap, Shield, Disc,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
-import { BadgeOverlay } from '../../components/GachaHarian'
 
 const TABS = [
   { key:'hadir',     label:'Rajin',     emoji:'🏆', color:'#10b981', gradFull:'linear-gradient(135deg,#059669,#10b981,#34d399)', text:'text-emerald-600 dark:text-emerald-400', icon:CheckCircle,   desc:'Paling sering hadir' },
@@ -22,18 +21,15 @@ const PODIUM_CFG = [
 
 function SiswaAvatar({ siswa, size=44 }) {
   const [err, setErr] = useState(false)
-  // Reset error state saat badge berubah (key prop di parent handle ini)
   const initial = (siswa?.nama_lengkap||'S').charAt(0).toUpperCase()
-  const hasBadge = !!siswa?.active_badge
   return (
     <div className="relative flex-shrink-0" style={{ width:size, height:size }}>
-      <div className={`w-full h-full overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white ${hasBadge?'rounded-full':'rounded-2xl'}`}
+      <div className="w-full h-full overflow-hidden bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center font-black text-white rounded-2xl"
         style={{ fontSize:Math.round(size*0.38) }}>
         {siswa?.foto_url && !err
           ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={()=>setErr(true)}/>
           : initial}
       </div>
-      {hasBadge && <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="sm"/>}
     </div>
   )
 }
@@ -427,14 +423,9 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                   className="relative"
                   style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}
                 >
-                  <div className={`w-full h-full overflow-hidden shadow-xl ${
-                    siswa.active_badge ? 'rounded-full' : 'rounded-3xl'
-                  }`}>
+                  <div className="w-full h-full overflow-hidden shadow-xl rounded-3xl">
                     <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover"/>
                   </div>
-                  {siswa.active_badge && (
-                    <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="lg"/>
-                  )}
                 </motion.div>
 
                 {/* Info bawah */}
@@ -502,7 +493,7 @@ function PodiumSection({ items, valKey, activeTab, myId, onAvatarClick }) {
                       boxShadow:`0 0 16px ${isMe?'#7c3aed66':cfg.ringColor+'44'}`,
                     }}>
                     <div className="rounded-full p-[2px] bg-white dark:bg-slate-900">
-                      <SiswaAvatar key={`${siswa.id}-${siswa.active_badge}`} siswa={siswa} size={cfg.size}/>
+                      <SiswaAvatar siswa={siswa} size={cfg.size}/>
                     </div>
                   </motion.div>
                   {isMe && (
@@ -609,22 +600,6 @@ export default function SiswaRankingPage() {
   }, [tab, tingkat])
 
   useEffect(() => { fetchRanking(1, tab, tingkat) }, [tab, tingkat])
-
-  // Badge ganti → update list instan
-  useEffect(() => {
-    const onBadgeChanged = (e) => {
-      const newBadge = e.detail?.activeBadge ?? null
-      setData(prev => {
-        if (!prev) return prev
-        const myId = prev.my_id
-        const patch = (list) => list?.map(s => s.id===myId ? { ...s, active_badge:newBadge } : s) ?? []
-        return { ...prev, data:patch(prev.data) }
-      })
-      setSelectedSiswa(prev => prev ? { ...prev, active_badge: newBadge } : prev)
-    }
-    window.addEventListener('badge-changed', onBadgeChanged)
-    return () => window.removeEventListener('badge-changed', onBadgeChanged)
-  }, [])
 
   const handleTab  = (key) => { setTab(key); setPage(1) }
   const handlePage = (pg) => {
@@ -806,7 +781,7 @@ export default function SiswaRankingPage() {
                     {/* Avatar clickable */}
                     <motion.div whileTap={{ scale:0.9 }} className="cursor-pointer flex-shrink-0"
                       onClick={() => setSelectedSiswa(siswa)}>
-                      <SiswaAvatar key={`${siswa.id}-${siswa.active_badge}`} siswa={siswa} size={42}/>
+                      <SiswaAvatar siswa={siswa} size={42}/>
                     </motion.div>
 
                     {/* Info */}

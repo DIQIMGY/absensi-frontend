@@ -29,8 +29,6 @@ import AlamIndonesia from '../../components/AlamIndonesia'
 import KampusImpian from '../../components/KampusImpian'
 import TopKampus from '../../components/TopKampus'
 import SiswaBerprestasi from '../../components/SiswaBerprestasi'
-import GachaHarian, { BadgeOverlay } from '../../components/GachaHarian'
-import BorderWindowNotification from '../../components/BorderWindowNotification'
 import toast from 'react-hot-toast'
 
 const STATUS_CFG = {
@@ -63,16 +61,14 @@ const Avatar = ({ src, name, size = 32, className = '' }) => {
 // Avatar dengan border badge support
 const RankAvatar = ({ siswa, size = 32, ringClass = '' }) => {
   const [err, setErr] = useState(false)
-  const hasBadge = !!siswa?.active_badge
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <div className={`w-full h-full overflow-hidden flex items-center justify-center font-bold bg-gradient-to-br from-violet-400 to-indigo-500 text-white ${hasBadge ? 'rounded-full' : `rounded-xl ${ringClass}`}`}
+      <div className={`w-full h-full overflow-hidden flex items-center justify-center font-bold bg-gradient-to-br from-violet-400 to-indigo-500 text-white rounded-xl ${ringClass}`}
         style={{ fontSize: Math.round(size * 0.38) }}>
         {siswa?.foto_url && !err
           ? <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" onError={() => setErr(true)}/>
           : (siswa?.nama_lengkap || '?').charAt(0).toUpperCase()}
       </div>
-      {hasBadge && <BadgeOverlay badgeId={siswa.active_badge} badges={[]} size="sm"/>}
     </div>
   )
 }
@@ -93,8 +89,6 @@ export default function SiswaDashboard() {
   const [events, setEvents] = useState([])
   const [eventFotos, setEventFotos] = useState([])
   const [topKey, setTopKey] = useState(0)
-  const [activeBadge, setActiveBadge] = useState(null)
-  const [ownedBadges, setOwnedBadges] = useState([])
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
 
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t) }, [])
@@ -139,24 +133,6 @@ export default function SiswaDashboard() {
         const d = izinListRes.value.data
         setIzinList(Array.isArray(d) ? d : (d?.data || []))
       }
-      // Gacha status (silent)
-      try {
-        const gRes = await siswaApi.getGachaStatus()
-        let activeBadgeId = gRes.data.active_badge
-        let badges = gRes.data.badges || []
-        try {
-          const bwRes = await siswaApi.getBorderWindowStatus()
-          // Kedua badge bisa aktif — window_badge dan gacha_badge
-          // active_badge di DB sudah mencerminkan yang terakhir dipasang
-          // Kalau window badge masih valid, gunakan itu sebagai prioritas tampilan
-          if (bwRes.data.window_badge && bwRes.data.border_sisa_detik > 0) {
-            // Ada window badge valid — pakai active_badge dari DB (bisa window atau gacha)
-            if (bwRes.data.active_badge) activeBadgeId = bwRes.data.active_badge
-          }
-        } catch { /* ignore */ }
-        setActiveBadge(activeBadgeId)
-        setOwnedBadges(badges)
-      } catch { /* ignore */ }
     } catch { toast.error('Gagal memuat data') }
     finally { setLoading(false); setRefreshing(false) }
   }, [])
@@ -168,38 +144,6 @@ export default function SiswaDashboard() {
     const poll = setInterval(() => fetchAll(true), 30000)
     return () => clearInterval(poll)
   }, [fetchAll])
-
-  // Saat badge ganti (dari Profil/GachaHarian) — update ranking list langsung tanpa re-fetch
-  useEffect(() => {
-    const onBadgeChanged = (e) => {
-      const newBadge = e.detail?.activeBadge ?? null
-      setActiveBadge(newBadge)
-      // Patch active_badge di semua list ranking kelas & sekolah untuk user ini
-      setRanking(prev => {
-        if (!prev) return prev
-        const myId = data?.siswa?.id
-        if (!myId) return prev
-        const patch = (list) => list?.map(s => s.id === myId ? { ...s, active_badge: newBadge } : s) ?? []
-        return {
-          ...prev,
-          kelas: {
-            ...prev.kelas,
-            siswa_rajin:     patch(prev.kelas?.siswa_rajin),
-            siswa_terlambat: patch(prev.kelas?.siswa_terlambat),
-            siswa_alpha:     patch(prev.kelas?.siswa_alpha),
-          },
-          sekolah: {
-            ...prev.sekolah,
-            siswa_rajin:     patch(prev.sekolah?.siswa_rajin),
-            siswa_terlambat: patch(prev.sekolah?.siswa_terlambat),
-            siswa_alpha:     patch(prev.sekolah?.siswa_alpha),
-          },
-        }
-      })
-    }
-    window.addEventListener('badge-changed', onBadgeChanged)
-    return () => window.removeEventListener('badge-changed', onBadgeChanged)
-  }, [data?.siswa?.id])
 
   const getGreeting = () => {
     const h = now.getHours()
@@ -275,7 +219,6 @@ export default function SiswaDashboard() {
       <RankingNotification show={showRankingNotif} ranking={ranking} onClose={() => setShowRankingNotif(false)}/>
       <PulangNotification/>
       <SantaiDirumahNotification/>
-      <BorderWindowNotification/>
       {absenHariIni && <SelamatPulangNotification statusKehadiran={absenHariIni.status} dataAbsensi={absenHariIni}/>}
 
       <div className="pb-12">
@@ -301,22 +244,16 @@ export default function SiswaDashboard() {
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 overflow-hidden shadow-lg bg-white/15 ${
-                  activeBadge
-                    ? 'rounded-full ring-0'
-                    : 'rounded-2xl ring-2 ring-white/25'
-                }`}>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 overflow-hidden shadow-lg bg-white/15 rounded-2xl ring-2 ring-white/25">
                   {data?.siswa?.foto
                     ? <img src={data.siswa.foto} alt="foto" className="w-full h-full object-cover"/>
                     : <div className="w-full h-full flex items-center justify-center text-xl font-black text-white/80">
                         {(data?.siswa?.nama||user?.name||'S').charAt(0).toUpperCase()}
                       </div>}
                 </div>
-                {/* Badge overlay di foto profil */}
-                {activeBadge && <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="md" />}
-                {!activeBadge && <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white/40 shadow-sm ${
+                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white/40 shadow-sm ${
                   statusHariIni==='hadir'?'bg-emerald-400':statusHariIni==='terlambat'?'bg-amber-400':
-                  statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/30'}`}/>}
+                  statusHariIni==='izin'?'bg-violet-400':statusHariIni==='alpha'?'bg-rose-400':'bg-white/30'}`}/>
               </div>
 
               {/* Info */}
@@ -1158,13 +1095,6 @@ export default function SiswaDashboard() {
             )}
           </div>
 
-
-          {/* Gacha Harian floating di pojok kanan atas */}
-          <GachaHarian floating onBadgeChange={(newBadgeId, newBadges) => {
-            setActiveBadge(newBadgeId)
-            window.dispatchEvent(new CustomEvent('badge-changed', { detail: { activeBadge: newBadgeId } }))
-            setOwnedBadges(newBadges || [])
-          }} />
 
           {/* Kampus Impian */}
           <KampusImpian pctHadir={pctHadir} totalAlpha={data?.total_alpha||0} totalTerlambat={data?.total_terlambat||0} streak={streak}

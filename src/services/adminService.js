@@ -125,11 +125,6 @@ export const adminApi = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
 
-  // Border Window
-  getBorderWindowStatus: () => api.get('/admin/border-window'),
-  bukaBorderWindow: (durasi, limitedBadges = []) => api.post('/admin/border-window/buka', { durasi, limited_badges: limitedBadges }),
-  tutupBorderWindow: () => api.post('/admin/border-window/tutup'),
-  
   // Laporan
   getLaporanHarian: (params) => api.get('/admin/laporan/harian', { params }),
   getLaporanBulanan: (params) => api.get('/admin/laporan/bulanan', { params }),

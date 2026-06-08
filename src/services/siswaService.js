@@ -41,16 +41,6 @@ export const siswaApi = {
   }),
   hapusVideoKampus: () => api.delete('/siswa/kampus-impian/video'),
 
-  // Gacha Harian
-  getGachaStatus: () => api.get('/siswa/gacha/status'),
-  rollGacha: () => api.post('/siswa/gacha/roll'),
-  equipBadge: (badge_id) => api.post('/siswa/gacha/equip', { badge_id }),
-  unequipBadge: () => api.post('/siswa/gacha/unequip'),
-
-  // Border Window
-  getBorderWindowStatus: () => api.get('/siswa/border-window'),
-  pilihBorderWindow: (badge_id) => api.post('/siswa/border-window/pilih', { badge_id }),
-
   // Ranking Sekolah
   getRankingSekolah: (params) => api.get('/siswa/ranking-sekolah', { params }),
 

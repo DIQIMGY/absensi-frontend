@@ -5,7 +5,7 @@ import {
   Camera, Save, QrCode, Loader, Download,
   X, Eye, AlertCircle, GraduationCap,
   UserCircle, Home, Award, BookOpen,
-  CheckCircle, Shield, Sparkles, Lock, Send, MessageSquare, Music, Disc,
+  CheckCircle, Shield, Sparkles, Send, MessageSquare, Music, Disc,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 import { useAuthStore } from '../../stores/authStore'
@@ -14,23 +14,11 @@ import { publicApi } from '../../services/publicApi'
 import toast from 'react-hot-toast'
 import Modal from '../../components/Modal'
 import QrCard from '../../components/QrCard'
-import { BadgeOverlay, BADGE_POOL, RARITY_CFG } from '../../components/GachaHarian'
 
 const iv = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 14 } } }
 const cv = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }
 
 const inputCls = 'w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all'
-
-// Format detik → "23j 59m" atau "59m 30d"
-function formatSisaBorder(detik) {
-  if (!detik || detik <= 0) return null
-  const h = Math.floor(detik / 3600)
-  const m = Math.floor((detik % 3600) / 60)
-  const s = detik % 60
-  if (h > 0) return `${h}j ${m}m lagi`
-  if (m > 0) return `${m}m ${s}d lagi`
-  return `${s}d lagi`
-}
 
 const TABS = [
   { id: 'profil',   label: 'Profil',   icon: User },
@@ -55,15 +43,6 @@ export default function SiswaProfil() {
   const [coverPreview, setCoverPreview] = useState(null)
   const [coverType, setCoverType] = useState('image') // 'image' | 'video'
   const [activeTab, setActiveTab] = useState('profil')
-  const [activeBadge, setActiveBadge] = useState(null)
-  const [ownedBadges, setOwnedBadges] = useState([])
-  const [showBorderModal, setShowBorderModal] = useState(false)
-  const [showKoleksiModal, setShowKoleksiModal] = useState(false)
-  const [borderWindow, setBorderWindow] = useState(null)
-  const [borderSisaDetik, setBorderSisaDetik] = useState(0)
-  const [windowPickedBadgeId, setWindowPickedBadgeId] = useState(null)
-  const [windowBadgeIds, setWindowBadgeIds] = useState([])
-  const [permanentBadges, setPermanentBadges] = useState([])
   // Pesan Dispen
   const [showPesanModal, setShowPesanModal] = useState(false)
   // Musik Favorit
@@ -88,22 +67,7 @@ export default function SiswaProfil() {
   const { user, updateUser } = useAuthStore()
   const { pengaturan } = usePengaturanStore()
 
-  useEffect(() => { fetchProfil(); fetchGacha() }, [])
-
-  const fetchGacha = async () => {
-    try {
-      const res = await siswaApi.getGachaStatus()
-      setActiveBadge(res.data.active_badge)
-      setOwnedBadges(res.data.badges || [])
-      setPermanentBadges(res.data.permanent_badges || [])
-    } catch { /* silent */ }
-  }
-
-  // Broadcast perubahan active badge ke layout
-  const updateActiveBadge = (badgeId) => {
-    setActiveBadge(badgeId)
-    window.dispatchEvent(new CustomEvent('badge-changed', { detail: { activeBadge: badgeId } }))
-  }
+  useEffect(() => { fetchProfil() }, [])
 
   const fetchGuruList = async () => {
     try {
@@ -188,51 +152,6 @@ export default function SiswaProfil() {
       window.dispatchEvent(new CustomEvent('musik-changed'))
     } catch { toast.error('Gagal menghapus') }
   }
-
-  // Preload gambar border yang dimiliki + aktif saat modal dibuka
-  const handleOpenBorderModal = () => {
-    setShowBorderModal(true)
-    const toPreload = [
-      ...ownedBadges.map(b => BADGE_POOL.find(p => p.id === b.id)?.borderImg).filter(Boolean),
-      ...windowBadgeIds.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
-      ...permanentBadges.map(id => BADGE_POOL.find(p => p.id === id)?.borderImg).filter(Boolean),
-      activeBadge ? BADGE_POOL.find(p => p.id === activeBadge)?.borderImg : null,
-    ].filter(Boolean)
-    toPreload.forEach(src => { const img = new Image(); img.src = src })
-  }
-  const fetchBorderWindow = async () => {
-    try {
-      const res = await siswaApi.getBorderWindowStatus()
-      setBorderWindow(res.data)
-      if (res.data.active_badge !== undefined) setActiveBadge(res.data.active_badge)
-      setBorderSisaDetik(res.data.border_sisa_detik || 0)
-      // Simpan semua window badges aktif
-      const wBadges = res.data.window_badges || []
-      setWindowBadgeIds(wBadges.map(wb => wb.id))
-      // backward compat
-      if (wBadges.length > 0) {
-        setWindowPickedBadgeId(res.data.window_badge || wBadges[0]?.id || null)
-      } else {
-        setWindowPickedBadgeId(null)
-      }    } catch { /* silent */ }
-  }
-  // Countdown lokal sisa waktu border aktif
-  useEffect(() => {
-    if (!borderSisaDetik || borderSisaDetik <= 0) return
-    const t = setInterval(() => {
-      setBorderSisaDetik(prev => {
-        if (prev <= 1) { fetchBorderWindow(); return 0 }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(t)
-  }, [borderSisaDetik > 0])
-
-  useEffect(() => {
-    fetchBorderWindow()
-    const interval = setInterval(fetchBorderWindow, 30000)
-    return () => clearInterval(interval)
-  }, [])
 
   const fetchProfil = async () => {
     try {
@@ -544,18 +463,13 @@ export default function SiswaProfil() {
         <div className="absolute left-4 sm:left-6 -bottom-10 sm:-bottom-12">
           <div className="relative">
             <div
-              className={`w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-xl bg-violet-700 ${
-                activeBadge && !editMode
-                  ? 'rounded-full ring-0'
-                  : 'rounded-2xl ring-4 ring-white dark:ring-slate-900'
-              } ${!editMode && avatar ? 'cursor-pointer' : ''}`}
+              className={`w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-xl bg-violet-700 rounded-2xl ring-4 ring-white dark:ring-slate-900 ${!editMode && avatar ? 'cursor-pointer' : ''}`}
               onClick={() => { if (!editMode && avatar) setShowFotoViewer(true) }}
             >
               {avatar
                 ? <img src={avatar} alt={profil?.nama_lengkap} className="w-full h-full object-cover"/>
                 : <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl font-black text-white">{initial}</div>}
             </div>
-            {activeBadge && !editMode && <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="lg"/>}
             {editMode && (
               <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-violet-500 hover:bg-violet-400 rounded-xl flex items-center justify-center cursor-pointer shadow-lg border-2 border-white dark:border-slate-900 transition-all">
                 <Camera size={13} className="text-white"/>
@@ -623,108 +537,6 @@ export default function SiswaProfil() {
             </div>
           ))}
         </div>
-        {ownedBadges.length > 0 && (
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Badge Koleksi</p>
-            <div className="flex flex-wrap gap-1.5">
-              {ownedBadges.map(badge => {
-                const cfg = RARITY_CFG[badge.rarity] || RARITY_CFG.common
-                const isActive = activeBadge === badge.id
-                return (
-                  <button key={badge.id}
-                    onClick={async () => {
-                      try {
-                        if (isActive) { await siswaApi.unequipBadge(); updateActiveBadge(null); toast.success('Badge dilepas') }
-                        else { await siswaApi.equipBadge(badge.id); setActiveBadge(badge.id); toast.success('Badge terpasang!') }
-                      } catch { toast.error('Gagal') }
-                    }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                      isActive ? 'bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 shadow-sm'
-                               : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
-                    }`}>
-                    <span>{badge.emoji}</span>
-                    <span className="hidden sm:inline">{badge.name}</span>
-                    <span className={`text-[9px] font-bold ${cfg.text}`}>{cfg.label}</span>
-                    {isActive && <span className="text-[9px] text-emerald-500">✓</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Button Border Tersedia + Koleksiku */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => handleOpenBorderModal()}
-            className="flex-1 flex items-center justify-between px-4 py-3 rounded-2xl transition-all group"
-            style={{
-              background: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
-                ? 'linear-gradient(135deg, rgba(120,60,200,0.15) 0%, rgba(60,100,220,0.12) 100%)'
-                : 'linear-gradient(135deg, rgba(120,60,200,0.08) 0%, rgba(60,100,220,0.08) 100%)',
-              border: borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
-                ? '1px solid rgba(160,100,255,0.35)'
-                : '1px solid rgba(120,60,200,0.15)',
-            }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center relative"
-                style={{ background: 'linear-gradient(135deg, rgba(120,60,200,0.15), rgba(60,100,220,0.15))' }}>
-                <Sparkles size={16} className="text-violet-500 dark:text-violet-400"/>
-                {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih && (
-                  <motion.span animate={{ scale:[1,1.4,1], opacity:[1,0.5,1] }} transition={{ repeat:Infinity, duration:1.2 }}
-                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-violet-500 border-2 border-white dark:border-slate-900"/>
-                )}
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-black text-slate-800 dark:text-white">Border Tersedia</p>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                  {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
-                    ? '✨ Window aktif — pilih border bebas sekarang!'
-                    : borderSisaDetik > 0
-                    ? `🕐 Border aktif · ${formatSisaBorder(borderSisaDetik)}`
-                    : `${ownedBadges.length} dimiliki · ${BADGE_POOL.filter(b => b.borderImg).length} total`
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {ownedBadges.length > 0 && (
-                <div className="flex -space-x-1.5">
-                  {ownedBadges.slice(0,3).map(b => {
-                    const pool = BADGE_POOL.find(p => p.id === b.id)
-                    return pool?.borderImg ? (
-                      <div key={b.id} className="w-6 h-6 rounded-full overflow-hidden border-2 border-white dark:border-slate-900 bg-slate-200">
-                        <img src={pool.borderImg} alt="" className="w-full h-full object-cover"/>
-                      </div>
-                    ) : null
-                  })}
-                </div>
-              )}
-              <svg className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-              </svg>
-            </div>
-          </motion.button>
-
-          {/* Button Koleksiku */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setShowKoleksiModal(true)}
-            className="flex flex-col items-center justify-center px-4 py-3 rounded-2xl transition-all flex-shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, rgba(0,180,220,0.08) 0%, rgba(0,100,160,0.08) 100%)',
-              border: permanentBadges.length > 0 ? '1px solid rgba(0,229,255,0.3)' : '1px solid rgba(0,180,220,0.15)',
-            }}>
-            <span className="text-base leading-none">🎒</span>
-            <p className="text-[9px] font-black text-slate-700 dark:text-white mt-1">Koleksiku</p>
-            <p className="text-[8px] text-slate-400 dark:text-slate-500 mt-0.5">
-              {permanentBadges.length + ownedBadges.length + windowBadgeIds.length}
-            </p>
-          </motion.button>
-        </div>
-      </div>
-
       {/* TABS */}
       <div className="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-700/60 overflow-x-auto">
         <div className="flex min-w-max">
@@ -892,499 +704,6 @@ export default function SiswaProfil() {
         </div>
       </Modal>
 
-      {/* ── MODAL BORDER TERSEDIA ── */}
-      <AnimatePresence>
-        {showBorderModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
-            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)' }}
-            onClick={() => setShowBorderModal(false)}>
-            <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              onClick={e => e.stopPropagation()}
-              className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#0f0d1a] border border-slate-200 dark:border-white/[0.06]"
-              style={{
-                boxShadow: '0 -8px 60px rgba(0,0,0,0.3)',
-                maxHeight: '90vh',
-              }}>
-
-              {/* Handle bar mobile */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden">
-                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-white/20"/>
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-4 pb-3">
-                <div>
-                  <h2 className="text-base font-black text-slate-900 dark:text-white">Border Tersedia</h2>
-                  <p className="text-[11px] text-slate-400 dark:text-white/40 mt-0.5">
-                    {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih
-                      ? '✨ Window aktif — pilih 1 border bebas!'
-                      : `${ownedBadges.length} dimiliki · ${BADGE_POOL.filter(b => b.borderImg).length} total · Gacha harian untuk membuka`
-                    }
-                  </p>
-                </div>
-                <button onClick={() => setShowBorderModal(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/[0.07] text-slate-500 dark:text-white/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
-                  <X size={14}/>
-                </button>
-              </div>
-
-              {/* Banner permanent dimiliki */}
-              {permanentBadges.length > 0 && (
-                <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2 bg-cyan-50 dark:bg-cyan-900/15 border border-cyan-200 dark:border-cyan-500/20">
-                  <span className="text-sm">∞</span>
-                  <p className="text-[11px] text-cyan-700 dark:text-cyan-300 font-bold">
-                    {permanentBadges.length} border permanen · milikmu selamanya
-                  </p>
-                </div>
-              )}
-
-              {/* Banner window aktif */}
-              {borderWindow?.border_window_aktif && !borderWindow?.sudah_pilih && (
-                <motion.div
-                  animate={{ opacity: [0.85, 1, 0.85] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-500/30">
-                  <Sparkles size={13} className="text-violet-500 dark:text-violet-400 flex-shrink-0"/>
-                  <p className="text-[11px] text-violet-700 dark:text-violet-300 font-bold flex-1">
-                    Pilih 1 border apapun — gratis! Hanya bisa 1x per window.
-                  </p>
-                </motion.div>
-              )}
-
-              {/* Banner sudah pilih */}
-              {borderWindow?.border_window_aktif && borderWindow?.sudah_pilih && (
-                <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/25">
-                  <CheckCircle size={13} className="text-emerald-500 dark:text-emerald-400 flex-shrink-0"/>
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold">
-                    Border terpasang · berlaku 1 hari
-                    {borderSisaDetik > 0 && <span className="font-normal opacity-75"> ({formatSisaBorder(borderSisaDetik)})</span>}
-                  </p>
-                </div>
-              )}
-
-              {/* Garis */}
-              <div className="h-px mx-5 bg-slate-100 dark:bg-white/[0.06]"/>
-
-              {/* Grid border */}
-              <div className="overflow-y-auto px-4 py-4" style={{ maxHeight: 'calc(90vh - 160px)' }}>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {BADGE_POOL.filter(b => b.borderImg).map(border => {
-                    const cfg      = RARITY_CFG[border.rarity] || RARITY_CFG.common
-                    const glow     = border.glow  || cfg.glow
-                    const glow2    = border.glow2 || cfg.glow2
-                    const owned    = ownedBadges.some(b => b.id === border.id)
-                    const isActive = activeBadge === border.id
-                    const windowAktif    = borderWindow?.border_window_aktif
-                    const sudahPilih     = borderWindow?.sudah_pilih
-                    const isLimited      = border.rarity === 'limited'
-                    const isPermanent    = border.rarity === 'permanent'
-                    const windowLimited  = borderWindow?.limited_badges || []
-                    const isLimitedAvail = isLimited && windowAktif && !sudahPilih && windowLimited.includes(border.id)
-                    const bisaPilihBebas = windowAktif && !sudahPilih && !isLimited && !isPermanent
-                    // Border ini ada di window_badges aktif — bisa equip/unequip berulang
-                    const windowBadgeOwned = windowBadgeIds.includes(border.id)
-                    // Permanent — milik selamanya
-                    const isPermanentOwned = isPermanent && permanentBadges.includes(border.id)
-                    const canInteract    = owned || bisaPilihBebas || windowBadgeOwned || isLimitedAvail || isPermanentOwned
-
-                    return (
-                      <motion.button
-                        key={border.id}
-                        whileTap={canInteract ? { scale: 0.95 } : {}}
-                        onClick={async () => {
-                          if (!canInteract) return
-                          try {
-                            if ((bisaPilihBebas || isLimitedAvail) && !owned && !windowBadgeOwned && !isPermanentOwned) {
-                              // Pilih border baru via window (1x per window)
-                              await siswaApi.pilihBorderWindow(border.id)
-                              updateActiveBadge(border.id)
-                              setWindowPickedBadgeId(border.id)
-                              setWindowBadgeIds(prev => [...prev.filter(id => id !== border.id), border.id])
-                              setBorderWindow(prev => ({ ...prev, sudah_pilih: true }))
-                              setBorderSisaDetik(86400)
-                              toast.success(`${border.name} terpasang! Berlaku 24 jam.`)
-                            } else {
-                              // Equip / unequip — bisa berulang kali
-                              if (isActive) {
-                                await siswaApi.unequipBadge()
-                                updateActiveBadge(null)
-                                toast.success('Border dilepas')
-                              } else {
-                                await siswaApi.equipBadge(border.id)
-                                updateActiveBadge(border.id)
-                                toast.success(`${border.name} terpasang!`)
-                              }
-                            }
-                          } catch (e) {
-                            toast.error(e.response?.data?.message || 'Gagal')
-                          }
-                        }}
-                        className="relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all bg-slate-50 dark:bg-white/[0.02]"
-                        style={{
-                          background: isActive
-                            ? `linear-gradient(160deg, ${glow}22, ${glow2}18)`
-                            : bisaPilihBebas && !owned
-                            ? 'rgba(120,60,200,0.07)'
-                            : owned
-                            ? 'rgba(120,60,200,0.05)'
-                            : undefined,
-                          border: isActive
-                            ? `1.5px solid ${glow}55`
-                            : bisaPilihBebas && !owned
-                            ? '1.5px solid rgba(160,100,255,0.25)'
-                            : owned
-                            ? '1.5px solid rgba(120,60,200,0.15)'
-                            : '1.5px solid transparent',
-                          cursor: canInteract ? 'pointer' : 'default',
-                        }}>
-
-                        {/* Preview border */}
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20" style={{ zIndex: 1 }}>
-                          <div className="absolute inset-0 rounded-full"
-                            style={{ background: canInteract ? `radial-gradient(circle, ${glow}18 0%, transparent 70%)` : undefined }}/>
-
-                          {canInteract ? (
-                            <motion.img
-                              src={border.borderImg}
-                              alt={border.name}
-                              loading="lazy"
-                              className="absolute pointer-events-none select-none"
-                              style={{
-                                top: '50%', left: '50%',
-                                transform: 'translate(-50%,-50%) scale(1.35)',
-                                width: '100%', height: '100%',
-                                objectFit: 'contain', zIndex: 10,
-                              }}
-                              animate={{ filter: isActive ? [
-                                `drop-shadow(0 0 6px ${glow2})`,
-                                `drop-shadow(0 0 16px ${glow})`,
-                                `drop-shadow(0 0 6px ${glow2})`,
-                              ] : [`drop-shadow(0 0 4px ${glow2})`]}}
-                              transition={{ repeat: isActive ? Infinity : 0, duration: 2.4, ease: 'easeInOut' }}
-                            />
-                          ) : (
-                            <>
-                              <img
-                                src={border.borderImg}
-                                alt={border.name}
-                                loading="lazy"
-                                className="absolute pointer-events-none select-none"
-                                style={{
-                                  top: '50%', left: '50%',
-                                  transform: 'translate(-50%,-50%) scale(1.35)',
-                                  width: '100%', height: '100%',
-                                  objectFit: 'contain', zIndex: 10,
-                                  filter: 'grayscale(1) brightness(0.5) blur(1px)',
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center z-20">
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-200/80 dark:bg-black/60 border border-slate-300 dark:border-white/10">
-                                  <Lock size={12} className="text-slate-400 dark:text-white/50"/>
-                                </div>
-                              </div>
-                            </>
-                          )}
-
-                          {/* Badge FREE */}
-                          {bisaPilihBebas && !owned && !windowBadgeOwned && (
-                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
-                              style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)' }}>
-                              FREE
-                            </div>
-                          )}
-                          {/* Badge LTD FREE untuk limited yang tersedia di window */}
-                          {isLimitedAvail && !owned && !windowBadgeOwned && (
-                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
-                              style={{ background: 'linear-gradient(135deg,#be0058,#ff2d78)' }}>
-                              LTD✨
-                            </div>
-                          )}
-                          {/* Badge PERM untuk permanent yang dimiliki */}
-                          {isPermanentOwned && (
-                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black"
-                              style={{ background: 'linear-gradient(135deg,#003d5c,#00e5ff)', color: '#000' }}>
-                              ∞
-                            </div>
-                          )}
-                          {/* Badge LIMITED */}
-                          {isLimited && !owned && (
-                            <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[8px] font-black text-white"
-                              style={{ background: 'linear-gradient(135deg,#be0058,#ff2d78)' }}>
-                              LTD
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Nama & rarity */}
-                        <div className="text-center w-full" style={{ zIndex: 1 }}>
-                          <p className={`text-[10px] font-black leading-tight truncate ${
-                            canInteract ? 'text-slate-800 dark:text-white/85' : 'text-slate-300 dark:text-white/25'
-                          }`}>
-                            {border.name}
-                          </p>
-                          <p className={`text-[9px] font-bold mt-0.5 ${
-                            canInteract ? '' : 'text-slate-300 dark:text-white/15'
-                          }`}
-                            style={{ color: canInteract ? glow : undefined }}>
-                            {cfg.label}
-                          </p>
-                        </div>
-
-                        {/* Badge aktif */}
-                        {isActive && (
-                          <motion.div
-                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-2 border-white dark:border-[#0f0d1a]"
-                            style={{ zIndex: 2 }}>
-                            <CheckCircle size={10} className="text-white"/>
-                          </motion.div>
-                        )}
-                      </motion.button>
-                    )
-                  })}
-                </div>
-
-                {/* Info */}
-                <div className="mt-4 p-3 rounded-2xl flex items-center gap-3 bg-amber-50 dark:bg-white/[0.03] border border-amber-100 dark:border-white/[0.05]">
-                  <Sparkles size={14} className="text-amber-500 dark:text-amber-400 flex-shrink-0"/>
-                  <p className="text-[11px] text-slate-500 dark:text-white/35">
-                    Saat admin buka window, kamu punya <span className="text-violet-600 dark:text-violet-400 font-bold">1 jam</span> untuk pilih border. Border yang dipilih berlaku <span className="text-amber-600 dark:text-amber-400 font-bold">1 hari</span>. Border <span className="text-rose-500 font-bold">LIMITED</span> hanya bisa didapat dari Gacha Harian.
-                  </p>
-                </div>
-
-                {/* Tombol Lepas Border */}
-                {activeBadge && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={async () => {
-                      try {
-                        await siswaApi.unequipBadge()
-                        updateActiveBadge(null)
-                        toast.success('Border dilepas')
-                      } catch {
-                        toast.error('Gagal melepas border')
-                      }
-                    }}
-                    className="mt-3 w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08]">
-                    <X size={14}/>
-                    Lepas Border Aktif
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── MODAL KOLEKSIKU ── */}
-      <AnimatePresence>
-        {showKoleksiModal && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
-            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)' }}
-            onClick={() => setShowKoleksiModal(false)}>
-            <motion.div
-              initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              onClick={e => e.stopPropagation()}
-              className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#0f0d1a] border border-slate-200 dark:border-white/[0.06]"
-              style={{ maxHeight: '90vh' }}>
-
-              {/* Handle bar mobile */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden">
-                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-white/20"/>
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-4 pb-3">
-                <div>
-                  <h2 className="text-base font-black text-slate-900 dark:text-white">🎒 Koleksiku</h2>
-                  <p className="text-[11px] text-slate-400 dark:text-white/40 mt-0.5">
-                    {permanentBadges.length} permanen · {ownedBadges.length} trial gacha · {windowBadgeIds.length} trial window
-                  </p>
-                </div>
-                <button onClick={() => setShowKoleksiModal(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/[0.07] text-slate-500 dark:text-white/40">
-                  <X size={14}/>
-                </button>
-              </div>
-
-              <div className="h-px mx-5 bg-slate-100 dark:bg-white/[0.06]"/>
-
-              <div className="overflow-y-auto px-4 py-4" style={{ maxHeight: 'calc(90vh - 120px)' }}>
-                {/* Hitung semua koleksi */}
-                {(() => {
-                  // Gabungkan semua badge yang dimiliki
-                  const allOwned = []
-
-                  // 1. Permanent
-                  permanentBadges.forEach(id => {
-                    const b = BADGE_POOL.find(p => p.id === id)
-                    if (b) allOwned.push({ ...b, type: 'permanent', expiresLabel: null })
-                  })
-
-                  // 2. Window badges (trial)
-                  const wBadgesRaw = borderWindow?.window_badges || []
-                  wBadgesRaw.forEach(wb => {
-                    const b = BADGE_POOL.find(p => p.id === wb.id)
-                    if (b && !permanentBadges.includes(wb.id)) {
-                      const exp = wb.expires_at ? new Date(wb.expires_at) : null
-                      const sisaMs = exp ? exp - Date.now() : 0
-                      const sisaJam = sisaMs > 0 ? Math.floor(sisaMs / 3600000) : 0
-                      const sisaMenit = sisaMs > 0 ? Math.floor((sisaMs % 3600000) / 60000) : 0
-                      allOwned.push({
-                        ...b,
-                        type: 'window',
-                        expiresLabel: sisaMs > 0 ? `${sisaJam}j ${sisaMenit}m` : 'Expired',
-                      })
-                    }
-                  })
-
-                  // 3. Gacha badges (trial hari ini)
-                  ownedBadges.forEach(badge => {
-                    const b = BADGE_POOL.find(p => p.id === badge.id)
-                    if (b && !permanentBadges.includes(badge.id) && !wBadgesRaw.find(w => w.id === badge.id)) {
-                      allOwned.push({ ...b, type: 'gacha', expiresLabel: 'Hari ini' })
-                    }
-                  })
-
-                  if (allOwned.length === 0) {
-                    return (
-                      <div className="text-center py-12">
-                        <p className="text-4xl mb-3">🎒</p>
-                        <p className="text-sm font-bold text-slate-500 dark:text-white/40">Koleksi masih kosong</p>
-                        <p className="text-[11px] text-slate-400 dark:text-white/25 mt-1">Gacha harian untuk mulai koleksi!</p>
-                      </div>
-                    )
-                  }
-
-                  return (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                      {allOwned.map((border, idx) => {
-                        const cfg = RARITY_CFG[border.rarity] || RARITY_CFG.common
-                        const glow = border.glow || cfg.glow
-                        const glow2 = border.glow2 || cfg.glow2
-                        const isActive = activeBadge === border.id
-                        const isPerm = border.type === 'permanent'
-
-                        return (
-                          <motion.button
-                            key={`${border.id}-${idx}`}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={async () => {
-                              try {
-                                if (isActive) {
-                                  await siswaApi.unequipBadge()
-                                  updateActiveBadge(null)
-                                  toast.success('Border dilepas')
-                                } else {
-                                  await siswaApi.equipBadge(border.id)
-                                  updateActiveBadge(border.id)
-                                  toast.success(`${border.name} terpasang!`)
-                                }
-                              } catch (e) {
-                                toast.error(e.response?.data?.message || 'Gagal')
-                              }
-                            }}
-                            className="relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all bg-slate-50 dark:bg-white/[0.02]"
-                            style={{
-                              background: isActive ? `linear-gradient(160deg, ${glow}22, ${glow2}18)` : undefined,
-                              border: isActive ? `1.5px solid ${glow}55` : '1.5px solid transparent',
-                              cursor: 'pointer',
-                            }}>
-
-                            {/* Preview */}
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-                              <div className="absolute inset-0 rounded-full"
-                                style={{ background: `radial-gradient(circle, ${glow}18 0%, transparent 70%)` }}/>
-                              <motion.img
-                                src={border.borderImg}
-                                alt={border.name}
-                                loading="lazy"
-                                className="absolute pointer-events-none select-none"
-                                style={{
-                                  top: '50%', left: '50%',
-                                  transform: 'translate(-50%,-50%) scale(1.35)',
-                                  width: '100%', height: '100%',
-                                  objectFit: 'contain', zIndex: 10,
-                                }}
-                                animate={{ filter: isActive ? [
-                                  `drop-shadow(0 0 6px ${glow2})`,
-                                  `drop-shadow(0 0 16px ${glow})`,
-                                  `drop-shadow(0 0 6px ${glow2})`,
-                                ] : [`drop-shadow(0 0 4px ${glow2})`]}}
-                                transition={{ repeat: isActive ? Infinity : 0, duration: 2.4, ease: 'easeInOut' }}
-                              />
-                              {/* Label type */}
-                              <div className="absolute -top-1 -right-1 z-30 px-1.5 py-0.5 rounded-full text-[7px] font-black"
-                                style={isPerm
-                                  ? { background: 'linear-gradient(135deg,#003d5c,#00e5ff)', color: '#000' }
-                                  : { background: 'rgba(0,0,0,0.55)', color: 'rgba(255,255,255,0.7)' }}>
-                                {isPerm ? '∞' : 'TRIAL'}
-                              </div>
-                            </div>
-
-                            {/* Nama */}
-                            <div className="text-center w-full">
-                              <p className="text-[10px] font-black leading-tight truncate text-slate-800 dark:text-white/85">
-                                {border.name}
-                              </p>
-                              <p className="text-[8px] mt-0.5"
-                                style={{ color: isPerm ? 'rgba(0,229,255,0.8)' : 'rgba(200,160,60,0.8)' }}>
-                                {isPerm ? 'Permanen' : border.expiresLabel}
-                              </p>
-                            </div>
-
-                            {/* Aktif indicator */}
-                            {isActive && (
-                              <motion.div
-                                initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-2 border-white dark:border-[#0f0d1a]"
-                                style={{ zIndex: 2 }}>
-                                <CheckCircle size={10} className="text-white"/>
-                              </motion.div>
-                            )}
-                          </motion.button>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
-
-                {/* Lepas border aktif */}
-                {activeBadge && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={async () => {
-                      try {
-                        await siswaApi.unequipBadge()
-                        updateActiveBadge(null)
-                        toast.success('Border dilepas')
-                      } catch { toast.error('Gagal') }
-                    }}
-                    className="mt-3 w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08]">
-                    <X size={14}/>
-                    Lepas Border Aktif
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── FOTO VIEWER (WA style) ── */}
       <AnimatePresence>
         {showFotoViewer && avatar && (
@@ -1424,15 +743,9 @@ export default function SiswaProfil() {
               onClick={e => e.stopPropagation()}
             >
               {/* Foto */}
-              <div className={`w-full h-full overflow-hidden shadow-2xl ${
-                activeBadge ? 'rounded-full' : 'rounded-3xl'
-              }`}>
+              <div className="w-full h-full overflow-hidden shadow-2xl rounded-3xl">
                 <img src={avatar} alt={profil?.nama_lengkap} className="w-full h-full object-cover"/>
               </div>
-              {/* Border overlay */}
-              {activeBadge && (
-                <BadgeOverlay badgeId={activeBadge} badges={ownedBadges} size="lg"/>
-              )}
             </motion.div>
           </motion.div>
         )}

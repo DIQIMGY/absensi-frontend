@@ -8,7 +8,6 @@ import { usePengaturanStore } from '../stores/pengaturanStore'
 import { adminApi } from '../services/adminService'
 import { guruApi } from '../services/guruService'
 import { siswaApi } from '../services/siswaService'
-import { BadgeOverlay, BADGE_POOL } from '../components/GachaHarian'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 
@@ -48,7 +47,6 @@ function SidebarContent({
   searchRef, filtered, navigate, toggleCollapsed, setSidebarOpen,
   user, getFoto, isDark, toggleTheme, handleLogout, navRef,
   handleUploadFoto, uploadingFoto,
-  layoutActiveBadge, layoutOwnedBadges,
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -162,11 +160,8 @@ function SidebarContent({
           <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 mb-1.5">
             {/* Avatar bisa diklik untuk upload foto */}
             <label className="relative cursor-pointer flex-shrink-0 group">
-              <div className={`relative ${layoutActiveBadge && user?.role === 'siswa' ? 'rounded-full' : ''}`}>
+              <div className="relative">
                 <Avatar src={getFoto()} name={user?.name} size={28}/>
-                {layoutActiveBadge && user?.role === 'siswa' && (
-                  <BadgeOverlay badgeId={layoutActiveBadge} badges={layoutOwnedBadges} size="sm"/>
-                )}
               </div>
               <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Camera size={10} className="text-white"/>
@@ -218,8 +213,6 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
   const [scrollPct, setScrollPct] = useState(0)
   const [fotoModalOpen, setFotoModalOpen] = useState(false)
   const [uploadingFoto, setUploadingFoto] = useState(false)
-  const [layoutActiveBadge, setLayoutActiveBadge] = useState(null)
-  const [layoutOwnedBadges, setLayoutOwnedBadges] = useState([])
 
   const { user, logout } = useAuthStore()
   const { isDark, toggleTheme, sidebarCollapsed: storeCollapsed, toggleSidebar } = useThemeStore()
@@ -245,37 +238,6 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
   }
 
   useEffect(() => { fetchPengaturan(true) }, [])
-
-  // Fetch active badge untuk siswa
-  useEffect(() => {
-    if (user?.role !== 'siswa') return
-    const fetchBadge = async () => {
-      try {
-        const [gRes, bwRes] = await Promise.allSettled([
-          siswaApi.getGachaStatus(),
-          siswaApi.getBorderWindowStatus(),
-        ])
-        let activeBadgeId = gRes.status === 'fulfilled' ? gRes.value.data.active_badge : null
-        let badges = gRes.status === 'fulfilled' ? (gRes.value.data.badges || []) : []
-        if (bwRes.status === 'fulfilled' && bwRes.value.data.active_badge) {
-          activeBadgeId = bwRes.value.data.active_badge
-        }
-        setLayoutActiveBadge(activeBadgeId)
-        setLayoutOwnedBadges(badges)
-      } catch { /* silent */ }
-    }
-    fetchBadge()
-    const t = setInterval(fetchBadge, 60000)
-
-    // Listen event badge-changed dari Profil — update langsung tanpa fetch
-    const onBadgeChanged = (e) => setLayoutActiveBadge(e.detail.activeBadge)
-    window.addEventListener('badge-changed', onBadgeChanged)
-
-    return () => {
-      clearInterval(t)
-      window.removeEventListener('badge-changed', onBadgeChanged)
-    }
-  }, [user?.role])
 
   useEffect(() => {
     const el = mainRef.current
@@ -373,7 +335,6 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
     searchRef, filtered, navigate, toggleCollapsed, setSidebarOpen,
     user, getFoto, isDark, toggleTheme, handleLogout,
     handleUploadFoto, uploadingFoto,
-    layoutActiveBadge, layoutOwnedBadges,
   }
 
   return (
@@ -496,11 +457,8 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
             )}
 
             <div className="flex items-center gap-2 pl-1">
-              <div className={`relative flex-shrink-0 ${layoutActiveBadge && user?.role === 'siswa' ? 'rounded-full' : ''}`}>
+              <div className="relative flex-shrink-0">
                 <Avatar src={getFoto()} name={user?.name} size={28}/>
-                {layoutActiveBadge && user?.role === 'siswa' && (
-                  <BadgeOverlay badgeId={layoutActiveBadge} badges={layoutOwnedBadges} size="sm"/>
-                )}
               </div>
               <span className="hidden md:block text-xs font-medium text-slate-600 dark:text-slate-300 max-w-[90px] truncate">{user?.name}</span>
             </div>
