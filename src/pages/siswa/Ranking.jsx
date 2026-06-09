@@ -4,7 +4,7 @@ import {
   Trophy, RefreshCw, Crown, Star,
   ChevronLeft, ChevronRight,
   CheckCircle, Clock, AlertTriangle, X,
-  GraduationCap, Shield, Disc,
+  GraduationCap, Disc, Users, Building2,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
 
@@ -618,10 +618,10 @@ export default function SiswaRankingPage() {
   const maxVal    = items[0]?.[valKey] || 1
 
   const TINGKAT_OPTS = [
-    { value: '', label: 'Semua', emoji: '🏫' },
-    { value: '10', label: 'Kelas 10', emoji: '1️⃣0️⃣' },
-    { value: '11', label: 'Kelas 11', emoji: '1️⃣1️⃣' },
-    { value: '12', label: 'Kelas 12', emoji: '1️⃣2️⃣' },
+    { value: '', label: 'Semua' },
+    { value: '10', label: 'Kelas 10' },
+    { value: '11', label: 'Kelas 11' },
+    { value: '12', label: 'Kelas 12' },
   ]
 
   return (
@@ -653,102 +653,28 @@ export default function SiswaRankingPage() {
           <RefreshCw size={14} className={refreshing?'animate-spin':''}/>
         </motion.button>
       </div>
-
-      {/* FILTER ANGKATAN — game style */}
+      {/* FILTER ANGKATAN */}
       <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
-        {TINGKAT_OPTS.map((opt, idx) => {
+        {TINGKAT_OPTS.map((opt) => {
           const isActive = tingkat === opt.value
-          const gameColors = [
-            { from:'#6366f1', to:'#818cf8', glow:'#6366f155', border:'#818cf870' },
-            { from:'#0ea5e9', to:'#38bdf8', glow:'#0ea5e955', border:'#38bdf870' },
-            { from:'#8b5cf6', to:'#a78bfa', glow:'#8b5cf655', border:'#a78bfa70' },
-            { from:'#ec4899', to:'#f472b6', glow:'#ec489955', border:'#f472b670' },
-          ]
-          const gc = gameColors[idx]
           return (
             <motion.button
               key={opt.value}
-              whileTap={{ scale: 0.88, y: 2 }}
-              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => { setTingkat(opt.value); setPage(1) }}
-              className="relative flex-shrink-0 flex items-center gap-2 px-4 py-2 font-black text-[12px] tracking-wide select-none"
-              style={{
-                borderRadius: 12,
-                transition: 'all 0.18s cubic-bezier(.34,1.56,.64,1)',
-                ...(isActive ? {
-                  background: `linear-gradient(135deg, ${gc.from}, ${gc.to})`,
-                  color: '#fff',
-                  boxShadow: `0 4px 18px ${gc.glow}, 0 0 0 2px ${gc.border}, inset 0 1px 0 rgba(255,255,255,0.25)`,
-                  border: 'none',
-                } : {
-                  background: 'transparent',
-                  color: '',
-                  boxShadow: `0 2px 8px rgba(0,0,0,0.06)`,
-                  border: `2px solid`,
-                })
-              }}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                isActive
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm'
+                  : 'bg-white dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
             >
-              {/* border gradient trick untuk non-active */}
-              {!isActive && (
-                <span className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    borderRadius: 12,
-                    padding: 2,
-                    background: `linear-gradient(135deg, ${gc.from}55, ${gc.to}55)`,
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    maskComposite: 'exclude',
-                  }}/>
-              )}
-              {!isActive && (
-                <span className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    background: `linear-gradient(135deg, ${gc.from}10, ${gc.to}10)`,
-                    borderRadius: 12,
-                  }}/>
-              )}
-
-              {/* shine overlay saat aktif */}
-              {isActive && (
-                <motion.span
-                  className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden"
-                  style={{ borderRadius: 12 }}
-                >
-                  <motion.span
-                    className="absolute inset-y-0 w-10 -skew-x-12 opacity-30"
-                    style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }}
-                    animate={{ x: ['-100%', '260%'] }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut', delay: idx * 0.4 }}
-                  />
-                </motion.span>
-              )}
-
-              {/* pixel dots dekor pojok — game feel */}
-              {isActive && (
-                <>
-                  <span className="absolute top-1 left-1 w-1 h-1 rounded-full opacity-50" style={{ background:'rgba(255,255,255,0.8)' }}/>
-                  <span className="absolute bottom-1 right-1 w-1 h-1 rounded-full opacity-40" style={{ background:'rgba(255,255,255,0.6)' }}/>
-                </>
-              )}
-
-              <span className="relative z-10 text-base leading-none">{opt.emoji}</span>
-              <span className={`relative z-10 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>
-                {opt.label}
-              </span>
-
-              {/* active indicator dot bawah */}
-              {isActive && (
-                <motion.span
-                  layoutId="filter-dot"
-                  className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                  style={{ background: gc.to, boxShadow: `0 0 6px ${gc.glow}` }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                />
-              )}
+              {opt.value === '' ? <Users size={11} strokeWidth={2}/> : <Building2 size={11} strokeWidth={2}/>}
+              <span>{opt.label}</span>
             </motion.button>
           )
         })}
       </div>
+
 
       {/* TABS */}
       <div className="relative flex gap-2 mb-5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl">
@@ -880,18 +806,18 @@ export default function SiswaRankingPage() {
                         <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
                         {siswa.nis}
                       </p>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
-                          style={{ background:'#10b98118', color:'#059669', border:'1px solid #10b98130' }}>
-                          ✅ {siswa.total_hadir} Hadir
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
+                          style={{ background:'#10b98114', color:'#059669' }}>
+                          <CheckCircle size={9} strokeWidth={2.5}/>{siswa.total_hadir}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
-                          style={{ background:'#f59e0b18', color:'#d97706', border:'1px solid #f59e0b30' }}>
-                          ⏰ {siswa.total_terlambat} Lambat
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
+                          style={{ background:'#f59e0b14', color:'#b45309' }}>
+                          <Clock size={9} strokeWidth={2.5}/>{siswa.total_terlambat}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
-                          style={{ background:'#ef444418', color:'#dc2626', border:'1px solid #ef444430' }}>
-                          ❌ {siswa.total_alpha} Alpha
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
+                          style={{ background:'#ef444414', color:'#dc2626' }}>
+                          <AlertTriangle size={9} strokeWidth={2.5}/>{siswa.total_alpha}
                         </span>
                       </div>
                     </div>
