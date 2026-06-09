@@ -124,3 +124,7 @@
     background-color: #475569;
   }
 }
+
+/* Hide scrollbar for filter row */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

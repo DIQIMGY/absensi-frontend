@@ -654,21 +654,100 @@ export default function SiswaRankingPage() {
         </motion.button>
       </div>
 
-      {/* FILTER ANGKATAN */}
-      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1">
-        {TINGKAT_OPTS.map(opt => (
-          <motion.button key={opt.value} whileTap={{ scale: 0.92 }}
-            onClick={() => { setTingkat(opt.value); setPage(1) }}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-              tingkat === opt.value
-                ? 'text-white shadow-lg'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-            style={tingkat === opt.value ? { background: activeTab.gradFull } : {}}>
-            <span>{opt.emoji}</span>
-            <span>{opt.label}</span>
-          </motion.button>
-        ))}
+      {/* FILTER ANGKATAN — game style */}
+      <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1 no-scrollbar">
+        {TINGKAT_OPTS.map((opt, idx) => {
+          const isActive = tingkat === opt.value
+          const gameColors = [
+            { from:'#6366f1', to:'#818cf8', glow:'#6366f155', border:'#818cf870' },
+            { from:'#0ea5e9', to:'#38bdf8', glow:'#0ea5e955', border:'#38bdf870' },
+            { from:'#8b5cf6', to:'#a78bfa', glow:'#8b5cf655', border:'#a78bfa70' },
+            { from:'#ec4899', to:'#f472b6', glow:'#ec489955', border:'#f472b670' },
+          ]
+          const gc = gameColors[idx]
+          return (
+            <motion.button
+              key={opt.value}
+              whileTap={{ scale: 0.88, y: 2 }}
+              whileHover={{ y: -2 }}
+              onClick={() => { setTingkat(opt.value); setPage(1) }}
+              className="relative flex-shrink-0 flex items-center gap-2 px-4 py-2 font-black text-[12px] tracking-wide select-none"
+              style={{
+                borderRadius: 12,
+                transition: 'all 0.18s cubic-bezier(.34,1.56,.64,1)',
+                ...(isActive ? {
+                  background: `linear-gradient(135deg, ${gc.from}, ${gc.to})`,
+                  color: '#fff',
+                  boxShadow: `0 4px 18px ${gc.glow}, 0 0 0 2px ${gc.border}, inset 0 1px 0 rgba(255,255,255,0.25)`,
+                  border: 'none',
+                } : {
+                  background: 'transparent',
+                  color: '',
+                  boxShadow: `0 2px 8px rgba(0,0,0,0.06)`,
+                  border: `2px solid`,
+                })
+              }}
+            >
+              {/* border gradient trick untuk non-active */}
+              {!isActive && (
+                <span className="absolute inset-0 rounded-xl pointer-events-none"
+                  style={{
+                    borderRadius: 12,
+                    padding: 2,
+                    background: `linear-gradient(135deg, ${gc.from}55, ${gc.to}55)`,
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude',
+                  }}/>
+              )}
+              {!isActive && (
+                <span className="absolute inset-0 rounded-xl pointer-events-none"
+                  style={{
+                    background: `linear-gradient(135deg, ${gc.from}10, ${gc.to}10)`,
+                    borderRadius: 12,
+                  }}/>
+              )}
+
+              {/* shine overlay saat aktif */}
+              {isActive && (
+                <motion.span
+                  className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden"
+                  style={{ borderRadius: 12 }}
+                >
+                  <motion.span
+                    className="absolute inset-y-0 w-10 -skew-x-12 opacity-30"
+                    style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }}
+                    animate={{ x: ['-100%', '260%'] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut', delay: idx * 0.4 }}
+                  />
+                </motion.span>
+              )}
+
+              {/* pixel dots dekor pojok — game feel */}
+              {isActive && (
+                <>
+                  <span className="absolute top-1 left-1 w-1 h-1 rounded-full opacity-50" style={{ background:'rgba(255,255,255,0.8)' }}/>
+                  <span className="absolute bottom-1 right-1 w-1 h-1 rounded-full opacity-40" style={{ background:'rgba(255,255,255,0.6)' }}/>
+                </>
+              )}
+
+              <span className="relative z-10 text-base leading-none">{opt.emoji}</span>
+              <span className={`relative z-10 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                {opt.label}
+              </span>
+
+              {/* active indicator dot bawah */}
+              {isActive && (
+                <motion.span
+                  layoutId="filter-dot"
+                  className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+                  style={{ background: gc.to, boxShadow: `0 0 6px ${gc.glow}` }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                />
+              )}
+            </motion.button>
+          )
+        })}
       </div>
 
       {/* TABS */}
@@ -801,15 +880,18 @@ export default function SiswaRankingPage() {
                         <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
                         {siswa.nis}
                       </p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold text-emerald-500">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"/>{siswa.total_hadir}H
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
+                          style={{ background:'#10b98118', color:'#059669', border:'1px solid #10b98130' }}>
+                          ✅ {siswa.total_hadir} Hadir
                         </span>
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold text-amber-500">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"/>{siswa.total_terlambat}T
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
+                          style={{ background:'#f59e0b18', color:'#d97706', border:'1px solid #f59e0b30' }}>
+                          ⏰ {siswa.total_terlambat} Lambat
                         </span>
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold text-rose-500">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"/>{siswa.total_alpha}A
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black"
+                          style={{ background:'#ef444418', color:'#dc2626', border:'1px solid #ef444430' }}>
+                          ❌ {siswa.total_alpha} Alpha
                         </span>
                       </div>
                     </div>
