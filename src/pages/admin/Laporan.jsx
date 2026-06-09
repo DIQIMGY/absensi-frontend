@@ -413,11 +413,13 @@ export default function Laporan() {
                 options={kelasList}
                 value={kelasList.find(k => k.value === filters.kelas_id) || null}
                 onChange={(option) => setFilters({ ...filters, kelas_id: option?.value || '' })}
-                placeholder="Semuakelas"
+                placeholder="Semua Kelas"
                 className="react-select-container text-xs sm:text-sm"
                 classNamePrefix="react-select"
                 isClearable
                 isSearchable
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
                 styles={{
                   control: (base) => ({
                     ...base,
@@ -429,6 +431,10 @@ export default function Laporan() {
                     '&:hover': {
                       borderColor: '#14b8a6'
                     }
+                  }),
+                  menuPortal: (base) => ({
+                    ...base,
+                    zIndex: 9999
                   })
                 }}
               />
