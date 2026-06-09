@@ -808,6 +808,7 @@ export default function PublicAbsen() {
                 {absenResult && (
                   <motion.div initial={{opacity:0,y:8,scale:0.98}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8}}
                     className={`mt-4 rounded-2xl border-2 overflow-hidden ${absenResult.success ? isDark?'bg-emerald-500/10 border-emerald-500/25':'bg-emerald-50 border-emerald-200' : isDark?'bg-red-500/10 border-red-500/25':'bg-red-50 border-red-200'}`}>
+                    {/* Header bar */}
                     <div className={`px-4 py-2.5 flex items-center justify-between ${absenResult.success?'bg-gradient-to-r from-emerald-500 to-teal-600':'bg-gradient-to-r from-red-500 to-rose-600'}`}>
                       <div className="flex items-center gap-2">
                         {absenResult.success?<CheckCircle size={13} className="text-white"/>:<X size={13} className="text-white"/>}
@@ -815,38 +816,87 @@ export default function PublicAbsen() {
                       </div>
                       <button onClick={()=>{setAbsenResult(null);setErrors({})}} className="text-white/60 hover:text-white"><X size={12}/></button>
                     </div>
+
                     <div className="p-4">
-                      <p className={`text-xs mb-3 ${isDark?'text-slate-300':'text-slate-600'}`}>{absenResult.message}</p>
-                      {absenResult.success && absenResult.data && (
-                        <div className={`rounded-xl p-3 grid grid-cols-2 gap-2.5 ${isDark?'bg-white/5':'bg-white border border-slate-100'}`}>
-                          {(() => {
-                            const metodeMap = {
-                              fingerprint: '🖐 Sidik Jari',
-                              qr_code:     '📷 QR Code',
-                              manual:      '✏️ Manual',
-                              sistem:      '⚙️ Sistem',
-                            }
-                            const metode = absenResult.data.absensi?.metode
-                            const metodeLabel = metodeMap[metode] || metode || '-'
-                            return [
-                              { label:'Nama', value: absenResult.role==='siswa'?absenResult.data.siswa?.nama:absenResult.data.guru?.nama },
-                              ...(absenResult.role==='siswa' ? [{ label:'Kelas', value: absenResult.data.siswa?.kelas }] : []),
-                              { label:'Status', value: absenResult.data.is_terlambat?'Terlambat':'Tepat Waktu', badge: true, late: absenResult.data.is_terlambat },
-                              ...(absenResult.data.absensi ? [{ label:'Jam Masuk', value: absenResult.data.absensi.jam_masuk?.substring(0,5), mono: true }] : []),
-                              { label:'Metode', value: metodeLabel },
-                            ]
-                          })().map((item,i) => (
-                            <div key={i}>
-                              <p className={`text-[9px] uppercase font-black mb-0.5 tracking-widest ${isDark?'text-slate-600':'text-slate-400'}`}>{item.label}</p>
-                              {item.badge
-                                ? <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${item.late ? isDark?'bg-amber-500/20 text-amber-300':'bg-amber-100 text-amber-700' : isDark?'bg-emerald-500/20 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${item.late?'bg-amber-400':'bg-emerald-400'}`}/>{item.value}
-                                  </span>
-                                : <p className={`text-xs font-bold truncate ${item.mono?'font-mono':''} ${isDark?'text-white':'text-slate-800'}`}>{item.value}</p>
-                              }
+                      {absenResult.success && absenResult.data && (() => {
+                        const isSiswa = absenResult.role === 'siswa'
+                        const person  = isSiswa ? absenResult.data.siswa : absenResult.data.guru
+                        const fotoUrl = person?.foto_url
+                        const isLate  = absenResult.data.is_terlambat
+                        const metodeMap = { fingerprint:'🖐 Sidik Jari', qr_code:'📷 QR Code', manual:'✏️ Manual', sistem:'⚙️ Sistem' }
+                        const metode = absenResult.data.absensi?.metode
+                        const metodeLabel = metodeMap[metode] || metode || '-'
+                        const jamMasuk = absenResult.data.absensi?.jam_masuk?.substring(0,5)
+
+                        return (
+                          <div className={`rounded-2xl overflow-hidden ${isDark?'bg-white/5':'bg-white border border-slate-100'} shadow-sm`}>
+                            {/* Foto + nama section */}
+                            <div className={`relative flex items-center gap-4 px-4 py-4 ${isLate ? isDark?'bg-amber-500/10':'bg-amber-50' : isDark?'bg-emerald-500/10':'bg-emerald-50'}`}>
+                              {/* foto */}
+                              <div className="relative flex-shrink-0">
+                                {fotoUrl ? (
+                                  <img src={fotoUrl} alt={person?.nama}
+                                    className={`w-16 h-16 rounded-2xl object-cover shadow-lg border-2 ${isLate?'border-amber-400':'border-emerald-400'}`}
+                                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
+                                  />
+                                ) : null}
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-lg border-2 ${isLate?'bg-gradient-to-br from-amber-400 to-orange-500 border-amber-400':'bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-400'} ${fotoUrl?'hidden':''}`}>
+                                  {(person?.nama||'?')[0].toUpperCase()}
+                                </div>
+                                {/* status dot */}
+                                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center ${isLate?'bg-amber-400':'bg-emerald-400'}`}>
+                                  {isLate ? <span className="text-[8px]">⏰</span> : <CheckCircle size={10} className="text-white"/>}
+                                </div>
+                              </div>
+
+                              {/* nama & kelas */}
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-black text-base truncate ${isDark?'text-white':'text-slate-800'}`}>{person?.nama}</p>
+                                {isSiswa && (
+                                  <p className={`text-xs font-semibold truncate ${isDark?'text-slate-400':'text-slate-500'}`}>
+                                    {person?.kelas}{person?.jurusan ? ` · ${person.jurusan}` : ''}
+                                  </p>
+                                )}
+                                {!isSiswa && (
+                                  <p className={`text-xs font-semibold truncate ${isDark?'text-slate-400':'text-slate-500'}`}>
+                                    {person?.nip}
+                                  </p>
+                                )}
+                                {/* status badge */}
+                                <span className={`inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isLate ? isDark?'bg-amber-500/25 text-amber-300':'bg-amber-100 text-amber-700' : isDark?'bg-emerald-500/25 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isLate?'bg-amber-400':'bg-emerald-400'}`}/>
+                                  {isLate ? `Terlambat ${absenResult.data.menit_terlambat || 0} menit` : 'Tepat Waktu'}
+                                </span>
+                              </div>
+
+                              {/* jam besar di kanan */}
+                              {jamMasuk && (
+                                <div className="flex-shrink-0 text-right">
+                                  <p className={`text-[9px] uppercase font-black tracking-widest mb-0.5 ${isDark?'text-slate-500':'text-slate-400'}`}>Jam Masuk</p>
+                                  <p className={`text-2xl font-black font-mono ${isLate?'text-amber-500':'text-emerald-500'}`}>{jamMasuk}</p>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
+
+                            {/* info bawah */}
+                            <div className="grid grid-cols-2 gap-px bg-slate-100 dark:bg-slate-700">
+                              {[
+                                ...(isSiswa ? [{ label:'NIS', value: person?.nis || '-' }] : [{ label:'NIP', value: person?.nip || '-' }]),
+                                { label:'Metode', value: metodeLabel },
+                              ].map((item, i) => (
+                                <div key={i} className={`px-3 py-2.5 ${isDark?'bg-slate-800/80':'bg-white'}`}>
+                                  <p className={`text-[9px] uppercase font-black tracking-widest mb-0.5 ${isDark?'text-slate-500':'text-slate-400'}`}>{item.label}</p>
+                                  <p className={`text-xs font-bold ${isDark?'text-white':'text-slate-700'}`}>{item.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
+
+                      {/* Gagal state */}
+                      {!absenResult.success && (
+                        <p className={`text-xs mt-1 ${isDark?'text-slate-300':'text-slate-600'}`}>{absenResult.message}</p>
                       )}
                     </div>
                   </motion.div>
