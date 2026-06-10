@@ -111,6 +111,7 @@ export const usePengaturanStore = create(
             prestasi_judul: data.prestasi_judul || null,
             prestasi_deskripsi: data.prestasi_deskripsi || null,
             prestasi_siswa: Array.isArray(data.prestasi_siswa) ? data.prestasi_siswa : [],
+            fingerprint_enabled: data.fingerprint_enabled ?? false,
           }
           
           console.log('✅ Setting pengaturan to store:')

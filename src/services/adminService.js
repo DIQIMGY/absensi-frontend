@@ -200,6 +200,9 @@ export const adminApi = {
   getFingerprintLogs: () => api.get('/admin/fingerprint/logs'),
   syncFingerprint: (params) => api.post('/admin/fingerprint/sync', params),
   clearFingerprintLogs: () => api.delete('/admin/fingerprint/logs'),
+  registerFingerprint: (data) => api.post('/admin/fingerprint/register', data),
+  unregisterFingerprint: (data) => api.delete('/admin/fingerprint/register', { data }),
+  checkFingerprintRegistered: (params) => api.get('/admin/fingerprint/check', { params }),
 
   // Absensi Pulang Guru
   getAbsensiGuruPulang: (params) => api.get('/admin/absensi-guru-pulang', { params }),

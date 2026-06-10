@@ -51,5 +51,8 @@ export const publicApi = {
   getKelas: () => api.get('/public/kelas'),
   
   // Daftar mata pelajaran (untuk registrasi guru)
-  getMataPelajaran: () => api.get('/public/mata-pelajaran')
+  getMataPelajaran: () => api.get('/public/mata-pelajaran'),
+
+  // Daftar sidik jari ke mesin fingerprint (tanpa login)
+  registerFingerprint: (data) => api.post('/public/fingerprint/register', data),
 }

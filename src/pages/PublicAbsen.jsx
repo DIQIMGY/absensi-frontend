@@ -28,6 +28,12 @@ export default function PublicAbsen() {
   const [pulangResult, setPulangResult] = useState(null)
   const [waktu, setWaktu] = useState(new Date())
   const [jamMasuk, setJamMasuk] = useState('07:15')
+  // ── Fingerprint registration ──
+  const [showFpModal, setShowFpModal] = useState(false)
+  const [fpForm, setFpForm] = useState({ identifier: '', tipe: 'siswa' })
+  const [fpFormErrors, setFpFormErrors] = useState({})
+  const [fpLoading, setFpLoading] = useState(false)
+  const [fpResult, setFpResult] = useState(null) // null | { success, data, message }
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
   const { isDark, toggleTheme } = useThemeStore()
 
@@ -205,6 +211,38 @@ export default function PublicAbsen() {
       else if (msg.includes('tidak valid') || msg.includes('tidak terdaftar')) { showError('QR Tidak Valid', 'QR Code tidak dikenali.') }
       else { showError('Gagal', msg) }
     } finally { setLoading(false) }
+  }
+
+  // ── Handler fingerprint registration ──────────────────────────────
+  const handleOpenFpModal = () => {
+    setFpForm({ identifier: userRole === 'siswa' ? formData.nisn : formData.nip, tipe: userRole })
+    setFpFormErrors({})
+    setFpResult(null)
+    setShowFpModal(true)
+  }
+
+  const handleFpRegister = async (e) => {
+    e.preventDefault()
+    const errs = {}
+    if (!fpForm.identifier.trim()) errs.identifier = fpForm.tipe === 'siswa' ? 'NIS/NISN wajib diisi' : 'NIP wajib diisi'
+    else if (fpForm.identifier.length < 4) errs.identifier = 'Minimal 4 karakter'
+    setFpFormErrors(errs)
+    if (Object.keys(errs).length) return
+
+    setFpLoading(true)
+    setFpResult(null)
+    try {
+      const res = await publicApi.registerFingerprint({ identifier: fpForm.identifier, tipe: fpForm.tipe })
+      const d = res.data.data
+      setFpResult({ success: true, data: d, message: res.data.message })
+      playSuccessSound()
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Terjadi kesalahan'
+      setFpResult({ success: false, message: msg })
+      playErrorSound()
+    } finally {
+      setFpLoading(false)
+    }
   }
 
   const tabs = [
@@ -974,6 +1012,32 @@ export default function PublicAbsen() {
             </div>
           </Link>
 
+          {/* ── Daftar Sidik Jari CTA ── */}
+          {pengaturan.fingerprint_enabled && (
+            <motion.button
+              whileHover={{scale:1.01}} whileTap={{scale:0.99}}
+              onClick={handleOpenFpModal}
+              className={`w-full flex items-center justify-between p-4 sm:p-5 rounded-2xl border-2 border-dashed transition-all group ${
+                isDark
+                  ? 'border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/50'
+                  : 'border-cyan-300 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-400'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-cyan-500/20':'bg-white shadow-md shadow-cyan-100'}`}>
+                  <Fingerprint size={18} className="text-cyan-500"/>
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-black ${isDark?'text-cyan-300':'text-cyan-700'}`}>Daftar Sidik Jari</p>
+                  <p className={`text-[10px] mt-0.5 ${isDark?'text-cyan-500/70':'text-cyan-500'}`}>Daftarkan jari ke mesin fingerprint sekolah</p>
+                </div>
+              </div>
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${isDark?'bg-cyan-500/20 group-hover:bg-cyan-500/30':'bg-white shadow-sm group-hover:shadow-md'}`}>
+                <ArrowRight size={14} className={`${isDark?'text-cyan-400':'text-cyan-500'} group-hover:translate-x-0.5 transition-transform`}/>
+              </div>
+            </motion.button>
+          )}
+
           <p className={`text-center text-[10px] ${isDark?'text-white/10':'text-slate-300'}`}>
             © {new Date().getFullYear()} {pengaturan.nama_sekolah||'Sistem Absensi Digital'}
           </p>
@@ -1008,6 +1072,221 @@ export default function PublicAbsen() {
         {showScannerPulang && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
             <QrScanner onScan={handleQrPulang} onError={(e)=>showError('Kamera Error',e)} onClose={()=>setShowScannerPulang(false)}/>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══ MODAL DAFTAR SIDIK JARI ══ */}
+      <AnimatePresence>
+        {showFpModal && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => { if (!fpLoading) { setShowFpModal(false); setFpResult(null); setFpFormErrors({}) } }}
+          >
+            <motion.div
+              initial={{y:'100%', opacity:0}} animate={{y:0, opacity:1}} exit={{y:'100%', opacity:0}}
+              transition={{type:'spring', bounce:0.18, duration:0.45}}
+              className="bg-white dark:bg-[#0d1526] w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Drag handle (mobile) */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-white/20"/>
+              </div>
+
+              {/* Header */}
+              <div className="relative bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 p-5">
+                {/* BG pattern */}
+                <div className="absolute inset-0 opacity-10"
+                  style={{backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'14px 14px'}}/>
+                <div className="relative flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <motion.div animate={{rotate:[0,10,-10,0]}} transition={{duration:2,repeat:Infinity,repeatDelay:3}}
+                      className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-lg shadow-black/20">
+                      <Fingerprint size={24} className="text-white"/>
+                    </motion.div>
+                    <div>
+                      <h3 className="text-white font-black text-base">Daftar Sidik Jari</h3>
+                      <p className="text-white/70 text-xs mt-0.5">Daftarkan ke mesin fingerprint sekolah</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { if (!fpLoading) { setShowFpModal(false); setFpResult(null); setFpFormErrors({}) } }}
+                    className="p-1.5 rounded-xl hover:bg-white/20 transition-colors text-white/70 hover:text-white flex-shrink-0">
+                    <X size={16}/>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+
+                {/* Jika belum berhasil daftar, tampilkan form */}
+                {!fpResult?.success ? (
+                  <>
+                    {/* Info cara kerja */}
+                    <div className={`p-3.5 rounded-2xl border ${isDark?'bg-cyan-500/8 border-cyan-500/20':'bg-cyan-50 border-cyan-200'}`}>
+                      <p className={`text-[10px] font-black uppercase tracking-wider mb-2 ${isDark?'text-cyan-400':'text-cyan-600'}`}>
+                        📋 Cara Kerja
+                      </p>
+                      {[
+                        {n:'1', t:'Isi NIS/NISN atau NIP di bawah lalu submit.'},
+                        {n:'2', t:'Sistem mendaftarkan User ID ke mesin fingerprint.'},
+                        {n:'3', t:'Datang ke mesin → ikuti instruksi layar → scan jari.'},
+                        {n:'4', t:'Selesai! Absensi sidik jari langsung aktif.'},
+                      ].map(s => (
+                        <div key={s.n} className="flex items-start gap-2 mt-1.5">
+                          <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center flex-shrink-0 mt-0.5 ${isDark?'bg-cyan-500/30 text-cyan-300':'bg-cyan-100 text-cyan-600'}`}>{s.n}</span>
+                          <p className={`text-[11px] leading-relaxed ${isDark?'text-slate-400':'text-slate-500'}`}>{s.t}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Error dari server */}
+                    {fpResult?.success === false && (
+                      <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}}
+                        className="flex items-start gap-2.5 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 rounded-xl">
+                        <AlertCircle size={14} className="text-red-500 flex-shrink-0 mt-0.5"/>
+                        <p className="text-xs text-red-600 dark:text-red-400 font-medium">{fpResult.message}</p>
+                      </motion.div>
+                    )}
+
+                    {/* Form */}
+                    <form onSubmit={handleFpRegister} className="space-y-3">
+                      {/* Toggle tipe */}
+                      <div>
+                        <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>
+                          Saya adalah
+                        </label>
+                        <div className={`flex gap-1.5 p-1 rounded-xl ${isDark?'bg-white/5':'bg-slate-100'}`}>
+                          {[
+                            {k:'siswa', l:'Siswa', i:GraduationCap},
+                            {k:'guru',  l:'Guru',  i:User},
+                          ].map(t => (
+                            <button key={t.k} type="button"
+                              onClick={() => { setFpForm(p=>({...p, tipe:t.k, identifier:''})); setFpFormErrors({}) }}
+                              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                                fpForm.tipe===t.k
+                                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30'
+                                  : isDark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'
+                              }`}>
+                              <t.i size={11}/>{t.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Input NIS/NISN atau NIP */}
+                      <div>
+                        <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>
+                          {fpForm.tipe === 'siswa' ? 'NIS atau NISN' : 'NIP'}
+                        </label>
+                        <div className="relative">
+                          <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center ${isDark?'bg-cyan-500/20':'bg-cyan-50'}`}>
+                            <Hash size={13} className="text-cyan-500"/>
+                          </div>
+                          <input
+                            type="text"
+                            value={fpForm.identifier}
+                            onChange={e => { setFpForm(p=>({...p, identifier:e.target.value})); setFpFormErrors({}) }}
+                            disabled={fpLoading}
+                            autoComplete="off"
+                            placeholder={fpForm.tipe==='siswa' ? 'Masukkan NIS atau NISN' : 'Masukkan NIP'}
+                            className={`w-full pl-12 pr-4 py-3 rounded-xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 ${
+                              fpFormErrors.identifier
+                                ? 'border-red-400 focus:ring-red-400/20 bg-red-50 dark:bg-red-500/10'
+                                : isDark
+                                  ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-cyan-500/20'
+                                  : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 focus:bg-white'
+                            } ${fpLoading?'opacity-50 cursor-not-allowed':''}`}
+                          />
+                        </div>
+                        {fpFormErrors.identifier && (
+                          <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
+                            <AlertCircle size={10}/>{fpFormErrors.identifier}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Submit */}
+                      <motion.button whileTap={{scale:0.98}} type="submit" disabled={fpLoading}
+                        className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black rounded-xl shadow-lg shadow-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                        {fpLoading
+                          ? <><Loader size={15} className="animate-spin"/>Mendaftarkan...</>
+                          : <><Fingerprint size={15}/>Daftarkan ke Mesin</>}
+                      </motion.button>
+                    </form>
+                  </>
+                ) : (
+                  /* ── BERHASIL DAFTAR ── */
+                  <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} className="space-y-4">
+                    {/* Success animation */}
+                    <div className="flex flex-col items-center py-4">
+                      <motion.div
+                        initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5,delay:0.1}}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-3">
+                        <CheckCircle size={40} className="text-white"/>
+                      </motion.div>
+                      <motion.p initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
+                        className={`text-base font-black ${isDark?'text-white':'text-slate-800'}`}>
+                        Berhasil Didaftarkan! 🎉
+                      </motion.p>
+                      <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.3}}
+                        className={`text-xs text-center mt-1 ${isDark?'text-slate-400':'text-slate-500'}`}>
+                        {fpResult.data?.pesan || 'Pendaftaran sidik jari berhasil'}
+                      </motion.p>
+                    </div>
+
+                    {/* Info card */}
+                    <div className={`p-4 rounded-2xl border ${isDark?'bg-white/5 border-white/10':'bg-slate-50 border-slate-200'}`}>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          {l:'Nama', v: fpResult.data?.nama || '-'},
+                          {l:'User ID Mesin', v: fpResult.data?.userid || '-', mono:true},
+                          {l:'UID Mesin', v: fpResult.data?.uid || '-', mono:true},
+                          {l:'Tipe', v: fpForm.tipe === 'siswa' ? '🎓 Siswa' : '👨‍🏫 Guru'},
+                        ].map((item,i) => (
+                          <div key={i}>
+                            <p className={`text-[9px] uppercase font-black tracking-wider mb-0.5 ${isDark?'text-slate-500':'text-slate-400'}`}>{item.l}</p>
+                            <p className={`text-xs font-bold ${item.mono?'font-mono':''}  ${isDark?'text-white':'text-slate-700'}`}>{item.v}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Next step */}
+                    <div className={`p-3.5 rounded-2xl border ${isDark?'bg-emerald-500/10 border-emerald-500/25':'bg-emerald-50 border-emerald-200'}`}>
+                      <p className={`text-xs font-black mb-2 ${isDark?'text-emerald-300':'text-emerald-700'}`}>
+                        ✅ Langkah Selanjutnya
+                      </p>
+                      <div className="space-y-1.5">
+                        {[
+                          '1. Datang ke mesin fingerprint yang tersedia.',
+                          '2. Pada layar mesin, pilih menu "Enroll" atau "Daftar Jari".',
+                          '3. Masukkan User ID yang terdaftar, lalu scan jari Anda.',
+                          '4. Ulangi scan 3–5 kali sampai mesin konfirmasi.',
+                        ].map((s,i) => (
+                          <p key={i} className={`text-[11px] ${isDark?'text-emerald-400/80':'text-emerald-700/80'}`}>{s}</p>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setFpResult(null); setFpForm(p=>({...p, identifier:''})) }}
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-colors ${isDark?'border-white/10 text-slate-300 hover:bg-white/5':'border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
+                        Daftarkan Lagi
+                      </button>
+                      <button
+                        onClick={() => { setShowFpModal(false); setFpResult(null); setFpFormErrors({}) }}
+                        className="flex-1 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-cyan-500/25 hover:from-cyan-600 hover:to-blue-700 transition-all">
+                        Selesai
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

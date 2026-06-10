@@ -27,6 +27,9 @@ import {
   UserPlus,
   Sparkles,
   BookOpen,
+  Fingerprint,
+  CheckCircle,
+  Loader,
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import Modal from '../../components/Modal'
@@ -86,7 +89,7 @@ const StudentAvatar = ({ siswa }) => {
 }
 
 // QR Code Action Buttons
-const QrActions = ({ row, onView, onDownload, onReset }) => (
+const QrActions = ({ row, onView, onDownload, onReset, onFingerprint }) => (
   <div className="flex items-center gap-0.5">
     <motion.button whileHover={{scale:1.1}} whileTap={{scale:0.9}}
       onClick={() => onView(row)}
@@ -102,6 +105,11 @@ const QrActions = ({ row, onView, onDownload, onReset }) => (
       onClick={() => onReset(row)}
       className="p-1.5 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm hover:shadow-md transition-all hidden lg:block" title="Reset QR Code">
       <RefreshCw size={12}/>
+    </motion.button>
+    <motion.button whileHover={{scale:1.1}} whileTap={{scale:0.9}}
+      onClick={() => onFingerprint(row)}
+      className="p-1.5 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-sm hover:shadow-md transition-all" title="Daftar Sidik Jari">
+      <Fingerprint size={12}/>
     </motion.button>
   </div>
 )
@@ -143,6 +151,10 @@ export default function Siswas() {
   const [viewingSiswa, setViewingSiswa] = useState(null)
   const [viewingQrSiswa, setViewingQrSiswa] = useState(null)
   const [error, setError] = useState(null)
+  // Fingerprint modal
+  const [fingerprintSiswa, setFingerprintSiswa] = useState(null)
+  const [fpLoading, setFpLoading] = useState(false)
+  const [fpStatus, setFpStatus] = useState(null) // null | 'checking' | { terdaftar, uid }
   const [stats, setStats] = useState({
     total: 0,
     laki_laki: 0,
@@ -509,6 +521,47 @@ export default function Siswas() {
     setPreviewFoto(null)
   }
 
+  // ============= FINGERPRINT HANDLERS =============
+  const handleOpenFingerprint = async (siswa) => {
+    setFingerprintSiswa(siswa)
+    setFpStatus('checking')
+    setFpLoading(false)
+    try {
+      const res = await adminApi.checkFingerprintRegistered({ tipe: 'siswa', id: siswa.id })
+      setFpStatus(res.data.data)
+    } catch {
+      setFpStatus({ terdaftar: false, userid: siswa.nis || siswa.nisn })
+    }
+  }
+
+  const handleRegisterFingerprint = async () => {
+    if (!fingerprintSiswa) return
+    setFpLoading(true)
+    try {
+      const res = await adminApi.registerFingerprint({ tipe: 'siswa', id: fingerprintSiswa.id })
+      setFpStatus({ terdaftar: true, userid: res.data.data.userid, uid: res.data.data.uid })
+      toast.success(res.data.data.pesan)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal mendaftarkan sidik jari')
+    } finally {
+      setFpLoading(false)
+    }
+  }
+
+  const handleUnregisterFingerprint = async () => {
+    if (!fingerprintSiswa) return
+    setFpLoading(true)
+    try {
+      await adminApi.unregisterFingerprint({ tipe: 'siswa', id: fingerprintSiswa.id })
+      setFpStatus({ terdaftar: false, userid: fingerprintSiswa.nis || fingerprintSiswa.nisn })
+      toast.success('Sidik jari berhasil dihapus dari mesin')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal menghapus sidik jari')
+    } finally {
+      setFpLoading(false)
+    }
+  }
+
   // ============= TABLE COLUMNS =============
   const columns = [
     {
@@ -567,6 +620,7 @@ export default function Siswas() {
           onView={setViewingQrSiswa}
           onDownload={handleDownloadQr}
           onReset={handleResetQr}
+          onFingerprint={handleOpenFingerprint}
         />
       ),
     },
@@ -1401,6 +1455,116 @@ export default function Siswas() {
           background-clip: text;
         }
       `}</style>
+
+      {/* ── MODAL FINGERPRINT SISWA ── */}
+      <AnimatePresence>
+        {fingerprintSiswa && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setFingerprintSiswa(null); setFpStatus(null) }}>
+            <motion.div initial={{scale:0.9,opacity:0,y:20}} animate={{scale:1,opacity:1,y:0}} exit={{scale:0.9,opacity:0,y:20}}
+              transition={{type:'spring',bounce:0.3}}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700"
+              onClick={e => e.stopPropagation()}>
+
+              {/* Header */}
+              <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Fingerprint size={22} className="text-white"/>
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-white">Sidik Jari Siswa</h3>
+                      <p className="text-xs text-white/70 mt-0.5">Daftar ke mesin fingerprint</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setFingerprintSiswa(null); setFpStatus(null) }}
+                    className="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white">
+                    <X size={16}/>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Info siswa */}
+                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                  {fingerprintSiswa.foto_url ? (
+                    <img src={fingerprintSiswa.foto_url} alt={fingerprintSiswa.nama_lengkap}
+                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-cyan-200 flex-shrink-0"/>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
+                      {(fingerprintSiswa.nama_lengkap||'?')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{fingerprintSiswa.nama_lengkap}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">NIS: {fingerprintSiswa.nis} · {fingerprintSiswa.kelas?.nama_kelas || '-'}</p>
+                    <p className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 mt-0.5">User ID Mesin: {fingerprintSiswa.nis || fingerprintSiswa.nisn}</p>
+                  </div>
+                </div>
+
+                {/* Status */}
+                {fpStatus === 'checking' ? (
+                  <div className="flex items-center justify-center gap-2 py-4 text-slate-400">
+                    <Loader size={16} className="animate-spin"/>
+                    <span className="text-sm">Mengecek status di mesin...</span>
+                  </div>
+                ) : fpStatus?.terdaftar ? (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle size={16} className="text-emerald-500 flex-shrink-0"/>
+                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Sudah Terdaftar di Mesin</p>
+                    </div>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">UID Mesin: <span className="font-mono font-bold">{fpStatus.uid}</span></p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Siswa sudah bisa scan sidik jari di mesin. Untuk menghapus dan daftar ulang, klik tombol hapus di bawah.</p>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle size={16} className="text-amber-500 flex-shrink-0"/>
+                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">Belum Terdaftar di Mesin</p>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Klik "Daftarkan ke Mesin" — lalu siswa perlu datang ke mesin fingerprint untuk merekam sidik jarinya.</p>
+                  </div>
+                )}
+
+                {/* Petunjuk cara kerja */}
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                  <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Cara Kerja</p>
+                  {['1. Klik "Daftarkan ke Mesin" untuk mendaftarkan User ID siswa.', '2. Siswa datang ke mesin fingerprint.', '3. Ikuti instruksi mesin untuk scan jari (pilih jari ke-1 s.d 10).', '4. Setelah terdaftar, absensi fingerprint langsung berfungsi.'].map((s,i) => (
+                    <p key={i} className="text-[10px] text-blue-600/80 dark:text-blue-400/80 mt-0.5">{s}</p>
+                  ))}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-2 pt-1">
+                  {fpStatus !== 'checking' && !fpStatus?.terdaftar && (
+                    <motion.button whileHover={{scale:1.02}} whileTap={{scale:0.98}}
+                      onClick={handleRegisterFingerprint} disabled={fpLoading}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      {fpLoading ? <Loader size={14} className="animate-spin"/> : <Fingerprint size={14}/>}
+                      {fpLoading ? 'Mendaftarkan...' : 'Daftarkan ke Mesin'}
+                    </motion.button>
+                  )}
+                  {fpStatus?.terdaftar && (
+                    <motion.button whileHover={{scale:1.02}} whileTap={{scale:0.98}}
+                      onClick={handleUnregisterFingerprint} disabled={fpLoading}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-rose-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      {fpLoading ? <Loader size={14} className="animate-spin"/> : <X size={14}/>}
+                      {fpLoading ? 'Menghapus...' : 'Hapus dari Mesin'}
+                    </motion.button>
+                  )}
+                  <button onClick={() => { setFingerprintSiswa(null); setFpStatus(null) }}
+                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm transition-colors border border-slate-200 dark:border-slate-700">
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
