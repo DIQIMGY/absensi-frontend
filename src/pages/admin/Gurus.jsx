@@ -1536,4 +1536,4 @@ export default function Gurus() {
       </AnimatePresence>
     </div>
   )
-}}
+}
