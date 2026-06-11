@@ -241,29 +241,35 @@ export default function PublicAbsen() {
         setFpResult({ success: true, data: { ...d, status: 'processing' }, message: res.data.message })
         setFpLoading(false)
 
+        // Ekstrak key tanpa prefix 'fp_reg_' untuk dikirim ke endpoint
+        const rawKey = d.job_key.replace(/^fp_reg_/, '')
+
         // Poll tiap 2 detik, max 30 detik
         let attempts = 0
         const maxAttempts = 15
         const poll = async () => {
           attempts++
           try {
-            const pollRes = await publicApi.getFingerprintStatus(d.job_key)
+            const pollRes = await publicApi.getFingerprintStatus(rawKey)
             const status = pollRes.data.data
             if (status.status === 'success') {
-              setFpResult({ success: true, data: { ...d, ...status, uid: status.uid }, message: status.message })
+              setFpResult({ success: true, data: { ...d, ...status }, message: status.message })
               playSuccessSound()
               return
-            } else if (status.status === 'failed' || status.status === 'already') {
-              setFpResult({ success: status.status === 'already', data: { ...d, ...status }, message: status.message })
-              if (status.status === 'failed') playErrorSound()
+            } else if (status.status === 'failed') {
+              setFpResult({ success: false, data: { ...d, ...status }, message: status.message })
+              playErrorSound()
+              return
+            } else if (status.status === 'already') {
+              setFpResult({ success: true, data: { ...d, ...status }, message: status.message })
               return
             }
+            // masih processing
           } catch {}
           if (attempts < maxAttempts) {
             setTimeout(poll, 2000)
           } else {
-            // Timeout polling — anggap berhasil (job mungkin sudah jalan)
-            setFpResult({ success: true, data: d, message: 'Pendaftaran diproses. Coba scan jari ke mesin sekarang.' })
+            setFpResult({ success: true, data: { ...d, status: 'timeout' }, message: 'Pendaftaran diproses. Coba scan jari ke mesin sekarang.' })
           }
         }
         setTimeout(poll, 2000)
