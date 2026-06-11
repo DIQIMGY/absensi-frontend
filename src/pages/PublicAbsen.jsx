@@ -234,13 +234,49 @@ export default function PublicAbsen() {
     try {
       const res = await publicApi.registerFingerprint({ identifier: fpForm.identifier, tipe: fpForm.tipe })
       const d = res.data.data
-      setFpResult({ success: true, data: d, message: res.data.message })
-      playSuccessSound()
+
+      // Jika backend dispatch job (async), lakukan polling
+      if (d.polling && d.job_key) {
+        // Tampilkan state "processing" dulu
+        setFpResult({ success: true, data: { ...d, status: 'processing' }, message: res.data.message })
+        setFpLoading(false)
+
+        // Poll tiap 2 detik, max 30 detik
+        let attempts = 0
+        const maxAttempts = 15
+        const poll = async () => {
+          attempts++
+          try {
+            const pollRes = await publicApi.getFingerprintStatus(d.job_key)
+            const status = pollRes.data.data
+            if (status.status === 'success') {
+              setFpResult({ success: true, data: { ...d, ...status, uid: status.uid }, message: status.message })
+              playSuccessSound()
+              return
+            } else if (status.status === 'failed' || status.status === 'already') {
+              setFpResult({ success: status.status === 'already', data: { ...d, ...status }, message: status.message })
+              if (status.status === 'failed') playErrorSound()
+              return
+            }
+          } catch {}
+          if (attempts < maxAttempts) {
+            setTimeout(poll, 2000)
+          } else {
+            // Timeout polling — anggap berhasil (job mungkin sudah jalan)
+            setFpResult({ success: true, data: d, message: 'Pendaftaran diproses. Coba scan jari ke mesin sekarang.' })
+          }
+        }
+        setTimeout(poll, 2000)
+      } else {
+        // Sync response langsung
+        setFpResult({ success: true, data: d, message: res.data.message })
+        playSuccessSound()
+        setFpLoading(false)
+      }
     } catch (err) {
       const msg = err.response?.data?.message || 'Terjadi kesalahan'
       setFpResult({ success: false, message: msg })
       playErrorSound()
-    } finally {
       setFpLoading(false)
     }
   }
@@ -1219,20 +1255,38 @@ export default function PublicAbsen() {
                 ) : (
                   /* ── BERHASIL DAFTAR ── */
                   <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} className="space-y-4">
-                    {/* Success animation */}
+                    {/* Icon: processing vs success */}
                     <div className="flex flex-col items-center py-4">
-                      <motion.div
-                        initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5,delay:0.1}}
-                        className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-3">
-                        <CheckCircle size={40} className="text-white"/>
-                      </motion.div>
-                      <motion.p initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
+                      {fpResult.data?.status === 'processing' ? (
+                        <motion.div
+                          animate={{rotate:360}} transition={{duration:2,repeat:Infinity,ease:'linear'}}
+                          className="w-20 h-20 rounded-full border-4 border-cyan-200 border-t-cyan-500 mb-3"/>
+                      ) : (
+                        <motion.div
+                          initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5,delay:0.1}}
+                          className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl mb-3 ${
+                            fpResult.data?.status === 'failed'
+                              ? 'bg-gradient-to-br from-rose-400 to-red-500 shadow-rose-500/30'
+                              : 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-emerald-500/30'
+                          }`}>
+                          {fpResult.data?.status === 'failed'
+                            ? <X size={40} className="text-white"/>
+                            : <CheckCircle size={40} className="text-white"/>}
+                        </motion.div>
+                      )}
+
+                      <motion.p initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.1}}
                         className={`text-base font-black ${isDark?'text-white':'text-slate-800'}`}>
-                        Berhasil Didaftarkan! 🎉
+                        {fpResult.data?.status === 'processing' ? 'Sedang Diproses...' :
+                         fpResult.data?.status === 'failed' ? 'Pendaftaran Gagal' :
+                         fpResult.data?.status === 'already' ? 'Sudah Terdaftar ✅' :
+                         'Berhasil Didaftarkan! 🎉'}
                       </motion.p>
-                      <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.3}}
-                        className={`text-xs text-center mt-1 ${isDark?'text-slate-400':'text-slate-500'}`}>
-                        {fpResult.data?.pesan || 'Pendaftaran sidik jari berhasil'}
+                      <motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.2}}
+                        className={`text-xs text-center mt-1 px-2 ${isDark?'text-slate-400':'text-slate-500'}`}>
+                        {fpResult.data?.status === 'processing'
+                          ? 'Menghubungi mesin fingerprint... Harap tunggu ±10 detik'
+                          : fpResult.message || fpResult.data?.pesan || 'Pendaftaran sidik jari berhasil'}
                       </motion.p>
                     </div>
 
@@ -1240,47 +1294,98 @@ export default function PublicAbsen() {
                     <div className={`p-4 rounded-2xl border ${isDark?'bg-white/5 border-white/10':'bg-slate-50 border-slate-200'}`}>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          {l:'Nama', v: fpResult.data?.nama || '-'},
+                          {l:'Nama',         v: fpResult.data?.nama   || '-'},
                           {l:'User ID Mesin', v: fpResult.data?.userid || '-', mono:true},
-                          {l:'UID Mesin', v: fpResult.data?.uid || '-', mono:true},
+                          {
+                            l:'UID Mesin',
+                            v: fpResult.data?.uid
+                              ? String(fpResult.data.uid)
+                              : fpResult.data?.status === 'processing'
+                                ? '⏳ Memproses...'
+                                : '-',
+                            mono: !!fpResult.data?.uid
+                          },
                           {l:'Tipe', v: fpForm.tipe === 'siswa' ? '🎓 Siswa' : '👨‍🏫 Guru'},
                         ].map((item,i) => (
                           <div key={i}>
                             <p className={`text-[9px] uppercase font-black tracking-wider mb-0.5 ${isDark?'text-slate-500':'text-slate-400'}`}>{item.l}</p>
-                            <p className={`text-xs font-bold ${item.mono?'font-mono':''}  ${isDark?'text-white':'text-slate-700'}`}>{item.v}</p>
+                            <p className={`text-xs font-bold ${item.mono?'font-mono':''} ${isDark?'text-white':'text-slate-700'}`}>{item.v}</p>
                           </div>
                         ))}
                       </div>
+
+                      {/* Polling status banner */}
+                      {fpResult.data?.status === 'processing' && (
+                        <motion.div initial={{opacity:0}} animate={{opacity:1}}
+                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-cyan-500/10 border border-cyan-500/20':'bg-cyan-50 border border-cyan-200'}`}>
+                          <Loader size={12} className="text-cyan-500 animate-spin flex-shrink-0"/>
+                          <p className={`text-[11px] font-semibold ${isDark?'text-cyan-400':'text-cyan-600'}`}>
+                            Menghubungi mesin fingerprint...
+                          </p>
+                        </motion.div>
+                      )}
+                      {fpResult.data?.status === 'success' && (
+                        <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}}
+                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-emerald-500/10 border border-emerald-500/20':'bg-emerald-50 border border-emerald-200'}`}>
+                          <CheckCircle size={12} className="text-emerald-500 flex-shrink-0"/>
+                          <p className={`text-[11px] font-semibold ${isDark?'text-emerald-400':'text-emerald-600'}`}>
+                            ✅ Terdaftar di mesin! Sekarang datang ke mesin dan scan jari.
+                          </p>
+                        </motion.div>
+                      )}
+                      {fpResult.data?.status === 'already' && (
+                        <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}}
+                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-amber-500/10 border border-amber-500/20':'bg-amber-50 border border-amber-200'}`}>
+                          <AlertCircle size={12} className="text-amber-500 flex-shrink-0"/>
+                          <p className={`text-[11px] font-semibold ${isDark?'text-amber-400':'text-amber-600'}`}>
+                            Sudah terdaftar — langsung datang ke mesin untuk scan jari
+                          </p>
+                        </motion.div>
+                      )}
+                      {fpResult.data?.status === 'failed' && (
+                        <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}}
+                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-red-500/10 border border-red-500/20':'bg-red-50 border border-red-200'}`}>
+                          <AlertCircle size={12} className="text-red-500 flex-shrink-0"/>
+                          <p className={`text-[11px] font-semibold ${isDark?'text-red-400':'text-red-600'}`}>
+                            {fpResult.data?.message || 'Gagal mendaftarkan. Coba lagi.'}
+                          </p>
+                        </motion.div>
+                      )}
                     </div>
 
-                    {/* Next step */}
-                    <div className={`p-3.5 rounded-2xl border ${isDark?'bg-emerald-500/10 border-emerald-500/25':'bg-emerald-50 border-emerald-200'}`}>
-                      <p className={`text-xs font-black mb-2 ${isDark?'text-emerald-300':'text-emerald-700'}`}>
-                        ✅ Langkah Selanjutnya
-                      </p>
-                      <div className="space-y-1.5">
-                        {[
-                          '1. Datang ke mesin fingerprint yang tersedia.',
-                          '2. Pada layar mesin, pilih menu "Enroll" atau "Daftar Jari".',
-                          '3. Masukkan User ID yang terdaftar, lalu scan jari Anda.',
-                          '4. Ulangi scan 3–5 kali sampai mesin konfirmasi.',
-                        ].map((s,i) => (
-                          <p key={i} className={`text-[11px] ${isDark?'text-emerald-400/80':'text-emerald-700/80'}`}>{s}</p>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Langkah selanjutnya — hanya tampil jika success/already/timeout */}
+                    {fpResult.data?.status !== 'processing' && fpResult.data?.status !== 'failed' && (
+                      <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
+                        className={`p-3.5 rounded-2xl border ${isDark?'bg-emerald-500/10 border-emerald-500/25':'bg-emerald-50 border-emerald-200'}`}>
+                        <p className={`text-xs font-black mb-2 ${isDark?'text-emerald-300':'text-emerald-700'}`}>
+                          📋 Langkah Selanjutnya
+                        </p>
+                        <div className="space-y-1.5">
+                          {[
+                            `1. User ID kamu: ${fpResult.data?.userid || '-'} (catat ini!)`,
+                            '2. Datang ke mesin fingerprint yang tersedia.',
+                            '3. Di mesin: pilih Enroll → masukkan User ID → scan jari.',
+                            '4. Ulangi scan 3–5 kali sampai mesin konfirmasi "OK".',
+                          ].map((s,i) => (
+                            <p key={i} className={`text-[11px] leading-relaxed ${isDark?'text-emerald-400/80':'text-emerald-700/80'}`}>{s}</p>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => { setFpResult(null); setFpForm(p=>({...p, identifier:''})) }}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-colors ${isDark?'border-white/10 text-slate-300 hover:bg-white/5':'border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
-                        Daftarkan Lagi
-                      </button>
+                      {fpResult.data?.status !== 'processing' && (
+                        <button
+                          onClick={() => { setFpResult(null); setFpForm(p=>({...p, identifier:''})) }}
+                          className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-colors ${isDark?'border-white/10 text-slate-300 hover:bg-white/5':'border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
+                          Daftarkan Lagi
+                        </button>
+                      )}
                       <button
                         onClick={() => { setShowFpModal(false); setFpResult(null); setFpFormErrors({}) }}
-                        className="flex-1 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-cyan-500/25 hover:from-cyan-600 hover:to-blue-700 transition-all">
-                        Selesai
+                        className={`${fpResult.data?.status === 'processing' ? 'w-full' : 'flex-1'} py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-cyan-500/25 hover:from-cyan-600 hover:to-blue-700 transition-all`}>
+                        {fpResult.data?.status === 'processing' ? 'Tutup (Proses Tetap Berjalan)' : 'Selesai'}
                       </button>
                     </div>
                   </motion.div>

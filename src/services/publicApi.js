@@ -55,4 +55,7 @@ export const publicApi = {
 
   // Daftar sidik jari ke mesin fingerprint (tanpa login)
   registerFingerprint: (data) => api.post('/public/fingerprint/register', data),
+
+  // Poll status pendaftaran fingerprint
+  getFingerprintStatus: (key) => api.get(`/public/fingerprint/status/${key}`),
 }
