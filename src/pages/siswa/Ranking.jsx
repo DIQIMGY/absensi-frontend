@@ -8,7 +8,6 @@ import {
   Medal, Award, TrendingUp, Hash, UserCircle2,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
-import { useAuthStore } from '../../stores/authStore'
 
 const TABS = [
   { key:'hadir',     label:'Rajin',     color:'#10b981', grad:'linear-gradient(135deg,#059669,#10b981)', text:'text-emerald-600 dark:text-emerald-400', icon:CheckCircle,   desc:'Paling sering hadir' },
@@ -37,18 +36,18 @@ function SiswaAvatar({ siswa, size = 44, rounded = 'rounded-2xl' }) {
 }
 
 // ─── PROFILE CARD MODAL ──────────────────────────────────────
-function ProfileCardModal({ siswa, onClose, myId, currentUser }) {
+function ProfileCardModal({ siswa, onClose, myId }) {
   const [coverErr, setCoverErr]       = useState(false)
   const [isDark, setIsDark]           = useState(() => document.documentElement.classList.contains('dark'))
   const [musikPlaying, setMusikPlaying] = useState(false)
   const [showFotoView, setShowFotoView] = useState(false)
-  // false = tampil foto siswa, true = tampil foto user (login)
+  // false = foto profil siswa, true = foto user/akun siswa tsb
   const [showUserPhoto, setShowUserPhoto] = useState(false)
   const musikRef = useRef(null)
   const isMe = siswa?.id === myId
 
-  // Foto user yang login
-  const userFotoUrl = currentUser?.foto_url || currentUser?.siswa?.foto_url || null
+  // Foto user (akun) dari siswa yang diklik — beda dengan foto profil siswa
+  const userFotoUrl = siswa?.foto_user_url || null
 
   useEffect(() => () => {
     if (musikRef.current) { musikRef.current.pause(); musikRef.current.currentTime = 0 }
@@ -342,7 +341,7 @@ function ProfileCardModal({ siswa, onClose, myId, currentUser }) {
                         : (isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)'),
                       border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.3)' : 'rgba(124,58,237,0.2)') : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')}`,
                     }}>
-                    {showUserPhoto ? '📱 Foto Kamu' : '🎓 Foto Siswa'}
+                    {showUserPhoto ? '👤 Foto Akun' : '🎓 Foto Profil'}
                   </span>
                 </motion.div>
 
@@ -390,13 +389,10 @@ function ProfileCardModal({ siswa, onClose, myId, currentUser }) {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
                   className="mt-8 text-center px-4">
                   <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                    {showUserPhoto ? (currentUser?.name || currentUser?.siswa?.nama_lengkap || 'Kamu') : siswa.nama_lengkap}
+                    {siswa.nama_lengkap}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(100,116,139,0.8)' }}>
-                    {showUserPhoto
-                      ? 'Foto profil kamu'
-                      : <>{siswa.kelas} &middot; {siswa.nis}</>
-                    }
+                    {showUserPhoto ? 'Foto akun' : 'Foto profil'} &middot; {siswa.kelas} &middot; {siswa.nis}
                   </p>
                 </motion.div>
 
@@ -414,7 +410,7 @@ function ProfileCardModal({ siswa, onClose, myId, currentUser }) {
                       border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.15)') : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}`,
                     }}>
                     <UserCircle2 size={13} />
-                    {showUserPhoto ? 'Lihat foto siswa' : 'Lihat foto kamu'}
+                    {showUserPhoto ? 'Lihat foto profil' : 'Lihat foto akun'}
                   </motion.button>
                 )}
               </motion.div>
@@ -591,7 +587,6 @@ export default function SiswaRankingPage() {
   const [refreshing, setRefreshing]       = useState(false)
   const [selectedSiswa, setSelectedSiswa] = useState(null)
   const listRef = useRef(null)
-  const { user } = useAuthStore()
 
   const fetchRanking = useCallback(async (pg = 1, sort = tab, tk = tingkat, isRefresh = false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true)
@@ -635,7 +630,7 @@ export default function SiswaRankingPage() {
 
       {/* MODAL */}
       {selectedSiswa && (
-        <ProfileCardModal siswa={selectedSiswa} myId={myId} currentUser={user} onClose={() => setSelectedSiswa(null)} />
+        <ProfileCardModal siswa={selectedSiswa} myId={myId} onClose={() => setSelectedSiswa(null)} />
       )}
 
       {/* HEADER */}
