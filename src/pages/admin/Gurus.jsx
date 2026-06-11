@@ -122,7 +122,7 @@ const QrActions = ({ row, onView, onDownload, onReset, onFingerprint }) => (
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => onFingerprint(row)}
-      className="p-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-600 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 dark:text-cyan-400 rounded-lg transition-all border border-cyan-500/30 dark:border-cyan-500/30 shadow-sm hover:shadow-md"
+      className="p-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 dark:text-emerald-400 rounded-lg transition-all border border-emerald-500/30 dark:border-emerald-500/30 shadow-sm hover:shadow-md"
       title="Daftar Sidik Jari"
     >
       <Fingerprint size={14} />

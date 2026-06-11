@@ -1061,21 +1061,21 @@ export default function PublicAbsen() {
               onClick={handleOpenFpModal}
               className={`w-full flex items-center justify-between p-4 sm:p-5 rounded-2xl border-2 border-dashed transition-all group ${
                 isDark
-                  ? 'border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/50'
-                  : 'border-cyan-300 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-400'
+                  ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50'
+                  : 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-400'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-cyan-500/20':'bg-white shadow-md shadow-cyan-100'}`}>
-                  <Fingerprint size={18} className="text-cyan-500"/>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark?'bg-emerald-500/20':'bg-white shadow-md shadow-emerald-100'}`}>
+                  <Fingerprint size={18} className="text-emerald-500"/>
                 </div>
                 <div className="text-left">
-                  <p className={`text-sm font-black ${isDark?'text-cyan-300':'text-cyan-700'}`}>Daftar Sidik Jari</p>
-                  <p className={`text-[10px] mt-0.5 ${isDark?'text-cyan-500/70':'text-cyan-500'}`}>Daftarkan jari ke mesin fingerprint sekolah</p>
+                  <p className={`text-sm font-black ${isDark?'text-emerald-300':'text-emerald-700'}`}>Daftar Sidik Jari</p>
+                  <p className={`text-[10px] mt-0.5 ${isDark?'text-emerald-500/70':'text-emerald-600'}`}>Daftarkan jari ke mesin fingerprint sekolah</p>
                 </div>
               </div>
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${isDark?'bg-cyan-500/20 group-hover:bg-cyan-500/30':'bg-white shadow-sm group-hover:shadow-md'}`}>
-                <ArrowRight size={14} className={`${isDark?'text-cyan-400':'text-cyan-500'} group-hover:translate-x-0.5 transition-transform`}/>
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${isDark?'bg-emerald-500/20 group-hover:bg-emerald-500/30':'bg-white shadow-sm group-hover:shadow-md'}`}>
+                <ArrowRight size={14} className={`${isDark?'text-emerald-400':'text-emerald-500'} group-hover:translate-x-0.5 transition-transform`}/>
               </div>
             </motion.button>
           )}
@@ -1138,7 +1138,7 @@ export default function PublicAbsen() {
               </div>
 
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 p-5">
+              <div className="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 p-5">
                 {/* BG pattern */}
                 <div className="absolute inset-0 opacity-10"
                   style={{backgroundImage:'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize:'14px 14px'}}/>
@@ -1166,8 +1166,8 @@ export default function PublicAbsen() {
                 {!fpResult?.success ? (
                   <>
                     {/* Info cara kerja */}
-                    <div className={`p-3.5 rounded-2xl border ${isDark?'bg-cyan-500/8 border-cyan-500/20':'bg-cyan-50 border-cyan-200'}`}>
-                      <p className={`text-[10px] font-black uppercase tracking-wider mb-2 ${isDark?'text-cyan-400':'text-cyan-600'}`}>
+                    <div className={`p-3.5 rounded-2xl border ${isDark?'bg-emerald-500/8 border-emerald-500/20':'bg-emerald-50 border-emerald-200'}`}>
+                      <p className={`text-[10px] font-black uppercase tracking-wider mb-2 ${isDark?'text-emerald-400':'text-emerald-700'}`}>
                         📋 Cara Kerja
                       </p>
                       {[
@@ -1177,7 +1177,7 @@ export default function PublicAbsen() {
                         {n:'4', t:'Selesai! Absensi sidik jari langsung aktif.'},
                       ].map(s => (
                         <div key={s.n} className="flex items-start gap-2 mt-1.5">
-                          <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center flex-shrink-0 mt-0.5 ${isDark?'bg-cyan-500/30 text-cyan-300':'bg-cyan-100 text-cyan-600'}`}>{s.n}</span>
+                          <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center flex-shrink-0 mt-0.5 ${isDark?'bg-emerald-500/30 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>{s.n}</span>
                           <p className={`text-[11px] leading-relaxed ${isDark?'text-slate-400':'text-slate-500'}`}>{s.t}</p>
                         </div>
                       ))}
@@ -1208,7 +1208,7 @@ export default function PublicAbsen() {
                               onClick={() => { setFpForm(p=>({...p, tipe:t.k, identifier:''})); setFpFormErrors({}) }}
                               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
                                 fpForm.tipe===t.k
-                                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30'
                                   : isDark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'
                               }`}>
                               <t.i size={11}/>{t.l}
@@ -1223,8 +1223,8 @@ export default function PublicAbsen() {
                           {fpForm.tipe === 'siswa' ? 'NIS atau NISN' : 'NIP'}
                         </label>
                         <div className="relative">
-                          <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center ${isDark?'bg-cyan-500/20':'bg-cyan-50'}`}>
-                            <Hash size={13} className="text-cyan-500"/>
+                          <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center ${isDark?'bg-emerald-500/20':'bg-emerald-50'}`}>
+                            <Hash size={13} className="text-emerald-500"/>
                           </div>
                           <input
                             type="text"
@@ -1237,8 +1237,8 @@ export default function PublicAbsen() {
                               fpFormErrors.identifier
                                 ? 'border-red-400 focus:ring-red-400/20 bg-red-50 dark:bg-red-500/10'
                                 : isDark
-                                  ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-cyan-500/20'
-                                  : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 focus:bg-white'
+                                  ? 'bg-white/5 border-white/10 text-white placeholder-slate-600 focus:border-emerald-500 focus:ring-emerald-500/20'
+                                  : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20 focus:bg-white'
                             } ${fpLoading?'opacity-50 cursor-not-allowed':''}`}
                           />
                         </div>
@@ -1251,7 +1251,7 @@ export default function PublicAbsen() {
 
                       {/* Submit */}
                       <motion.button whileTap={{scale:0.98}} type="submit" disabled={fpLoading}
-                        className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black rounded-xl shadow-lg shadow-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                        className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-xl shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                         {fpLoading
                           ? <><Loader size={15} className="animate-spin"/>Mendaftarkan...</>
                           : <><Fingerprint size={15}/>Daftarkan ke Mesin</>}
@@ -1266,7 +1266,7 @@ export default function PublicAbsen() {
                       {fpResult.data?.status === 'processing' ? (
                         <motion.div
                           animate={{rotate:360}} transition={{duration:2,repeat:Infinity,ease:'linear'}}
-                          className="w-20 h-20 rounded-full border-4 border-cyan-200 border-t-cyan-500 mb-3"/>
+                          className="w-20 h-20 rounded-full border-4 border-emerald-200 border-t-emerald-500 mb-3"/>
                       ) : (
                         <motion.div
                           initial={{scale:0}} animate={{scale:1}} transition={{type:'spring',bounce:0.5,delay:0.1}}
@@ -1323,9 +1323,9 @@ export default function PublicAbsen() {
                       {/* Polling status banner */}
                       {fpResult.data?.status === 'processing' && (
                         <motion.div initial={{opacity:0}} animate={{opacity:1}}
-                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-cyan-500/10 border border-cyan-500/20':'bg-cyan-50 border border-cyan-200'}`}>
-                          <Loader size={12} className="text-cyan-500 animate-spin flex-shrink-0"/>
-                          <p className={`text-[11px] font-semibold ${isDark?'text-cyan-400':'text-cyan-600'}`}>
+                          className={`mt-3 flex items-center gap-2 p-2.5 rounded-xl ${isDark?'bg-emerald-500/10 border border-emerald-500/20':'bg-emerald-50 border border-emerald-200'}`}>
+                          <Loader size={12} className="text-emerald-500 animate-spin flex-shrink-0"/>
+                          <p className={`text-[11px] font-semibold ${isDark?'text-emerald-400':'text-emerald-600'}`}>
                             Menghubungi mesin fingerprint...
                           </p>
                         </motion.div>
@@ -1390,7 +1390,7 @@ export default function PublicAbsen() {
                       )}
                       <button
                         onClick={() => { setShowFpModal(false); setFpResult(null); setFpFormErrors({}) }}
-                        className={`${fpResult.data?.status === 'processing' ? 'w-full' : 'flex-1'} py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-cyan-500/25 hover:from-cyan-600 hover:to-blue-700 transition-all`}>
+                        className={`${fpResult.data?.status === 'processing' ? 'w-full' : 'flex-1'} py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-700 transition-all`}>
                         {fpResult.data?.status === 'processing' ? 'Tutup (Proses Tetap Berjalan)' : 'Selesai'}
                       </button>
                     </div>

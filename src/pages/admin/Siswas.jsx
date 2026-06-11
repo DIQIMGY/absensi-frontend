@@ -108,7 +108,7 @@ const QrActions = ({ row, onView, onDownload, onReset, onFingerprint }) => (
     </motion.button>
     <motion.button whileHover={{scale:1.1}} whileTap={{scale:0.9}}
       onClick={() => onFingerprint(row)}
-      className="p-1.5 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-sm hover:shadow-md transition-all" title="Daftar Sidik Jari">
+      className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm hover:shadow-md transition-all" title="Daftar Sidik Jari">
       <Fingerprint size={12}/>
     </motion.button>
   </div>
@@ -1468,7 +1468,7 @@ export default function Siswas() {
               onClick={e => e.stopPropagation()}>
 
               {/* Header */}
-              <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-5">
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
@@ -1491,16 +1491,16 @@ export default function Siswas() {
                 <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
                   {fingerprintSiswa.foto_url ? (
                     <img src={fingerprintSiswa.foto_url} alt={fingerprintSiswa.nama_lengkap}
-                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-cyan-200 flex-shrink-0"/>
+                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-200 flex-shrink-0"/>
                   ) : (
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
                       {(fingerprintSiswa.nama_lengkap||'?')[0].toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{fingerprintSiswa.nama_lengkap}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">NIS: {fingerprintSiswa.nis} · {fingerprintSiswa.kelas?.nama_kelas || '-'}</p>
-                    <p className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 mt-0.5">User ID Mesin: {fingerprintSiswa.nis || fingerprintSiswa.nisn}</p>
+                    <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">User ID Mesin: {fingerprintSiswa.nis || fingerprintSiswa.nisn}</p>
                   </div>
                 </div>
 
@@ -1530,10 +1530,10 @@ export default function Siswas() {
                 )}
 
                 {/* Petunjuk cara kerja */}
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                  <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Cara Kerja</p>
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Cara Kerja</p>
                   {['1. Klik "Daftarkan ke Mesin" untuk mendaftarkan User ID siswa.', '2. Siswa datang ke mesin fingerprint.', '3. Ikuti instruksi mesin untuk scan jari (pilih jari ke-1 s.d 10).', '4. Setelah terdaftar, absensi fingerprint langsung berfungsi.'].map((s,i) => (
-                    <p key={i} className="text-[10px] text-blue-600/80 dark:text-blue-400/80 mt-0.5">{s}</p>
+                    <p key={i} className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">{s}</p>
                   ))}
                 </div>
 
@@ -1542,7 +1542,7 @@ export default function Siswas() {
                   {fpStatus !== 'checking' && !fpStatus?.terdaftar && (
                     <motion.button whileHover={{scale:1.02}} whileTap={{scale:0.98}}
                       onClick={handleRegisterFingerprint} disabled={fpLoading}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       {fpLoading ? <Loader size={14} className="animate-spin"/> : <Fingerprint size={14}/>}
                       {fpLoading ? 'Mendaftarkan...' : 'Daftarkan ke Mesin'}
                     </motion.button>
