@@ -5,9 +5,10 @@ import {
   ChevronLeft, ChevronRight,
   CheckCircle, Clock, AlertTriangle, X,
   GraduationCap, Disc, Users, Building2,
-  Medal, Award, TrendingUp, Hash,
+  Medal, Award, TrendingUp, Hash, UserCircle2,
 } from 'lucide-react'
 import { siswaApi } from '../../services/siswaService'
+import { useAuthStore } from '../../stores/authStore'
 
 const TABS = [
   { key:'hadir',     label:'Rajin',     color:'#10b981', grad:'linear-gradient(135deg,#059669,#10b981)', text:'text-emerald-600 dark:text-emerald-400', icon:CheckCircle,   desc:'Paling sering hadir' },
@@ -36,13 +37,18 @@ function SiswaAvatar({ siswa, size = 44, rounded = 'rounded-2xl' }) {
 }
 
 // ─── PROFILE CARD MODAL ──────────────────────────────────────
-function ProfileCardModal({ siswa, onClose, myId }) {
-  const [coverErr, setCoverErr]     = useState(false)
-  const [isDark, setIsDark]         = useState(() => document.documentElement.classList.contains('dark'))
+function ProfileCardModal({ siswa, onClose, myId, currentUser }) {
+  const [coverErr, setCoverErr]       = useState(false)
+  const [isDark, setIsDark]           = useState(() => document.documentElement.classList.contains('dark'))
   const [musikPlaying, setMusikPlaying] = useState(false)
   const [showFotoView, setShowFotoView] = useState(false)
+  // false = tampil foto siswa, true = tampil foto user (login)
+  const [showUserPhoto, setShowUserPhoto] = useState(false)
   const musikRef = useRef(null)
   const isMe = siswa?.id === myId
+
+  // Foto user yang login
+  const userFotoUrl = currentUser?.foto_url || currentUser?.siswa?.foto_url || null
 
   useEffect(() => () => {
     if (musikRef.current) { musikRef.current.pause(); musikRef.current.currentTime = 0 }
@@ -306,30 +312,111 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                 transition={{ type: 'spring', stiffness: 320, damping: 32 }}
                 className="absolute inset-0 flex flex-col items-center justify-center rounded-t-[28px] sm:rounded-[24px] overflow-hidden"
                 style={{ background: isDark ? '#0f172a' : '#f8fafc', zIndex: 10 }}>
-                <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowFotoView(false)}
+
+                {/* Tombol kembali */}
+                <motion.button whileTap={{ scale: 0.88 }} onClick={() => { setShowFotoView(false); setShowUserPhoto(false) }}
                   className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
                   style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}` }}>
                   <ChevronLeft size={16} style={{ color: isDark ? 'white' : '#334155' }} />
                 </motion.button>
+
+                {/* Tombol tutup */}
                 <motion.button whileTap={{ scale: 0.88 }} onClick={onClose}
                   className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
                   style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}` }}>
                   <X size={15} style={{ color: isDark ? 'white' : '#334155' }} />
                 </motion.button>
-                <motion.div initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.05 }}
-                  className="relative" style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}>
-                  <div className="w-full h-full overflow-hidden shadow-xl rounded-3xl">
-                    <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" />
-                  </div>
+
+                {/* Label foto siapa */}
+                <motion.div
+                  key={showUserPhoto ? 'label-user' : 'label-siswa'}
+                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                  className="absolute top-4 left-0 right-0 flex justify-center pointer-events-none">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold"
+                    style={{
+                      background: showUserPhoto
+                        ? (isDark ? 'rgba(124,58,237,0.25)' : 'rgba(124,58,237,0.1)')
+                        : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                      color: showUserPhoto
+                        ? (isDark ? '#c4b5fd' : '#7c3aed')
+                        : (isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)'),
+                      border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.3)' : 'rgba(124,58,237,0.2)') : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')}`,
+                    }}>
+                    {showUserPhoto ? '📱 Foto Kamu' : '🎓 Foto Siswa'}
+                  </span>
                 </motion.div>
+
+                {/* Foto — klik untuk toggle */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={showUserPhoto ? 'foto-user' : 'foto-siswa'}
+                    initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+                    className="relative cursor-pointer"
+                    style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}
+                    onClick={() => {
+                      // Hanya toggle jika ada foto user
+                      if (userFotoUrl) setShowUserPhoto(v => !v)
+                    }}>
+                    <div className="w-full h-full overflow-hidden shadow-xl rounded-3xl"
+                      style={{
+                        boxShadow: showUserPhoto
+                          ? `0 12px 40px rgba(124,58,237,0.35)`
+                          : `0 12px 40px rgba(0,0,0,0.2)`,
+                        outline: showUserPhoto ? '3px solid rgba(124,58,237,0.5)' : 'none',
+                        outlineOffset: 3,
+                      }}>
+                      {showUserPhoto && userFotoUrl
+                        ? <img src={userFotoUrl} alt="Foto Kamu" className="w-full h-full object-cover" />
+                        : <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" />
+                      }
+                    </div>
+                    {/* Hint tap */}
+                    {userFotoUrl && (
+                      <div className="absolute -bottom-3 left-0 right-0 flex justify-center">
+                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-semibold"
+                          style={{
+                            background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
+                            color: isDark ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.7)',
+                          }}>
+                          ketuk untuk {showUserPhoto ? 'lihat foto siswa' : 'lihat foto kamu'}
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Nama & info */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                  className="mt-4 text-center px-4">
-                  <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>{siswa.nama_lengkap}</p>
+                  className="mt-8 text-center px-4">
+                  <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
+                    {showUserPhoto ? (currentUser?.name || currentUser?.siswa?.nama_lengkap || 'Kamu') : siswa.nama_lengkap}
+                  </p>
                   <p className="text-xs mt-0.5" style={{ color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(100,116,139,0.8)' }}>
-                    {siswa.kelas} &middot; {siswa.nis}
+                    {showUserPhoto
+                      ? 'Foto profil kamu'
+                      : <>{siswa.kelas} &middot; {siswa.nis}</>
+                    }
                   </p>
                 </motion.div>
+
+                {/* Tombol toggle bawah (alternatif tap) */}
+                {userFotoUrl && (
+                  <motion.button
+                    whileTap={{ scale: 0.93 }}
+                    onClick={() => setShowUserPhoto(v => !v)}
+                    className="mt-5 flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all"
+                    style={{
+                      background: showUserPhoto
+                        ? (isDark ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)')
+                        : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                      color: showUserPhoto ? (isDark ? '#c4b5fd' : '#7c3aed') : (isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)'),
+                      border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.15)') : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}`,
+                    }}>
+                    <UserCircle2 size={13} />
+                    {showUserPhoto ? 'Lihat foto siswa' : 'Lihat foto kamu'}
+                  </motion.button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -504,6 +591,7 @@ export default function SiswaRankingPage() {
   const [refreshing, setRefreshing]       = useState(false)
   const [selectedSiswa, setSelectedSiswa] = useState(null)
   const listRef = useRef(null)
+  const { user } = useAuthStore()
 
   const fetchRanking = useCallback(async (pg = 1, sort = tab, tk = tingkat, isRefresh = false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true)
@@ -547,7 +635,7 @@ export default function SiswaRankingPage() {
 
       {/* MODAL */}
       {selectedSiswa && (
-        <ProfileCardModal siswa={selectedSiswa} myId={myId} onClose={() => setSelectedSiswa(null)} />
+        <ProfileCardModal siswa={selectedSiswa} myId={myId} currentUser={user} onClose={() => setSelectedSiswa(null)} />
       )}
 
       {/* HEADER */}
