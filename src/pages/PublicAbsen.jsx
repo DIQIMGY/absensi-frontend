@@ -224,7 +224,7 @@ export default function PublicAbsen() {
   const handleFpRegister = async (e) => {
     e.preventDefault()
     const errs = {}
-    if (!fpForm.identifier.trim()) errs.identifier = fpForm.tipe === 'siswa' ? 'NIS/NISN wajib diisi' : 'NIP wajib diisi'
+    if (!fpForm.identifier.trim()) errs.identifier = fpForm.tipe === 'siswa' ? 'NIS wajib diisi' : 'NIP wajib diisi'
     else if (fpForm.identifier.length < 4) errs.identifier = 'Minimal 4 karakter'
     setFpFormErrors(errs)
     if (Object.keys(errs).length) return
@@ -1171,7 +1171,7 @@ export default function PublicAbsen() {
                         📋 Cara Kerja
                       </p>
                       {[
-                        {n:'1', t:'Isi NIS/NISN atau NIP di bawah lalu submit.'},
+                        {n:'1', t:'Isi NIS (siswa) atau NIP (guru) di bawah lalu submit.'},
                         {n:'2', t:'Sistem mendaftarkan User ID ke mesin fingerprint.'},
                         {n:'3', t:'Datang ke mesin → ikuti instruksi layar → scan jari.'},
                         {n:'4', t:'Selesai! Absensi sidik jari langsung aktif.'},
@@ -1217,10 +1217,10 @@ export default function PublicAbsen() {
                         </div>
                       </div>
 
-                      {/* Input NIS/NISN atau NIP */}
+                      {/* Input NIS atau NIP */}
                       <div>
                         <label className={`block text-xs font-bold mb-1.5 ${isDark?'text-slate-300':'text-slate-700'}`}>
-                          {fpForm.tipe === 'siswa' ? 'NIS atau NISN' : 'NIP'}
+                          {fpForm.tipe === 'siswa' ? 'NIS (Nomor Induk Siswa)' : 'NIP'}
                         </label>
                         <div className="relative">
                           <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center ${isDark?'bg-emerald-500/20':'bg-emerald-50'}`}>
@@ -1232,7 +1232,7 @@ export default function PublicAbsen() {
                             onChange={e => { setFpForm(p=>({...p, identifier:e.target.value})); setFpFormErrors({}) }}
                             disabled={fpLoading}
                             autoComplete="off"
-                            placeholder={fpForm.tipe==='siswa' ? 'Masukkan NIS atau NISN' : 'Masukkan NIP'}
+                            placeholder={fpForm.tipe==='siswa' ? 'Masukkan NIS kamu' : 'Masukkan NIP'}
                             className={`w-full pl-12 pr-4 py-3 rounded-xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 ${
                               fpFormErrors.identifier
                                 ? 'border-red-400 focus:ring-red-400/20 bg-red-50 dark:bg-red-500/10'
@@ -1245,6 +1245,11 @@ export default function PublicAbsen() {
                         {fpFormErrors.identifier && (
                           <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
                             <AlertCircle size={10}/>{fpFormErrors.identifier}
+                          </p>
+                        )}
+                        {fpForm.tipe === 'siswa' && (
+                          <p className={`mt-1 text-[10px] ${isDark?'text-slate-500':'text-slate-400'}`}>
+                            💡 Masukkan NIS sesuai data di sekolah (contoh: 12345)
                           </p>
                         )}
                       </div>
