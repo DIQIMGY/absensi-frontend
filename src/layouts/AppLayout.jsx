@@ -213,6 +213,7 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
   const [scrollPct, setScrollPct] = useState(0)
   const [fotoModalOpen, setFotoModalOpen] = useState(false)
   const [uploadingFoto, setUploadingFoto] = useState(false)
+  const [fotoPreviewUrl, setFotoPreviewUrl] = useState(null) // preview instan setelah upload
 
   const { user, logout } = useAuthStore()
   const { isDark, toggleTheme, sidebarCollapsed: storeCollapsed, toggleSidebar } = useThemeStore()
@@ -294,21 +295,30 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
     if (!user?.id || !file) return
     try {
       setUploadingFoto(true)
+      // Preview instan sebelum upload selesai
+      const localUrl = URL.createObjectURL(file)
+      setFotoPreviewUrl(localUrl)
+
       const fd = new FormData()
       fd.append('foto', file)
-      // Admin upload via admin endpoint, guru/siswa via profil mereka
+
+      let res
       if (user.role === 'admin') {
-        await adminApi.uploadFotoUser(user.id, fd)
+        res = await adminApi.uploadFotoUser(user.id, fd)
       } else if (user.role === 'guru') {
-        await guruApi.updateProfile(fd)
+        res = await guruApi.updateFotoUser(fd)
       } else {
-        await siswaApi.updateFoto(fd)
+        res = await siswaApi.updateFotoUser(fd)
       }
-      // Refresh user data
-      const { checkAuth } = useAuthStore.getState()
-      await checkAuth()
+
+      // Update store langsung tanpa checkAuth — ambil foto_url dari response
+      const fotoUrl = res.data?.data?.foto_url || localUrl
+      setFotoPreviewUrl(fotoUrl)
+      useAuthStore.getState().updateUser({ foto: res.data?.data?.foto, foto_url: fotoUrl })
+
       toast.success('Foto profil diperbarui')
     } catch (err) {
+      setFotoPreviewUrl(null)
       toast.error(err.response?.data?.message || 'Gagal upload foto')
     } finally {
       setUploadingFoto(false)
@@ -316,9 +326,9 @@ export default function AppLayout({ menuGroups = [], accent = {}, roleLabel = 'P
   }
 
   const getFoto = () => {
-    const f = user?.foto_url || user?.siswa?.foto_url || user?.guru?.foto_url || null
+    if (fotoPreviewUrl) return fotoPreviewUrl
+    const f = user?.foto_url || null
     if (!f && user?.foto) {
-      // fallback: build URL from raw path
       if (user.foto.startsWith('http')) return user.foto
       return `${window.location.origin}/storage/${user.foto}`
     }
