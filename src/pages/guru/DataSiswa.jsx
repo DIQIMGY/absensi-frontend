@@ -1,480 +1,691 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  Users,
-  GraduationCap,
-  Search,
-  RefreshCw,
-  AlertCircle,
-  Eye,
-  Phone,
-  MapPin,
-  Calendar,
-  User,
-  Mail,
-  UserCheck,
-  UserX,
-  Award
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Users, GraduationCap, Search, RefreshCw, Eye,
+  Phone, MapPin, Calendar, User, Award,
+  UserCheck, UserX, QrCode, Download, Fingerprint,
+  CheckCircle, Clock, AlertTriangle, X, Loader,
+  AlertCircle, Hash, BookOpen, FileText,
 } from 'lucide-react'
-import DataTable from '../../components/DataTable'
-import Modal from '../../components/Modal'
 import { guruApi } from '../../services/guruService'
+import { confirmDelete } from '../../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 
-export default function DataSiswa() {
-  const [siswas, setSiswas] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [pagination, setPagination] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const [searchInput, setSearchInput] = useState('')
-  const debounceRef = useRef(null)
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [viewingSiswa, setViewingSiswa] = useState(null)
-  const [kelasInfo, setKelasInfo] = useState(null)
-  const [stats, setStats] = useState({
-    total: 0,
-    laki_laki: 0,
-    perempuan: 0,
-  })
+// ─── Avatar ───────────────────────────────────────────────────
+function SiswaAvatar({ siswa, size = 36 }) {
+  const [err, setErr] = useState(false)
+  const initial = (siswa?.nama_lengkap || 'S').charAt(0).toUpperCase()
+  return (
+    <div className="relative flex-shrink-0 rounded-xl overflow-hidden"
+      style={{ width: size, height: size }}>
+      {(siswa?.foto_url || siswa?.foto) && !err
+        ? <img src={siswa.foto_url || siswa.foto} alt={siswa.nama_lengkap}
+            className="w-full h-full object-cover"
+            onError={() => setErr(true)} />
+        : <div className="w-full h-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold"
+            style={{ fontSize: Math.round(size * 0.38) }}>{initial}</div>
+      }
+    </div>
+  )
+}
 
-  useEffect(() => {
-    fetchSiswas()
-    fetchStats()
-  }, [currentPage, search])
-
-  // Debounce search
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      setSearch(searchInput)
-      setCurrentPage(1)
-    }, 400)
-    return () => clearTimeout(debounceRef.current)
-  }, [searchInput])
-
-  const fetchStats = async () => {
-    try {
-      const response = await guruApi.getSiswaStats()
-      setStats(response.data.data)
-      setKelasInfo(response.data.data.kelas_info)
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-    }
+// ─── Stat Badge ───────────────────────────────────────────────
+function StatBadge({ value, color }) {
+  const styles = {
+    green:  'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    yellow: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    blue:   'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    red:    'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+    slate:  'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
   }
+  return (
+    <span className={`inline-flex items-center justify-center w-9 h-6 rounded-lg text-xs font-bold tabular-nums ${styles[color]}`}>
+      {value}
+    </span>
+  )
+}
 
-  const fetchSiswas = async () => {
+// ─── Progress Bar ─────────────────────────────────────────────
+function ProgressBar({ value, color = '#10b981' }) {
+  return (
+    <div className="flex items-center gap-2 min-w-[80px]">
+      <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${Math.min(value, 100)}%`, background: color }} />
+      </div>
+      <span className="text-[10px] font-bold tabular-nums text-slate-500 dark:text-slate-400 w-8 text-right">
+        {value}%
+      </span>
+    </div>
+  )
+}
+
+// ─── Modal QR ─────────────────────────────────────────────────
+function QrModal({ siswa, onClose, onReset, onDownload }) {
+  const [loading, setLoading] = useState(false)
+  const [qrData, setQrData] = useState(null)
+
+  useEffect(() => {
+    if (!siswa) return
+    setLoading(true)
+    guruApi.getSiswaQr(siswa.id)
+      .then(r => setQrData(r.data.data))
+      .catch(() => setQrData({ qr_code_url: null }))
+      .finally(() => setLoading(false))
+  }, [siswa])
+
+  if (!siswa) return null
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0, y: 16 }} transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-800 shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+              <QrCode size={15} className="text-teal-600 dark:text-teal-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800 dark:text-white">QR Code Siswa</p>
+              <p className="text-[10px] text-slate-400">{siswa.nama_lengkap} · {siswa.nis}</p>
+            </div>
+          </div>
+          <button onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <X size={15} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {loading ? (
+            <div className="flex flex-col items-center py-10 gap-3 text-slate-400">
+              <Loader size={24} className="animate-spin" />
+              <p className="text-sm">Memuat QR Code...</p>
+            </div>
+          ) : qrData?.qr_code_url ? (
+            <>
+              <div className="flex justify-center">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+                  <img src={qrData.qr_code_url} alt={`QR ${siswa.nama_lengkap}`}
+                    className="w-48 h-48 object-contain" />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-center">
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => onDownload(siswa)}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-sm">
+                  <Download size={13} /> Download
+                </motion.button>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => onReset(siswa)}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold transition-colors shadow-sm">
+                  <RefreshCw size={13} /> Reset QR
+                </motion.button>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center py-8 gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <QrCode size={36} className="text-slate-300 dark:text-slate-600" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">QR Code belum tersedia</p>
+                <p className="text-xs text-slate-400 mt-1">Klik generate untuk membuat QR Code baru</p>
+              </div>
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => onReset(siswa)}
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                <RefreshCw size={14} /> Generate QR Code
+              </motion.button>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// ─── Modal Fingerprint ────────────────────────────────────────
+function FingerprintModal({ siswa, onClose }) {
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState('checking') // 'checking' | object
+
+  useEffect(() => {
+    if (!siswa) return
+    setStatus('checking')
+    guruApi.checkSiswaFingerprint(siswa.id)
+      .then(r => setStatus(r.data.data))
+      .catch(() => setStatus({ terdaftar: false, userid: siswa.nis }))
+  }, [siswa])
+
+  const handleRegister = async () => {
+    setLoading(true)
     try {
-      setLoading(true)
-      
-      console.log('Fetching siswas...')
-      const response = await guruApi.getSiswas({
-        page: currentPage,
-        search: search,
-        per_page: 10,
-      })
-      
-      console.log('Full Response:', response)
-      console.log('Response data:', response.data)
-      console.log('Response data.data:', response.data?.data)
-      
-      // Backend mengembalikan response.data.data (nested)
-      const apiData = response.data?.data
-      
-      if (!apiData) {
-        console.warn('No data in response')
-        setSiswas([])
-        setPagination(null)
-        toast.error('Tidak ada data siswa')
-        return
-      }
-      
-      // Data siswa ada di apiData.data
-      const siswaData = Array.isArray(apiData.data) ? apiData.data : (Array.isArray(apiData) ? apiData : [])
-      const paginationData = apiData.pagination || null
-
-      console.log('Siswa data:', siswaData)
-      console.log('Pagination:', paginationData)
-
-      if (siswaData.length === 0) {
-        console.warn('Siswa data is empty')
-        toast.info('Tidak ada siswa di kelas yang Anda ampu')
-      }
-
-      setSiswas(siswaData)
-      setPagination(paginationData)
-      
-    } catch (error) {
-      console.error('Error fetching siswas:', error)
-      console.error('Error response:', error.response)
-      console.error('Error message:', error.message)
-      
-      if (error.response?.status === 404) {
-        toast.error('Anda belum mengampu kelas manapun')
-      } else {
-        toast.error(error.response?.data?.message || 'Gagal memuat data siswa')
-      }
+      const res = await guruApi.registerSiswaFingerprint(siswa.id)
+      setStatus({ terdaftar: true, userid: res.data.data?.userid, uid: res.data.data?.uid })
+      toast.success(res.data.data?.pesan || 'Berhasil didaftarkan')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal mendaftarkan')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleViewDetail = (siswa) => {
-    setViewingSiswa(siswa)
-    setIsDetailModalOpen(true)
+  const handleUnregister = async () => {
+    setLoading(true)
+    try {
+      await guruApi.unregisterSiswaFingerprint(siswa.id)
+      setStatus({ terdaftar: false, userid: siswa.nis })
+      toast.success('Sidik jari dihapus dari mesin')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal menghapus')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const columns = [
-    {
-      header: 'Siswa',
-      accessor: 'nama_lengkap',
-      cell: (row) => (
-        <div className="flex items-center gap-3 min-w-0">
-          {row.foto_url || row.foto ? (
-            <img 
-              src={row.foto_url || row.foto} 
-              alt={row.nama_lengkap}
-              className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm flex-shrink-0"
-              onError={(e) => {
-                e.target.style.display = 'none'
-                e.target.nextElementSibling.style.display = 'flex'
-              }}
-            />
-          ) : null}
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0 border-2 border-white dark:border-slate-700 ${row.foto_url || row.foto ? 'hidden' : 'flex'}`}>
-            {row.nama_lengkap?.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{row.nama_lengkap}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">NIS: {row.nis}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'NISN',
-      accessor: 'nisn',
-      cell: (row) => (
-        <span className="text-sm text-slate-600 dark:text-slate-400">{row.nisn || '-'}</span>
-      ),
-    },
-    {
-      header: 'Hadir',
-      accessor: 'statistik_absensi.hadir',
-      cell: (row) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-          {row.statistik_absensi?.hadir || 0}
-        </span>
-      ),
-    },
-    {
-      header: 'Terlambat',
-      accessor: 'statistik_absensi.terlambat',
-      cell: (row) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-          {row.statistik_absensi?.terlambat || 0}
-        </span>
-      ),
-    },
-    {
-      header: 'Izin/Sakit',
-      accessor: 'statistik_absensi.izin',
-      cell: (row) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-          {(row.statistik_absensi?.izin || 0) + (row.statistik_absensi?.sakit || 0)}
-        </span>
-      ),
-    },
-    {
-      header: 'Alpha',
-      accessor: 'statistik_absensi.alpha',
-      cell: (row) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
-          {row.statistik_absensi?.alpha || 0}
-        </span>
-      ),
-    },
-    {
-      header: 'Belum Absen',
-      accessor: 'statistik_absensi.belum_absen',
-      cell: (row) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-700/30 dark:text-slate-300">
-          {row.statistik_absensi?.belum_absen || 0}
-        </span>
-      ),
-    },
-    {
-      header: 'Aksi',
-      accessor: 'id',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleViewDetail(row)}
-            className="p-2 text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
-            title="Lihat" Detail
-          >
-            <Eye size={16} />
-          </button>
-        </div>
-      ),
-    },
-  ]
+  if (!siswa) return null
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-      >
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <GraduationCap className="text-teal-600" size={28} />
-            Data Siswa
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            {kelasInfo ? `Kelas ${kelasInfo.nama_kelas}` : 'Daftar siswa di kelas yang Anda ampu'}
-          </p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0, y: 16 }} transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-800 shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header gradient */}
+        <div className="px-5 py-4 bg-gradient-to-r from-teal-600 to-emerald-600">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Fingerprint size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Sidik Jari Siswa</p>
+                <p className="text-[10px] text-white/70">Mesin fingerprint</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white">
+              <X size={15} />
+            </button>
+          </div>
         </div>
 
-        <button
-          onClick={fetchSiswas}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors shadow-lg shadow-teal-600/30"
-        >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
-      </motion.div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Siswa</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-            </div>
-            <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-xl">
-              <Users className="text-teal-600 dark:text-teal-400" size={24} />
+        <div className="p-5 space-y-4">
+          {/* Info siswa */}
+          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+            <SiswaAvatar siswa={siswa} size={44} />
+            <div className="min-w-0">
+              <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{siswa.nama_lengkap}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">NIS: {siswa.nis}</p>
+              <p className="text-[10px] font-mono text-teal-600 dark:text-teal-400 mt-0.5">User ID: {siswa.nis}</p>
             </div>
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Laki-laki</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.laki_laki}</p>
+          {/* Status */}
+          {status === 'checking' ? (
+            <div className="flex items-center justify-center gap-2 py-6 text-slate-400">
+              <Loader size={16} className="animate-spin" />
+              <span className="text-sm">Mengecek status mesin...</span>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-              <UserCheck className="text-blue-600 dark:text-blue-400" size={24} />
+          ) : status?.terdaftar ? (
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle size={15} className="text-emerald-500 flex-shrink-0" />
+                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Sudah Terdaftar di Mesin</p>
+              </div>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">UID: <span className="font-mono font-bold">{status.uid}</span></p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Siswa sudah bisa absen fingerprint. Hapus untuk daftar ulang.</p>
             </div>
+          ) : (
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle size={15} className="text-amber-500 flex-shrink-0" />
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">Belum Terdaftar</p>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Daftarkan siswa, lalu arahkan ke mesin fingerprint untuk scan jari.</p>
+            </div>
+          )}
+
+          {/* Panduan */}
+          <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-100 dark:border-teal-800/50 space-y-1">
+            <p className="text-[10px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">Cara Daftar</p>
+            {['1. Klik "Daftarkan ke Mesin"', '2. Siswa datang ke mesin fingerprint', '3. Ikuti instruksi scan jari (1-10)', '4. Absensi fingerprint langsung aktif'].map((s, i) => (
+              <p key={i} className="text-[10px] text-teal-700/80 dark:text-teal-400/80">{s}</p>
+            ))}
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Perempuan</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.perempuan}</p>
-            </div>
-            <div className="p-3 bg-pink-100 dark:bg-pink-900/30 rounded-xl">
-              <UserX className="text-pink-600 dark:text-pink-400" size={24} />
-            </div>
+          {/* Aksi */}
+          <div className="flex gap-2 pt-1">
+            {status !== 'checking' && !status?.terdaftar && (
+              <motion.button whileTap={{ scale: 0.97 }} onClick={handleRegister} disabled={loading}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm disabled:opacity-50">
+                {loading ? <Loader size={14} className="animate-spin" /> : <Fingerprint size={14} />}
+                {loading ? 'Mendaftarkan...' : 'Daftarkan ke Mesin'}
+              </motion.button>
+            )}
+            {status?.terdaftar && (
+              <motion.button whileTap={{ scale: 0.97 }} onClick={handleUnregister} disabled={loading}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm disabled:opacity-50">
+                {loading ? <Loader size={14} className="animate-spin" /> : <X size={14} />}
+                {loading ? 'Menghapus...' : 'Hapus dari Mesin'}
+              </motion.button>
+            )}
+            <button onClick={onClose}
+              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm transition-colors border border-slate-200 dark:border-slate-700">
+              Tutup
+            </button>
           </div>
-        </motion.div>
-      </div>
-
-      {/* Search */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm"
-      >
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder="Cari siswa (Nama, NIS, NISN)..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 dark:text-white"
-          />
         </div>
       </motion.div>
+    </motion.div>
+  )
+}
 
-      {/* Data Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <DataTable
-          columns={columns}
-          data={siswas}
-          loading={loading}
-          pagination={pagination}
-          onPageChange={setCurrentPage}
-          emptyMessage="Tidak ada data siswa"
-        />
-      </motion.div>
+// ─── Modal Detail ─────────────────────────────────────────────
+function DetailModal({ siswa, onClose, onQr, onFingerprint }) {
+  if (!siswa) return null
+  const s = siswa.statistik_absensi || {}
+  const pct = s.persentase_kehadiran || 0
+  const pctColor = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444'
 
-      {/* Detail Modal */}
-      <Modal
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false)
-          setViewingSiswa(null)
-        }}
-        title="Detailsiswa"
-        size="lg"
-      >
-        {viewingSiswa && (
-          <div className="space-y-6">
-            {/* Foto */}
-            <div className="flex justify-center">
-              {viewingSiswa.foto_url || viewingSiswa.foto ? (
-                <img
-                  src={viewingSiswa.foto_url || viewingSiswa.foto}
-                  alt={viewingSiswa.nama_lengkap}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 shadow-lg"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-teal-500 shadow-lg">
-                  {viewingSiswa.nama_lengkap?.charAt(0).toUpperCase()}
-                </div>
-              )}
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}>
+      <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+        className="bg-white dark:bg-slate-900 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Drag handle mobile */}
+        <div className="flex justify-center pt-3 sm:hidden">
+          <div className="w-9 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <SiswaAvatar siswa={siswa} size={40} />
+            <div>
+              <p className="text-sm font-bold text-slate-800 dark:text-white">{siswa.nama_lengkap}</p>
+              <p className="text-[10px] text-slate-400">{siswa.kelas?.nama_kelas || '-'} · NIS {siswa.nis}</p>
             </div>
+          </div>
+          <button onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <X size={15} />
+          </button>
+        </div>
 
-            {/* Statistik Absensi Bulan Ini */}
-            {viewingSiswa.statistik_absensi && (
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Calendar size={16} className="text-teal-600" />
-                  Statistik Absensi Bulan Ini
-                </h3>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="text-center p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{viewingSiswa.statistik_absensi.hadir}</p>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">Hadir</p>
+        <div className="overflow-y-auto max-h-[70vh] p-5 space-y-4">
+          {/* Quick actions */}
+          <div className="flex gap-2">
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); onQr(siswa) }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 text-xs font-semibold border border-teal-200 dark:border-teal-800 hover:bg-teal-100 transition-colors">
+              <QrCode size={13} /> QR Code
+            </motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); onFingerprint(siswa) }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
+              <Fingerprint size={13} /> Sidik Jari
+            </motion.button>
+          </div>
+
+          {/* Kehadiran bar */}
+          {s.total_hari_kerja > 0 && (
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Kehadiran Bulan Ini</p>
+                <span className="text-sm font-black tabular-nums" style={{ color: pctColor }}>{pct}%</span>
+              </div>
+              <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <motion.div className="h-full rounded-full"
+                  initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  style={{ background: pctColor }} />
+              </div>
+              <div className="grid grid-cols-5 gap-2 mt-3">
+                {[
+                  { label: 'Hadir',     val: s.hadir,     c: '#10b981' },
+                  { label: 'Terlambat', val: s.terlambat, c: '#f59e0b' },
+                  { label: 'Izin/Sakit',val: (s.izin||0)+(s.sakit||0), c: '#3b82f6' },
+                  { label: 'Alpha',     val: s.alpha,     c: '#ef4444' },
+                  { label: 'Blm Absen', val: s.belum_absen, c: '#94a3b8' },
+                ].map(item => (
+                  <div key={item.label} className="text-center">
+                    <p className="text-base font-black tabular-nums" style={{ color: item.c }}>{item.val ?? 0}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5 leading-tight">{item.label}</p>
                   </div>
-                  <div className="text-center p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{viewingSiswa.statistik_absensi.terlambat}</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">Terlambat</p>
-                  </div>
-                  <div className="text-center p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{viewingSiswa.statistik_absensi.izin + viewingSiswa.statistik_absensi.sakit}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">Izin/Sakit</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 bg-rose-100 dark:bg-rose-900/30 rounded-lg border border-rose-200 dark:border-rose-800">
-                    <p className="text-2xl font-bold text-rose-700 dark:text-rose-300">{viewingSiswa.statistik_absensi.alpha}</p>
-                    <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">Alpha</p>
-                  </div>
-                  <div className="text-center p-3 bg-slate-100 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">{viewingSiswa.statistik_absensi.belum_absen}</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">Belum Absen</p>
-                  </div>
-                  <div className="text-center p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg border border-teal-200 dark:border-teal-800">
-                    <p className="text-2xl font-bold text-teal-700 dark:text-teal-300">{viewingSiswa.statistik_absensi.persentase_kehadiran}%</p>
-                    <p className="text-xs text-teal-600 dark:text-teal-400 mt-1 font-medium">Kehadiran</p>
-                  </div>
-                </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Info grid */}
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { icon: Hash,     label: 'NIS',    val: siswa.nis },
+              { icon: Hash,     label: 'NISN',   val: siswa.nisn || '-' },
+              { icon: User,     label: 'JK',     val: siswa.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
+              { icon: Calendar, label: 'Lahir',  val: siswa.tanggal_lahir ? new Date(siswa.tanggal_lahir).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' },
+              { icon: Phone,    label: 'HP',     val: siswa.no_hp || '-', span: 1 },
+              { icon: User,     label: 'Ortu',   val: siswa.nama_ortu || '-', span: 1 },
+            ].map((item, i) => (
+              <div key={i} className={`p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 ${item.span === 2 ? 'col-span-2' : ''}`}>
+                <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <item.icon size={9} />{item.label}
+                </p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-white truncate">{item.val}</p>
+              </div>
+            ))}
+            {siswa.alamat && (
+              <div className="col-span-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <MapPin size={9} />Alamat
+                </p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-white">{siswa.alamat}</p>
               </div>
             )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
 
-            {/* Info Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Full Name</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <User size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.nama_lengkap}</span>
+// ─── Main Page ────────────────────────────────────────────────
+export default function DataSiswa() {
+  const [siswas, setSiswas]           = useState([])
+  const [loading, setLoading]         = useState(false)
+  const [pagination, setPagination]   = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [search, setSearch]           = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [kelasInfo, setKelasInfo]     = useState(null)
+  const [stats, setStats]             = useState({ total: 0, laki_laki: 0, perempuan: 0 })
+  const debounceRef = useRef(null)
+
+  // Modals
+  const [detailSiswa, setDetailSiswa]       = useState(null)
+  const [qrSiswa, setQrSiswa]               = useState(null)
+  const [fingerprintSiswa, setFingerprintSiswa] = useState(null)
+
+  useEffect(() => { fetchSiswas(); fetchStats() }, [currentPage, search])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => { setSearch(searchInput); setCurrentPage(1) }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchInput])
+
+  const fetchStats = async () => {
+    try {
+      const r = await guruApi.getSiswaStats()
+      setStats(r.data.data)
+      setKelasInfo(r.data.data.kelas_info)
+    } catch {}
+  }
+
+  const fetchSiswas = async () => {
+    try {
+      setLoading(true)
+      const r = await guruApi.getSiswas({ page: currentPage, search, per_page: 15 })
+      const d = r.data?.data
+      setSiswas(Array.isArray(d?.data) ? d.data : [])
+      setPagination(d?.pagination || null)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal memuat data siswa')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResetQr = async (siswa) => {
+    const ok = await confirmDelete('Reset QR Code', `QR lama ${siswa.nama_lengkap} tidak bisa dipakai lagi. Lanjutkan?`)
+    if (!ok) return
+    try {
+      await guruApi.resetSiswaQr(siswa.id)
+      toast.success('QR Code berhasil direset')
+      // Tutup QR modal dan reload
+      setQrSiswa(null)
+      fetchSiswas()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal reset QR')
+    }
+  }
+
+  const handleDownloadQr = async (siswa) => {
+    try {
+      const r = await guruApi.downloadSiswaQr(siswa.id)
+      const url = window.URL.createObjectURL(new Blob([r.data], { type: 'image/png' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `QR-${siswa.nis || siswa.id}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+      toast.success('QR Code diunduh')
+    } catch {
+      toast.error('Gagal mengunduh QR Code')
+    }
+  }
+
+  // ─── Stat Cards ──────────────────────────────────────────────
+  const statCards = [
+    { label: 'Total Siswa', val: stats.total,     icon: Users,     color: 'teal' },
+    { label: 'Laki-laki',   val: stats.laki_laki, icon: UserCheck, color: 'blue' },
+    { label: 'Perempuan',   val: stats.perempuan, icon: UserX,     color: 'pink' },
+  ]
+  const cardColors = {
+    teal: { bg: 'bg-teal-50 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-100 dark:border-teal-800/40' },
+    blue: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-800/40' },
+    pink: { bg: 'bg-pink-50 dark:bg-pink-900/30', text: 'text-pink-600 dark:text-pink-400', border: 'border-pink-100 dark:border-pink-800/40' },
+  }
+
+  return (
+    <div className="space-y-4 max-w-full overflow-x-hidden">
+
+      {/* ── Header ─────────────────────────────────────────── */}
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+            <GraduationCap size={17} className="text-teal-600 dark:text-teal-400" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-slate-800 dark:text-white">Data Siswa</h1>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {kelasInfo ? `Kelas ${kelasInfo.nama_kelas}` : 'Kelas yang diampu'}
+              {pagination?.total ? ` · ${pagination.total} siswa` : ''}
+            </p>
+          </div>
+        </div>
+        <motion.button whileTap={{ scale: 0.92 }} onClick={() => { fetchSiswas(); fetchStats() }} disabled={loading}
+          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+        </motion.button>
+      </motion.div>
+
+      {/* ── Stat Cards ─────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-3">
+        {statCards.map((s, i) => {
+          const c = cardColors[s.color]
+          return (
+            <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className={`bg-white dark:bg-slate-900 rounded-2xl p-4 border ${c.border} shadow-sm`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">{s.label}</p>
+                  <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{s.val}</p>
+                </div>
+                <div className={`p-2 rounded-xl ${c.bg}`}>
+                  <s.icon size={16} className={c.text} />
                 </div>
               </div>
+            </motion.div>
+          )
+        })}
+      </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Student Number</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <Award size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.nis}</span>
-                </div>
-              </div>
+      {/* ── Search + Table ─────────────────────────────────── */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">NISN</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <Award size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.nisn || '-'}</span>
-                </div>
-              </div>
+        {/* Search bar */}
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="text" placeholder="Cari nama, NIS, atau NISN..."
+              value={searchInput} onChange={e => setSearchInput(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all" />
+          </div>
+        </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Student Gender</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  {viewingSiswa.jenis_kelamin === 'L' ? <UserCheck size={16} className="text-blue-500" /> : <UserX size={16} className="text-pink-500" />}
-                  <span className="text-slate-900 dark:text-white">
-                    {viewingSiswa.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}
-                  </span>
-                </div>
-              </div>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                {['Siswa', 'Hadir', 'Terlambat', 'Izin/Sakit', 'Alpha', 'Kehadiran', 'Aksi'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3 text-slate-400">
+                      <Loader size={24} className="animate-spin" />
+                      <p className="text-sm">Memuat data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : siswas.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3 text-slate-400">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <GraduationCap size={26} className="opacity-30" />
+                      </div>
+                      <p className="text-sm font-medium">Tidak ada data siswa</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                siswas.map((siswa, i) => {
+                  const s = siswa.statistik_absensi || {}
+                  const pct = s.persentase_kehadiran || 0
+                  const pctColor = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444'
+                  return (
+                    <motion.tr key={siswa.id}
+                      initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      className="border-b border-slate-50 dark:border-slate-800/60 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Student Birth Date</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <Calendar size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {viewingSiswa.tanggal_lahir ? new Date(viewingSiswa.tanggal_lahir).toLocaleDateString('id-ID') : '-'}
-                  </span>
-                </div>
-              </div>
+                      {/* Siswa */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <SiswaAvatar siswa={siswa} size={34} />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-xs text-slate-800 dark:text-white truncate max-w-[120px]">{siswa.nama_lengkap}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">{siswa.nis}</p>
+                          </div>
+                        </div>
+                      </td>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Phone Number</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <Phone size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.no_hp || '-'}</span>
-                </div>
-              </div>
+                      {/* Stats */}
+                      <td className="px-4 py-3"><StatBadge value={s.hadir ?? 0} color="green" /></td>
+                      <td className="px-4 py-3"><StatBadge value={s.terlambat ?? 0} color="yellow" /></td>
+                      <td className="px-4 py-3"><StatBadge value={(s.izin??0)+(s.sakit??0)} color="blue" /></td>
+                      <td className="px-4 py-3"><StatBadge value={s.alpha ?? 0} color="red" /></td>
 
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Alamat</label>
-                <div className="flex items-start gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <MapPin size={16} className="text-slate-400 mt-0.5" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.alamat || '-'}</span>
-                </div>
-              </div>
+                      {/* Progress */}
+                      <td className="px-4 py-3">
+                        <ProgressBar value={pct} color={pctColor} />
+                      </td>
 
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Nama Orang Tua</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                  <User size={16} className="text-slate-400" />
-                  <span className="text-slate-900 dark:text-white">{viewingSiswa.nama_ortu || '-'}</span>
-                </div>
-              </div>
+                      {/* Aksi */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <motion.button whileTap={{ scale: 0.88 }} onClick={() => setDetailSiswa(siswa)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-all" title="Detail">
+                            <Eye size={13} />
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.88 }} onClick={() => setQrSiswa(siswa)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all" title="QR Code">
+                            <QrCode size={13} />
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.88 }} onClick={() => handleDownloadQr(siswa)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all hidden sm:block" title="Download QR">
+                            <Download size={13} />
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.88 }} onClick={() => setFingerprintSiswa(siswa)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all" title="Sidik Jari">
+                            <Fingerprint size={13} />
+                          </motion.button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {pagination && pagination.last_page > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-slate-800">
+            <p className="text-xs text-slate-400">
+              {pagination.from}–{pagination.to} dari {pagination.total}
+            </p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                ← Prev
+              </button>
+              <span className="px-3 py-1.5 rounded-xl text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30">
+                {currentPage} / {pagination.last_page}
+              </span>
+              <button onClick={() => setCurrentPage(p => Math.min(pagination.last_page, p + 1))} disabled={currentPage >= pagination.last_page}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                Next →
+              </button>
             </div>
           </div>
         )}
-      </Modal>
+      </motion.div>
+
+      {/* ── Modals ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {detailSiswa && (
+          <DetailModal siswa={detailSiswa} onClose={() => setDetailSiswa(null)}
+            onQr={setQrSiswa} onFingerprint={setFingerprintSiswa} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {qrSiswa && (
+          <QrModal siswa={qrSiswa} onClose={() => setQrSiswa(null)}
+            onReset={handleResetQr} onDownload={handleDownloadQr} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {fingerprintSiswa && (
+          <FingerprintModal siswa={fingerprintSiswa} onClose={() => setFingerprintSiswa(null)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

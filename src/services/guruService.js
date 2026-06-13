@@ -40,6 +40,12 @@ export const guruApi = {
   // Data Siswa
   getSiswas: (params) => api.get('/guru/siswas', { params }),
   getSiswaStats: () => api.get('/guru/siswas/stats', { silent: true }),
+  getSiswaQr: (id) => api.get(`/guru/siswas/${id}/qr`),
+  resetSiswaQr: (id) => api.post(`/guru/siswas/${id}/reset-qr`),
+  downloadSiswaQr: (id) => api.get(`/guru/siswas/${id}/download-qr`, { responseType: 'blob' }),
+  checkSiswaFingerprint: (id) => api.get('/guru/siswas/fingerprint/check', { params: { id } }),
+  registerSiswaFingerprint: (id) => api.post('/guru/siswas/fingerprint/register', { id }),
+  unregisterSiswaFingerprint: (id) => api.delete('/guru/siswas/fingerprint/unregister', { data: { id } }),
   
   // Riwayat Absensi Guru
   getRiwayatAbsensi: (params) => api.get('/guru/riwayat-absensi', { params }),
