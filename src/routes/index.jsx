@@ -43,6 +43,7 @@ import GuruDashboard from '../pages/guru/Dashboard'
 import GuruAbsensi from '../pages/guru/Absensi'
 import GuruProfil from '../pages/guru/Profil'
 import GuruRanking from '../pages/guru/Ranking'
+import GuruRankingGuru from '../pages/guru/RankingGuru'
 import GuruRekapHarian from '../pages/guru/RekapHarian'
 import GuruStatistikKelas from '../pages/guru/StatistikKelas'
 import GuruDataSiswa from '../pages/guru/DataSiswa'
@@ -130,6 +131,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard',        element: <GuruDashboard /> },
       { path: 'absensi',          element: <GuruAbsensi /> },
       { path: 'ranking',          element: <GuruRanking /> },
+      { path: 'ranking-guru',     element: <GuruRankingGuru /> },
       { path: 'rekap-harian',     element: <GuruRekapHarian /> },
       { path: 'statistik-kelas',  element: <GuruStatistikKelas /> },
       { path: 'data-siswa',       element: <GuruDataSiswa /> },

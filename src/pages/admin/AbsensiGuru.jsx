@@ -699,107 +699,278 @@ export default function AbsensiGuru() {
               </div>
             )}
 
-            {/* Top 10 Guru Rajin */}
-            {statistik.guru_rajin?.length > 0 && (
-              <div className="bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-[#10B981]/20 dark:bg-[#34D399]/20 rounded-lg">
-                    <Award size={18} className="text-[#10B981] dark:text-[#34D399]" />
-                  </div>
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                    Top 10 Guru Paling Rajin
-                  </h3>
-                </div>
+            {/* Ranking Grid: Rajin + Terlambat + Alpha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
-                <div className="space-y-2">
-                  {statistik.guru_rajin.map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="flex items-center gap-3 p-3 bg-[#10B981]/20 dark:bg-[#34D399]/20 rounded-xl border border-[#10B981]/30 dark:border-[#34D399]/30 hover:bg-[#10B981]/30 dark:hover:bg-[#34D399]/30 transition-all"
-                    >
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm ${
-                        idx === 0 ? 'bg-[#F59E0B] text-white' :
-                        idx === 1 ? 'bg-slate-500 text-white' :
-                        idx === 2 ? 'bg-[#8B5CF6] text-white' :
-                        'bg-[#10B981]/30 dark:bg-[#34D399]/30 text-[#10B981] dark:text-[#34D399]'
-                      }`}>
-                        {idx + 1}
+              {/* Top Guru Rajin */}
+              {statistik.guru_rajin?.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="p-4 bg-gradient-to-r from-[#10B981] to-[#34D399]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white/25 rounded-xl">
+                          <Award size={15} className="text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-white">Paling Rajin</h3>
+                          <p className="text-[10px] text-white/75">Top hadir bulan ini</p>
+                        </div>
                       </div>
-                      <div className="relative flex-shrink-0">
-                        {item.guru.foto ? (
-                          <img 
-                            src={item.guru.foto} 
-                            alt={item.guru.nama} 
-                            className="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-[#1F3A44]"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#10B981] to-[#34D399] flex items-center justify-center text-white font-bold text-sm">
-                            {item.guru.nama.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{item.guru.nama}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">NIP: {item.guru.nip}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-lg font-bold text-[#10B981] dark:text-[#34D399]">{item.persentase_kehadiran}%</p>
-                        <p className="text-[10px] text-slate-500">{item.total_hadir} hadir</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Top 10 Guru Sering Terlambat */}
-            {statistik.guru_sering_terlambat?.length > 0 && (
-              <div className="bg-white/90 dark:bg-[#1F3A44]/90 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-[#F59E0B]/20 dark:bg-[#FBBF24]/20 rounded-lg">
-                    <Clock size={18} className="text-[#F59E0B] dark:text-[#FBBF24]" />
+                      <span className="px-2.5 py-1 bg-white/20 rounded-lg text-white text-[10px] font-bold">
+                        Top {statistik.guru_rajin.length}
+                      </span>
+                    </div>
                   </div>
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                    Top 10 Guru Sering Terlambat
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {statistik.guru_sering_terlambat.map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="flex items-center gap-3 p-3 bg-[#F59E0B]/20 dark:bg-[#FBBF24]/20 rounded-xl border border-[#F59E0B]/30 dark:border-[#FBBF24]/30"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm bg-[#F59E0B]/30 dark:bg-[#FBBF24]/30 text-[#F59E0B] dark:text-[#FBBF24]">
-                        {idx + 1}
-                      </div>
-                      <div className="relative flex-shrink-0">
-                        {item.guru.foto ? (
-                          <img src={item.guru.foto} alt={item.guru.nama} className="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-[#1F3A44]" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] flex items-center justify-center text-white font-bold text-sm">
-                            {item.guru.nama.charAt(0)}
+                  {/* Body */}
+                  <div className="p-3 space-y-1.5">
+                    {statistik.guru_rajin.map((item, idx) => {
+                      const maxHadir = statistik.guru_rajin[0]?.total_hadir || 1
+                      const barW = Math.round((item.total_hadir / maxHadir) * 100)
+                      const isTop3 = idx < 3
+                      const rankColors = ['#F59E0B','#94a3b8','#f97316']
+                      return (
+                        <motion.div key={idx}
+                          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.04 }}
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                            idx === 0
+                              ? 'bg-amber-50/60 dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30'
+                              : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
+                          }`}>
+                          {/* bar bg */}
+                          <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
+                            initial={{ width: 0 }} animate={{ width: `${barW}%` }}
+                            transition={{ delay: 0.3 + idx * 0.04, duration: 0.6, ease: 'easeOut' }}
+                            style={{ background: '#10B98108' }} />
+                          {/* rank badge */}
+                          <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg"
+                            style={isTop3
+                              ? { background: `${rankColors[idx]}20` }
+                              : { background: 'rgba(100,116,139,0.1)' }}>
+                            {isTop3
+                              ? <span className="text-[11px] font-black" style={{ color: rankColors[idx] }}>{idx + 1}</span>
+                              : <span className="text-[11px] font-black text-slate-400">{idx + 1}</span>
+                            }
                           </div>
-                        )}
+                          {/* avatar */}
+                          <div className="flex-shrink-0">
+                            {item.guru.foto
+                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                              : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#10B981] to-[#34D399] flex items-center justify-center text-white font-bold text-sm">
+                                  {item.guru.nama.charAt(0)}
+                                </div>
+                            }
+                          </div>
+                          {/* info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs text-slate-900 dark:text-white truncate">{item.guru.nama}</p>
+                            <p className="text-[10px] text-slate-400 truncate">NIP: {item.guru.nip}</p>
+                          </div>
+                          {/* score */}
+                          <div className="flex-shrink-0 text-right">
+                            <p className="text-base font-black text-[#10B981] dark:text-[#34D399] leading-none">{item.persentase_kehadiran}%</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">{item.total_hadir} hadir</p>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <CheckCircle size={9} className="text-[#10B981]" />
+                      {new Date(2000, filters.bulan - 1).toLocaleDateString('id-ID', { month: 'long' })} {filters.tahun}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Top Guru Terlambat */}
+              {statistik.guru_sering_terlambat?.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden"
+                >
+                  <div className="p-4 bg-gradient-to-r from-[#F59E0B] to-[#FBBF24]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white/25 rounded-xl">
+                          <Clock size={15} className="text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-white">Sering Terlambat</h3>
+                          <p className="text-[10px] text-white/75">Top keterlambatan</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{item.guru.nama}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">NIP: {item.guru.nip}</p>
+                      <span className="px-2.5 py-1 bg-white/20 rounded-lg text-white text-[10px] font-bold">
+                        Top {statistik.guru_sering_terlambat.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 space-y-1.5">
+                    {statistik.guru_sering_terlambat.map((item, idx) => {
+                      const maxTerlambat = statistik.guru_sering_terlambat[0]?.total_terlambat || 1
+                      const barW = Math.round((item.total_terlambat / maxTerlambat) * 100)
+                      const isTop3 = idx < 3
+                      const rankColors = ['#F59E0B','#94a3b8','#f97316']
+                      return (
+                        <motion.div key={idx}
+                          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.04 }}
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                            idx === 0
+                              ? 'bg-amber-50/60 dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30'
+                              : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
+                          }`}>
+                          <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
+                            initial={{ width: 0 }} animate={{ width: `${barW}%` }}
+                            transition={{ delay: 0.3 + idx * 0.04, duration: 0.6, ease: 'easeOut' }}
+                            style={{ background: '#F59E0B08' }} />
+                          <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg"
+                            style={isTop3
+                              ? { background: `${rankColors[idx]}20` }
+                              : { background: 'rgba(100,116,139,0.1)' }}>
+                            {isTop3
+                              ? <span className="text-[11px] font-black" style={{ color: rankColors[idx] }}>{idx + 1}</span>
+                              : <span className="text-[11px] font-black text-slate-400">{idx + 1}</span>
+                            }
+                          </div>
+                          <div className="flex-shrink-0">
+                            {item.guru.foto
+                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                              : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] flex items-center justify-center text-white font-bold text-sm">
+                                  {item.guru.nama.charAt(0)}
+                                </div>
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs text-slate-900 dark:text-white truncate">{item.guru.nama}</p>
+                            <p className="text-[10px] text-slate-400 truncate">NIP: {item.guru.nip}</p>
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <p className="text-base font-black text-[#F59E0B] dark:text-[#FBBF24] leading-none">{item.total_terlambat}x</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">~{item.rata_rata_terlambat}m</p>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <Clock size={9} className="text-[#F59E0B]" />
+                      {new Date(2000, filters.bulan - 1).toLocaleDateString('id-ID', { month: 'long' })} {filters.tahun}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Top Guru Alpha */}
+              {statistik.guru_sering_alpha?.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden"
+                >
+                  <div className="p-4 bg-gradient-to-r from-[#EF4444] to-[#F87171]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white/25 rounded-xl">
+                          <XCircle size={15} className="text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-white">Sering Alpha</h3>
+                          <p className="text-[10px] text-white/75">Top ketidakhadiran</p>
+                        </div>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-lg font-bold text-[#F59E0B] dark:text-[#FBBF24]">{item.total_terlambat}x</p>
-                        <p className="text-[10px] text-slate-500">rata-rata {item.rata_rata_terlambat} menit</p>
+                      <span className="px-2.5 py-1 bg-white/20 rounded-lg text-white text-[10px] font-bold">
+                        Top {statistik.guru_sering_alpha.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 space-y-1.5">
+                    {statistik.guru_sering_alpha.map((item, idx) => {
+                      const maxAlpha = statistik.guru_sering_alpha[0]?.total_alpha || 1
+                      const barW = Math.round((item.total_alpha / maxAlpha) * 100)
+                      const isTop3 = idx < 3
+                      const rankColors = ['#F59E0B','#94a3b8','#f97316']
+                      return (
+                        <motion.div key={idx}
+                          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.04 }}
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                            idx === 0
+                              ? 'bg-red-50/60 dark:bg-red-900/10 border-red-100 dark:border-red-800/30'
+                              : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
+                          }`}>
+                          <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
+                            initial={{ width: 0 }} animate={{ width: `${barW}%` }}
+                            transition={{ delay: 0.3 + idx * 0.04, duration: 0.6, ease: 'easeOut' }}
+                            style={{ background: '#EF444408' }} />
+                          <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg"
+                            style={isTop3
+                              ? { background: `${rankColors[idx]}20` }
+                              : { background: 'rgba(100,116,139,0.1)' }}>
+                            {isTop3
+                              ? <span className="text-[11px] font-black" style={{ color: rankColors[idx] }}>{idx + 1}</span>
+                              : <span className="text-[11px] font-black text-slate-400">{idx + 1}</span>
+                            }
+                          </div>
+                          <div className="flex-shrink-0">
+                            {item.guru.foto
+                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                              : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EF4444] to-[#F87171] flex items-center justify-center text-white font-bold text-sm">
+                                  {item.guru.nama.charAt(0)}
+                                </div>
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs text-slate-900 dark:text-white truncate">{item.guru.nama}</p>
+                            <p className="text-[10px] text-slate-400 truncate">NIP: {item.guru.nip}</p>
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <p className="text-base font-black text-[#EF4444] dark:text-[#F87171] leading-none">{item.total_alpha}x</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">alpha</p>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <XCircle size={9} className="text-[#EF4444]" />
+                      {new Date(2000, filters.bulan - 1).toLocaleDateString('id-ID', { month: 'long' })} {filters.tahun}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Fallback: jika guru_sering_alpha belum ada di API */}
+              {!statistik.guru_sering_alpha && statistik.guru_sering_terlambat?.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden"
+                >
+                  <div className="p-4 bg-gradient-to-r from-[#EF4444] to-[#F87171]">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-white/25 rounded-xl">
+                        <XCircle size={15} className="text-white" />
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
+                      <div>
+                        <h3 className="text-sm font-bold text-white">Sering Alpha</h3>
+                        <p className="text-[10px] text-white/75">Data dari rekap per guru</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+                    <XCircle size={28} className="opacity-20" />
+                    <p className="text-xs font-medium">Data alpha guru belum tersedia</p>
+                    <p className="text-[10px] text-slate-300 dark:text-slate-600 text-center px-4">Perbarui API untuk menampilkan guru_sering_alpha</p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
         )}
 

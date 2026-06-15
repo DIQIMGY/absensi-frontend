@@ -1,7 +1,7 @@
 import AppLayout from './AppLayout'
 import {
   LayoutDashboard, ClipboardList, User, Trophy, Calendar,
-  BarChart3, GraduationCap, FileText, History, BookOpen, TrendingUp, LogOut,
+  BarChart3, GraduationCap, FileText, History, BookOpen, TrendingUp, LogOut, Award,
 } from 'lucide-react'
 import { guruApi } from '../services/guruService'
 
@@ -14,7 +14,8 @@ const menuGroups = [
       { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa' },
       { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa' },
       { path: '/guru/izins',            icon: FileText,        label: 'Izin' },
-      { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking' },
+      { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa' },
+      { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru' },
       { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian' },
       { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas' },
       { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi' },
