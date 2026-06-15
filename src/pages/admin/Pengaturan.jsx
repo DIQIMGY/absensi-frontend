@@ -94,7 +94,7 @@ function LiburBulanPanel() {
 
   function hitungHari(mulai, selesai) {
     if (!mulai) return 0
-    const m = new Date(mulai), s = selesai ? new Date(selesai) : new Date(mulai)
+    const m = new Date(mulai + 'T00:00:00'), s = selesai ? new Date(selesai + 'T00:00:00') : new Date(mulai + 'T00:00:00')
     return Math.floor((s - m) / 86400000) + 1
   }
 
@@ -1184,9 +1184,9 @@ export default function Pengaturan() {
                             <div>
                               <p className="text-xs font-bold text-amber-700 dark:text-amber-300">{formData.keterangan_libur || 'Libur'}</p>
                               <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                                {new Date(formData.tanggal_libur_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
+                                {new Date(formData.tanggal_libur_mulai + 'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
                                 {' — '}
-                                {new Date(formData.tanggal_libur_selesai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
+                                {new Date(formData.tanggal_libur_selesai + 'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
                               </p>
                             </div>
                           </div>
