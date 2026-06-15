@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
+import SiswaProfileModal from '../../components/SiswaProfileModal'
 
 const BULAN = [
   'Januari','Februari','Maret','April','Mei','Juni',
@@ -44,7 +45,7 @@ const PODIUM_CFG = [
   { rank: 3, icon: Trophy, ring: 'ring-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20', num: 'text-orange-600 dark:text-orange-400', bar: 'h-10 bg-gradient-to-t from-orange-400 to-orange-300', label: 'bg-orange-400', gradient: 'from-orange-500 to-amber-400' },
 ]
 
-const PodiumBlock = ({ siswa, cfg, type }) => {
+const PodiumBlock = ({ siswa, cfg, type, onProfileClick }) => {
   const Icon = cfg.icon
   const val = type === 'rajin'
     ? `${siswa.total_hadir}× · ${siswa.persentase_kehadiran}%`
@@ -53,14 +54,14 @@ const PodiumBlock = ({ siswa, cfg, type }) => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: cfg.rank * 0.08, type: 'spring', stiffness: 120 }}
       className="flex flex-col items-center gap-2">
-      <div className="relative">
+      <motion.div whileTap={{ scale: 0.93 }} className="relative cursor-pointer" onClick={() => onProfileClick(siswa)}>
         <div className={`ring-2 ${cfg.ring} ring-offset-2 ring-offset-white dark:ring-offset-slate-900 rounded-full`}>
           <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={cfg.rank === 1 ? 52 : 44} gradient={cfg.gradient} />
         </div>
         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${cfg.label} flex items-center justify-center shadow-sm`}>
           <Icon size={10} className="text-white" />
         </div>
-      </div>
+      </motion.div>
       <div className="text-center max-w-[80px]">
         <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2">{siswa.nama_lengkap}</p>
         <p className="text-[9px] text-slate-400 truncate">{siswa.kelas?.nama_kelas || '-'}</p>
@@ -74,7 +75,7 @@ const PodiumBlock = ({ siswa, cfg, type }) => {
 }
 
 // ── Row rank 4+ ───────────────────────────────────────────────────────────────
-const RankRow = ({ siswa, index, type }) => {
+const RankRow = ({ siswa, index, type, onProfileClick }) => {
   const val = type === 'rajin'
     ? { text: `${siswa.total_hadir}×`, sub: `${siswa.persentase_kehadiran}% hadir`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' }
     : type === 'terlambat'
@@ -82,7 +83,8 @@ const RankRow = ({ siswa, index, type }) => {
     : { text: `${siswa.total_alpha}×`, sub: 'alpha', color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/20' }
   return (
     <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer active:scale-[0.98]"
+      onClick={() => onProfileClick(siswa)}>
       <span className="w-5 text-center text-xs font-bold text-slate-400 tabular-nums flex-shrink-0">{index + 4}</span>
       <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={32} />
       <div className="flex-1 min-w-0">
@@ -95,7 +97,7 @@ const RankRow = ({ siswa, index, type }) => {
 }
 
 // ── Warning row ───────────────────────────────────────────────────────────────
-const WarningRow = ({ siswa, index, type, maxVal }) => {
+const WarningRow = ({ siswa, index, type, maxVal, onProfileClick }) => {
   const isTerlambat = type === 'terlambat'
   const val  = isTerlambat ? siswa.total_terlambat : siswa.total_alpha
   const pct  = maxVal > 0 ? Math.round((val / maxVal) * 100) : 0
@@ -106,7 +108,8 @@ const WarningRow = ({ siswa, index, type, maxVal }) => {
   const numCfg = index === 0 ? 'text-slate-800 dark:text-slate-100 font-black' : index === 1 ? 'text-slate-600 dark:text-slate-300 font-bold' : 'text-slate-400 font-semibold'
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
-      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer active:scale-[0.98]"
+      onClick={() => onProfileClick(siswa)}>
       <span className={`w-5 text-center text-xs tabular-nums flex-shrink-0 ${numCfg}`}>{index + 1}</span>
       <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={36}
         gradient={isTerlambat ? 'from-amber-400 to-orange-500' : 'from-rose-400 to-red-500'} />
@@ -131,7 +134,7 @@ const CARD_CFG = {
   alpha:     { title: 'Sering Alpha',     icon: XCircle,     iconBg: 'bg-rose-50 dark:bg-rose-900/30',     iconColor: 'text-rose-600 dark:text-rose-400',     border: 'border-rose-100 dark:border-rose-800/40',     topBar: 'bg-rose-500'    },
 }
 
-const RankingCard = ({ data = [], type, delay = 0 }) => {
+const RankingCard = ({ data = [], type, delay = 0, onProfileClick }) => {
   const cfg = CARD_CFG[type]
   const Icon = cfg.icon
   const isPodium = type === 'rajin'
@@ -167,14 +170,14 @@ const RankingCard = ({ data = [], type, delay = 0 }) => {
           <div className="px-5 pb-4">
             <div className="flex items-end justify-center gap-3">
               {podiumOrder.map((siswa, i) => siswa && (
-                <PodiumBlock key={siswa.id} siswa={siswa} cfg={podiumCfgs[i]} type={type} />
+                <PodiumBlock key={siswa.id} siswa={siswa} cfg={podiumCfgs[i]} type={type} onProfileClick={onProfileClick} />
               ))}
             </div>
           </div>
           {rest.length > 0 && <div className="mx-5 border-t border-slate-100 dark:border-slate-800 mb-1" />}
           {rest.length > 0 && (
             <div className="px-2 pb-3">
-              {rest.map((siswa, i) => <RankRow key={siswa.id} siswa={siswa} index={i} type={type} />)}
+              {rest.map((siswa, i) => <RankRow key={siswa.id} siswa={siswa} index={i} type={type} onProfileClick={onProfileClick} />)}
             </div>
           )}
         </>
@@ -182,7 +185,7 @@ const RankingCard = ({ data = [], type, delay = 0 }) => {
         <div className="px-2 pb-3">
           {data.map((siswa, i) => {
             const maxVal = data[0] ? (type === 'terlambat' ? data[0].total_terlambat : data[0].total_alpha) : 1
-            return <WarningRow key={siswa.id} siswa={siswa} index={i} type={type} maxVal={maxVal} />
+            return <WarningRow key={siswa.id} siswa={siswa} index={i} type={type} maxVal={maxVal} onProfileClick={onProfileClick} />
           })}
         </div>
       )}
@@ -206,10 +209,10 @@ export default function Ranking() {
   const [bulan, setBulan]             = useState(today.getMonth() + 1)
   const [tahun, setTahun]             = useState(today.getFullYear())
   const [tingkat, setTingkat]         = useState('')
-  // Date range
   const [useRange, setUseRange]           = useState(false)
   const [tanggalMulai, setTanggalMulai]   = useState('')
   const [tanggalSelesai, setTanggalSelesai] = useState('')
+  const [selectedSiswa, setSelectedSiswa] = useState(null)
 
   useEffect(() => { fetchRanking() }, [bulan, tahun, tingkat])
 
@@ -249,6 +252,11 @@ export default function Ranking() {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-4">
+
+      {/* MODAL */}
+      {selectedSiswa && (
+        <SiswaProfileModal siswa={selectedSiswa} onClose={() => setSelectedSiswa(null)} />
+      )}
 
       {/* ── Header ── */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
@@ -385,9 +393,9 @@ export default function Ranking() {
 
           {/* ── Ranking Cards ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <RankingCard data={rankingData.siswa_rajin?.slice(0, 8) || []} type="rajin" delay={0.1} />
-            <RankingCard data={[...(rankingData.siswa_sering_terlambat || [])].sort((a,b) => b.total_terlambat - a.total_terlambat).slice(0, 8)} type="terlambat" delay={0.15} />
-            <RankingCard data={[...(rankingData.siswa_sering_alpha || [])].sort((a,b) => b.total_alpha - a.total_alpha).slice(0, 8)} type="alpha" delay={0.2} />
+            <RankingCard data={rankingData.siswa_rajin?.slice(0, 8) || []} type="rajin" delay={0.1} onProfileClick={setSelectedSiswa} />
+            <RankingCard data={[...(rankingData.siswa_sering_terlambat || [])].sort((a,b) => b.total_terlambat - a.total_terlambat).slice(0, 8)} type="terlambat" delay={0.15} onProfileClick={setSelectedSiswa} />
+            <RankingCard data={[...(rankingData.siswa_sering_alpha || [])].sort((a,b) => b.total_alpha - a.total_alpha).slice(0, 8)} type="alpha" delay={0.2} onProfileClick={setSelectedSiswa} />
           </div>
 
           {/* ── Info note ── */}

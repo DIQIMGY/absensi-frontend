@@ -34,6 +34,7 @@ import {
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 import DataTable from '../../components/DataTable'
+import SiswaProfileModal from '../../components/SiswaProfileModal'
 
 export default function AbsensiGuru() {
   const [data, setData] = useState([])
@@ -61,6 +62,7 @@ export default function AbsensiGuru() {
   const [rekapData, setRekapData] = useState([])
   const [loadingRekap, setLoadingRekap] = useState(false)
   const [rekapSearch, setRekapSearch] = useState('')
+  const [selectedSiswaRanking, setSelectedSiswaRanking] = useState(null)
 
   useEffect(() => {
     fetchData()
@@ -423,6 +425,11 @@ export default function AbsensiGuru() {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-4">
+
+      {/* MODAL PROFIL SISWA (dari ranking) */}
+      {selectedSiswaRanking && (
+        <SiswaProfileModal siswa={selectedSiswaRanking} onClose={() => setSelectedSiswaRanking(null)} />
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
