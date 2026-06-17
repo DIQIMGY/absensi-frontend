@@ -34,7 +34,7 @@ import {
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 import DataTable from '../../components/DataTable'
-import SiswaProfileModal from '../../components/SiswaProfileModal'
+import GuruProfileModal from '../../components/GuruProfileModal'
 
 export default function AbsensiGuru() {
   const [data, setData] = useState([])
@@ -426,9 +426,9 @@ export default function AbsensiGuru() {
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-4">
 
-      {/* MODAL PROFIL SISWA (dari ranking) */}
+      {/* MODAL PROFIL GURU (dari ranking) */}
       {selectedSiswaRanking && (
-        <SiswaProfileModal siswa={selectedSiswaRanking} onClose={() => setSelectedSiswaRanking(null)} />
+        <GuruProfileModal guru={selectedSiswaRanking} onClose={() => setSelectedSiswaRanking(null)} />
       )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5">
@@ -743,11 +743,12 @@ export default function AbsensiGuru() {
                         <motion.div key={idx}
                           initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.04 }}
-                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all cursor-pointer hover:shadow-sm active:scale-[0.99] ${
                             idx === 0
                               ? 'bg-amber-50/60 dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30'
                               : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
-                          }`}>
+                          }`}
+                          onClick={() => setSelectedSiswaRanking({ ...item, posisi: idx + 1 })}>
                           {/* bar bg */}
                           <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
                             initial={{ width: 0 }} animate={{ width: `${barW}%` }}

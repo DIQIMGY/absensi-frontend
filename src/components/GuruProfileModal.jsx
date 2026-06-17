@@ -1,27 +1,36 @@
 /**
- * SiswaProfileModal — exact copy dari ProfileCardModal di siswa/Ranking.jsx
- * Digunakan di: admin/Ranking.jsx, guru/Ranking.jsx (ranking siswa oleh guru)
- * Props: siswa (object), onClose (fn), myId (optional, untuk badge "KAMU")
+ * GuruProfileModal — profile card modal untuk data guru.
+ * Sama persis strukturnya dengan SiswaProfileModal tapi fields-nya NIP, nama guru.
+ * Digunakan di: admin/AbsensiGuru.jsx (bagian ranking guru)
+ *
+ * Props:
+ *   guru   — object guru: { id, nama, nip, foto, foto_cover_url, total_hadir, total_terlambat, total_alpha, posisi }
+ *   onClose — fn
  */
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Trophy, Medal, Award, Hash, Star,
+  Trophy, Medal, Award, Hash,
   CheckCircle, Clock, AlertTriangle, X,
-  GraduationCap, Disc, TrendingUp, UserCircle2,
-  ChevronLeft,
+  Disc, TrendingUp, UserCircle2, ChevronLeft,
 } from 'lucide-react'
 
-export default function SiswaProfileModal({ siswa, onClose, myId }) {
+export default function GuruProfileModal({ guru, onClose }) {
   const [coverErr, setCoverErr]           = useState(false)
   const [isDark, setIsDark]               = useState(() => document.documentElement.classList.contains('dark'))
   const [musikPlaying, setMusikPlaying]   = useState(false)
   const [showFotoView, setShowFotoView]   = useState(false)
-  const [showUserPhoto, setShowUserPhoto] = useState(false)
   const musikRef = useRef(null)
-  const isMe = siswa?.id === myId
 
-  const userFotoUrl = siswa?.foto_user_url || null
+  // normalise — bisa { guru: {...}, total_hadir, ... } atau flat
+  const data        = guru?.guru ? guru.guru : guru
+  const total_hadir     = guru?.total_hadir     ?? data?.total_hadir     ?? 0
+  const total_terlambat = guru?.total_terlambat ?? data?.total_terlambat ?? 0
+  const total_alpha     = guru?.total_alpha     ?? data?.total_alpha     ?? 0
+  const posisi          = guru?.posisi          ?? data?.posisi          ?? null
+  const nama            = data?.nama || data?.nama_lengkap || '-'
+  const nip             = data?.nip || '-'
+  const fotoUrl         = data?.foto_url || data?.foto
 
   useEffect(() => () => {
     if (musikRef.current) { musikRef.current.pause(); musikRef.current.currentTime = 0 }
@@ -45,19 +54,14 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  if (!siswa) return null
+  if (!guru) return null
 
-  // kelas bisa string atau object {id, nama_kelas} tergantung endpoint
-  const kelasLabel = typeof siswa.kelas === 'object' && siswa.kelas !== null
-    ? (siswa.kelas.nama_kelas || '-')
-    : (siswa.kelas || '-')
-
-  const hasCover   = siswa.foto_cover_url && !coverErr
-  const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
-  const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
+  const hasCover   = data?.foto_cover_url && !coverErr
+  const totalAbsen = total_hadir + total_terlambat + total_alpha
+  const pctHadir   = totalAbsen > 0 ? Math.round(((total_hadir + total_terlambat) / totalAbsen) * 100) : 0
   const pctColor   = pctHadir >= 80 ? '#10b981' : pctHadir >= 60 ? '#f59e0b' : '#ef4444'
-  const pctLabel   = pctHadir >= 80 ? 'Baik' : pctHadir >= 60 ? 'Cukup' : 'Kurang'
-  const rankIcon   = siswa.posisi === 1 ? Trophy : siswa.posisi === 2 ? Medal : siswa.posisi <= 3 ? Award : Hash
+  const pctLabel   = pctHadir >= 80 ? 'Baik'    : pctHadir >= 60 ? 'Cukup'   : 'Kurang'
+  const RankIcon   = posisi === 1 ? Trophy : posisi === 2 ? Medal : posisi !== null && posisi <= 3 ? Award : Hash
   const motivasi   = pctHadir >= 80
     ? '"Konsistensimu luar biasa, terus pertahankan!"'
     : pctHadir >= 60
@@ -72,17 +76,11 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
   const barTrack   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'
   const handleBg   = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'
   const nameColor  = isDark ? '#f8fafc' : '#0f172a'
-  const subColor   = isDark ? 'rgba(148,163,184,0.85)' : 'rgba(71,85,105,0.9)'
   const metaColor  = isDark ? 'rgba(100,116,139,0.8)'  : 'rgba(100,116,139,0.9)'
   const labelColor = isDark ? 'rgba(148,163,184,0.55)' : 'rgba(100,116,139,0.7)'
   const quoteColor = isDark ? 'rgba(148,163,184,0.4)'  : 'rgba(100,116,139,0.5)'
-  const meColor    = isDark ? '#c4b5fd' : '#7c3aed'
-  const meBg       = isDark ? 'rgba(124,58,237,0.2)'   : 'rgba(124,58,237,0.08)'
-  const meBd       = isDark ? 'rgba(167,139,250,0.35)' : 'rgba(124,58,237,0.25)'
   const statBg     = (c) => isDark ? `${c}10` : `${c}08`
   const statBd     = (c) => isDark ? `${c}22` : `${c}20`
-
-  const RankIcon = rankIcon
 
   return (
     <AnimatePresence>
@@ -110,46 +108,49 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
           {/* COVER */}
           <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
             {hasCover
-              ? <img src={siswa.foto_cover_url} alt="cover" className="w-full h-full object-cover" onError={() => setCoverErr(true)} />
+              ? <img src={data.foto_cover_url} alt="cover" className="w-full h-full object-cover" onError={() => setCoverErr(true)} />
               : <div className="w-full h-full relative overflow-hidden"
-                  style={{ background: isMe ? 'linear-gradient(135deg,#1e0a3c,#3b0764,#5b21b6)' : 'linear-gradient(135deg,#0c1445,#1e1b4b,#312e81)' }}>
+                  style={{ background: 'linear-gradient(135deg,#0c1445,#1e1b4b,#312e81)' }}>
                   <div className="absolute inset-0 opacity-[0.04]"
                     style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '14px 14px' }} />
-                  <div className="absolute top-3 right-6 w-16 h-16 rounded-full blur-2xl opacity-20"
-                    style={{ background: isMe ? '#a78bfa' : '#818cf8' }} />
+                  <div className="absolute top-3 right-6 w-16 h-16 rounded-full blur-2xl opacity-20 bg-indigo-400" />
                 </div>
             }
             <div className="absolute inset-x-0 bottom-0 h-12 pointer-events-none"
               style={{ background: `linear-gradient(to top,${card},transparent)` }} />
+
             {/* rank pill */}
-            <div className="absolute top-3 left-3">
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <RankIcon size={10} className="text-white" />
-                <span className="text-white font-black text-[11px]">#{siswa.posisi}</span>
+            {posisi !== null && (
+              <div className="absolute top-3 left-3">
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  <RankIcon size={10} className="text-white" />
+                  <span className="text-white font-black text-[11px]">#{posisi}</span>
+                </div>
               </div>
-            </div>
+            )}
+
             <motion.button whileTap={{ scale: 0.85 }} onClick={onClose}
               className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
               <X size={13} className="text-white" />
             </motion.button>
 
-            {/* MUSIK */}
-            {(siswa.musik_foto_url || siswa.musik_audio_url || siswa.musik_nama) && (
+            {/* MUSIK (jika ada) */}
+            {(data?.musik_foto_url || data?.musik_audio_url || data?.musik_nama) && (
               <div className="absolute bottom-3 right-3 z-10">
-                {siswa.musik_audio_url && (
-                  <audio ref={musikRef} src={siswa.musik_audio_url} loop onEnded={() => setMusikPlaying(false)} />
+                {data.musik_audio_url && (
+                  <audio ref={musikRef} src={data.musik_audio_url} loop onEnded={() => setMusikPlaying(false)} />
                 )}
                 <motion.button whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    if (!musikRef.current || !siswa.musik_audio_url) return
+                    if (!musikRef.current || !data.musik_audio_url) return
                     if (musikPlaying) { musikRef.current.pause(); setMusikPlaying(false) }
-                    else { musikRef.current.play(); setMusikPlaying(true) }
+                    else              { musikRef.current.play();  setMusikPlaying(true)  }
                   }}
                   className="flex items-center gap-2.5 rounded-full overflow-hidden"
                   style={{
-                    background: 'rgba(0,0,0,0.52)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                    background: 'rgba(0,0,0,0.52)', backdropFilter: 'blur(16px)',
                     border: '1px solid rgba(255,255,255,0.18)',
                     boxShadow: musikPlaying ? '0 4px 20px rgba(167,139,250,0.4)' : '0 4px 16px rgba(0,0,0,0.4)',
                     padding: '5px 12px 5px 5px', maxWidth: 170,
@@ -157,7 +158,7 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
                   <div className="relative flex-shrink-0" style={{ width: 32, height: 32 }}>
                     {musikPlaying && (
                       <motion.div className="absolute inset-0 rounded-full"
-                        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                        animate={{ scale: [1,1.5,1], opacity: [0.5,0,0.5] }}
                         transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
                         style={{ background: 'rgba(167,139,250,0.35)' }} />
                     )}
@@ -166,8 +167,8 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
                       transition={{ repeat: musikPlaying ? Infinity : 0, duration: 3.5, ease: 'linear' }}
                       className="w-full h-full rounded-full overflow-hidden"
                       style={{ border: musikPlaying ? '2px solid rgba(167,139,250,0.7)' : '2px solid rgba(255,255,255,0.3)', background: 'linear-gradient(135deg,#0f0a1e,#1e0a3c)' }}>
-                      {siswa.musik_foto_url
-                        ? <img src={siswa.musik_foto_url} alt="album" className="w-full h-full object-cover" />
+                      {data.musik_foto_url
+                        ? <img src={data.musik_foto_url} alt="album" className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center"><Disc size={13} className="text-white/40" /></div>}
                     </motion.div>
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -176,18 +177,13 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    {siswa.musik_nama && (
-                      <p className="text-white font-bold leading-tight truncate" style={{ fontSize: 10 }}>{siswa.musik_nama}</p>
-                    )}
-                    {siswa.musik_artis && (
-                      <p className="truncate leading-tight mt-0.5" style={{ fontSize: 9, color: 'rgba(200,180,255,0.7)' }}>{siswa.musik_artis}</p>
-                    )}
+                    {data.musik_nama && <p className="text-white font-bold leading-tight truncate" style={{ fontSize: 10 }}>{data.musik_nama}</p>}
+                    {data.musik_artis && <p className="truncate leading-tight mt-0.5" style={{ fontSize: 9, color: 'rgba(200,180,255,0.7)' }}>{data.musik_artis}</p>}
                     {musikPlaying && (
                       <div className="flex items-end gap-0.5 mt-1" style={{ height: 7 }}>
-                        {[0, 1, 2, 3].map(i => (
-                          <motion.div key={i} className="w-0.5 rounded-full"
-                            style={{ background: 'rgba(167,139,250,0.8)' }}
-                            animate={{ height: ['30%', '100%', '50%', '80%', '30%'] }}
+                        {[0,1,2,3].map(i => (
+                          <motion.div key={i} className="w-0.5 rounded-full" style={{ background: 'rgba(167,139,250,0.8)' }}
+                            animate={{ height: ['30%','100%','50%','80%','30%'] }}
                             transition={{ repeat: Infinity, duration: 0.6 + i * 0.15, ease: 'easeInOut', delay: i * 0.1 }} />
                         ))}
                       </div>
@@ -201,29 +197,11 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
           {/* BODY */}
           <div className="px-4 pt-3 pb-5 space-y-3">
             <div>
-              <div className="flex items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-[17px] font-black leading-tight" style={{ color: nameColor }}>{siswa.nama_lengkap}</h2>
-                    {isMe && (
-                      <span className="flex-shrink-0 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black"
-                        style={{ background: meBg, border: `1px solid ${meBd}`, color: meColor }}>
-                        <Star size={7} />KAMU
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: subColor }}>
-                      <GraduationCap size={10} style={{ color: metaColor }} />{kelasLabel}
-                    </span>
-                    <span style={{ color: metaColor, fontSize: 10 }}>·</span>
-                    <span className="text-[11px] font-mono" style={{ color: metaColor }}>NIS {siswa.nis || '-'}</span>
-                  </div>
-                </div>
-              </div>
+              <h2 className="text-[17px] font-black leading-tight" style={{ color: nameColor }}>{nama}</h2>
+              <p className="text-[11px] font-mono mt-0.5" style={{ color: metaColor }}>NIP: {nip}</p>
             </div>
 
-            {/* KEHADIRAN */}
+            {/* KEHADIRAN BAR */}
             <div className="rounded-2xl px-3.5 py-3" style={{ background: boxBg, border: `1px solid ${boxBd}` }}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
@@ -248,9 +226,9 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
             {/* STATS 3 KOLOM */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'HADIR',     sub: 'Total', val: siswa.total_hadir,     c: '#10b981', Icon: CheckCircle },
-                { label: 'TERLAMBAT', sub: 'Total', val: siswa.total_terlambat, c: '#f59e0b', Icon: Clock },
-                { label: 'ALPHA',     sub: 'Total', val: siswa.total_alpha,     c: '#ef4444', Icon: AlertTriangle },
+                { label: 'HADIR',     sub: 'Total', val: total_hadir,     c: '#10b981', Icon: CheckCircle   },
+                { label: 'TERLAMBAT', sub: 'Total', val: total_terlambat, c: '#f59e0b', Icon: Clock         },
+                { label: 'ALPHA',     sub: 'Total', val: total_alpha,     c: '#ef4444', Icon: AlertTriangle },
               ].map((s, i) => (
                 <motion.div key={s.label}
                   initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
@@ -260,7 +238,7 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
                   <div className="absolute inset-x-0 top-0 h-px"
                     style={{ background: `linear-gradient(90deg,transparent,${s.c}80,transparent)` }} />
                   <s.Icon size={14} style={{ color: s.c }} className="mx-auto" />
-                  <p className="text-[22px] font-black tabular-nums leading-none mt-1" style={{ color: s.c }}>{s.val ?? 0}</p>
+                  <p className="text-[22px] font-black tabular-nums leading-none mt-1" style={{ color: s.c }}>{s.val}</p>
                   <p className="text-[8px] font-black mt-1 tracking-wide" style={{ color: s.c }}>{s.label}</p>
                   <p className="text-[8px] mt-0.5" style={{ color: labelColor }}>{s.sub}</p>
                 </motion.div>
@@ -268,7 +246,7 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
             </div>
 
             {/* LIHAT FOTO */}
-            {siswa.foto_url && (
+            {fotoUrl && (
               <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowFotoView(true)}
                 className="w-full flex flex-col items-center gap-1 pt-1 pb-0.5 opacity-50 hover:opacity-80 transition-opacity">
                 <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: metaColor }}>Lihat Foto Profil</p>
@@ -290,106 +268,47 @@ export default function SiswaProfileModal({ siswa, onClose, myId }) {
                 className="absolute inset-0 flex flex-col items-center justify-center rounded-t-[28px] sm:rounded-[24px] overflow-hidden"
                 style={{ background: isDark ? '#0f172a' : '#f8fafc', zIndex: 10 }}>
 
-                {/* Tombol kembali */}
-                <motion.button whileTap={{ scale: 0.88 }} onClick={() => { setShowFotoView(false); setShowUserPhoto(false) }}
+                <motion.button whileTap={{ scale: 0.88 }} onClick={() => setShowFotoView(false)}
                   className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
                   style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}` }}>
                   <ChevronLeft size={16} style={{ color: isDark ? 'white' : '#334155' }} />
                 </motion.button>
 
-                {/* Tombol tutup */}
                 <motion.button whileTap={{ scale: 0.88 }} onClick={onClose}
                   className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20"
                   style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}` }}>
                   <X size={15} style={{ color: isDark ? 'white' : '#334155' }} />
                 </motion.button>
 
-                {/* Label foto siapa */}
-                <motion.div
-                  key={showUserPhoto ? 'label-user' : 'label-siswa'}
-                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-4 left-0 right-0 flex justify-center pointer-events-none">
+                <div className="absolute top-4 left-0 right-0 flex justify-center pointer-events-none">
                   <span className="px-3 py-1 rounded-full text-[10px] font-bold"
                     style={{
-                      background: showUserPhoto
-                        ? (isDark ? 'rgba(124,58,237,0.25)' : 'rgba(124,58,237,0.1)')
-                        : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
-                      color: showUserPhoto
-                        ? (isDark ? '#c4b5fd' : '#7c3aed')
-                        : (isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)'),
-                      border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.3)' : 'rgba(124,58,237,0.2)') : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')}`,
+                      background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                      color: isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
                     }}>
-                    {showUserPhoto ? '👤 Foto Akun' : '🎓 Foto Profil'}
+                    🧑‍🏫 Foto Profil Guru
                   </span>
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+                  className="relative"
+                  style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}>
+                  <div className="w-full h-full overflow-hidden shadow-xl rounded-3xl"
+                    style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.2)' }}>
+                    <img src={fotoUrl} alt={nama} className="w-full h-full object-cover" />
+                  </div>
                 </motion.div>
 
-                {/* Foto — klik untuk toggle */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={showUserPhoto ? 'foto-user' : 'foto-siswa'}
-                    initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 26 }}
-                    className="relative cursor-pointer"
-                    style={{ width: 'min(60vw, 200px)', height: 'min(60vw, 200px)' }}
-                    onClick={() => {
-                      if (userFotoUrl) setShowUserPhoto(v => !v)
-                    }}>
-                    <div className="w-full h-full overflow-hidden shadow-xl rounded-3xl"
-                      style={{
-                        boxShadow: showUserPhoto
-                          ? `0 12px 40px rgba(124,58,237,0.35)`
-                          : `0 12px 40px rgba(0,0,0,0.2)`,
-                        outline: showUserPhoto ? '3px solid rgba(124,58,237,0.5)' : 'none',
-                        outlineOffset: 3,
-                      }}>
-                      {showUserPhoto && userFotoUrl
-                        ? <img src={userFotoUrl} alt="Foto Kamu" className="w-full h-full object-cover" />
-                        : <img src={siswa.foto_url} alt={siswa.nama_lengkap} className="w-full h-full object-cover" />
-                      }
-                    </div>
-                    {/* Hint tap */}
-                    {userFotoUrl && (
-                      <div className="absolute -bottom-3 left-0 right-0 flex justify-center">
-                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-semibold"
-                          style={{
-                            background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
-                            color: isDark ? 'rgba(148,163,184,0.6)' : 'rgba(100,116,139,0.7)',
-                          }}>
-                          ketuk untuk {showUserPhoto ? 'lihat foto siswa' : 'lihat foto akun'}
-                        </span>
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Nama & info */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
                   className="mt-8 text-center px-4">
-                  <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>
-                    {siswa.nama_lengkap}
-                  </p>
+                  <p className="font-black text-sm" style={{ color: isDark ? '#f8fafc' : '#0f172a' }}>{nama}</p>
                   <p className="text-xs mt-0.5" style={{ color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(100,116,139,0.8)' }}>
-                    {showUserPhoto ? 'Foto akun' : 'Foto profil'} &middot; {kelasLabel} &middot; {siswa.nis || '-'}
+                    Foto profil &middot; NIP: {nip}
                   </p>
                 </motion.div>
-
-                {/* Tombol toggle bawah */}
-                {userFotoUrl && (
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => setShowUserPhoto(v => !v)}
-                    className="mt-5 flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all"
-                    style={{
-                      background: showUserPhoto
-                        ? (isDark ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.08)')
-                        : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                      color: showUserPhoto ? (isDark ? '#c4b5fd' : '#7c3aed') : (isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)'),
-                      border: `1px solid ${showUserPhoto ? (isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.15)') : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}`,
-                    }}>
-                    <UserCircle2 size={13} />
-                    {showUserPhoto ? 'Lihat foto profil' : 'Lihat foto akun'}
-                  </motion.button>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

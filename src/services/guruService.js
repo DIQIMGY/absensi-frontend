@@ -28,6 +28,7 @@ export const guruApi = {
   // Ranking & Statistik
   getRankingSiswa: (params) => api.get('/guru/ranking/siswa', { params }),
   getRankingGuru: (params) => api.get('/guru/ranking/guru', { params }),
+  getRankingGuruStatistik: (params) => api.get('/guru/ranking/guru-statistik', { params, silent: true }),
   getRekapHarian: (params) => api.get('/guru/rekap-harian', { params }),
   getStatistikKelas: (params) => api.get('/guru/statistik-kelas', { params }),
   
