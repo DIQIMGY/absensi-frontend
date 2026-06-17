@@ -828,11 +828,12 @@ export default function AbsensiGuru() {
                         <motion.div key={idx}
                           initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.04 }}
-                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all cursor-pointer hover:shadow-sm active:scale-[0.99] ${
                             idx === 0
                               ? 'bg-amber-50/60 dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30'
                               : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
-                          }`}>
+                          }`}
+                          onClick={() => setSelectedSiswaRanking({ ...item, posisi: idx + 1 })}>
                           <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
                             initial={{ width: 0 }} animate={{ width: `${barW}%` }}
                             transition={{ delay: 0.3 + idx * 0.04, duration: 0.6, ease: 'easeOut' }}
@@ -907,11 +908,12 @@ export default function AbsensiGuru() {
                         <motion.div key={idx}
                           initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.04 }}
-                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all ${
+                          className={`relative flex items-center gap-2.5 p-2.5 rounded-xl border overflow-hidden transition-all cursor-pointer hover:shadow-sm active:scale-[0.99] ${
                             idx === 0
                               ? 'bg-red-50/60 dark:bg-red-900/10 border-red-100 dark:border-red-800/30'
                               : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50'
-                          }`}>
+                          }`}
+                          onClick={() => setSelectedSiswaRanking({ ...item, posisi: idx + 1 })}>
                           <motion.div className="absolute inset-y-0 left-0 pointer-events-none rounded-xl"
                             initial={{ width: 0 }} animate={{ width: `${barW}%` }}
                             transition={{ delay: 0.3 + idx * 0.04, duration: 0.6, ease: 'easeOut' }}

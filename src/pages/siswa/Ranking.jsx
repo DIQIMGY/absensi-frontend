@@ -74,6 +74,10 @@ function ProfileCardModal({ siswa, onClose, myId }) {
   if (!siswa) return null
 
   const hasCover   = siswa.foto_cover_url && !coverErr
+  // kelas bisa string atau {id, nama_kelas} — normalise agar tidak render object
+  const kelasLabel = typeof siswa.kelas === 'object' && siswa.kelas !== null
+    ? (siswa.kelas.nama_kelas || '-')
+    : (siswa.kelas || '-')
   const initial    = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
   const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
   const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
@@ -236,7 +240,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: subColor }}>
-                      <GraduationCap size={10} style={{ color: metaColor }} />{siswa.kelas || '-'}
+                      <GraduationCap size={10} style={{ color: metaColor }} />{kelasLabel}
                     </span>
                     <span style={{ color: metaColor, fontSize: 10 }}>·</span>
                     <span className="text-[11px] font-mono" style={{ color: metaColor }}>NIS {siswa.nis || '-'}</span>
@@ -392,7 +396,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
                     {siswa.nama_lengkap}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(100,116,139,0.8)' }}>
-                    {showUserPhoto ? 'Foto akun' : 'Foto profil'} &middot; {siswa.kelas} &middot; {siswa.nis}
+                    {showUserPhoto ? 'Foto akun' : 'Foto profil'} &middot; {kelasLabel} &middot; {siswa.nis}
                   </p>
                 </motion.div>
 
@@ -503,7 +507,7 @@ function PodiumSection({ items, valKey, activeTab, myId, onAvatarClick }) {
                       {siswa.nama_lengkap.split(' ')[0]}
                     </p>
                     <p className="text-[9px] sm:text-[10px] truncate max-w-[80px] text-slate-400 dark:text-slate-500 mt-0.5">
-                      {siswa.kelas}
+                      {kelasLabel}
                     </p>
                   </div>
 
@@ -810,7 +814,7 @@ export default function SiswaRankingPage() {
                         )}
                       </div>
                       <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                        <span className="font-medium">{siswa.kelas}</span>
+                        <span className="font-medium">{kelasLabel}</span>
                         <span className="mx-1 opacity-50">/</span>
                         {siswa.nis}
                       </p>
