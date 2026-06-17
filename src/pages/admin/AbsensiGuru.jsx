@@ -766,8 +766,8 @@ export default function AbsensiGuru() {
                           </div>
                           {/* avatar */}
                           <div className="flex-shrink-0">
-                            {item.guru.foto
-                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                            {(item.guru.foto_url || item.guru.foto)
+                              ? <img src={(item.guru.foto_url || item.guru.foto)} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
                               : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#10B981] to-[#34D399] flex items-center justify-center text-white font-bold text-sm">
                                   {item.guru.nama.charAt(0)}
                                 </div>
@@ -848,8 +848,8 @@ export default function AbsensiGuru() {
                             }
                           </div>
                           <div className="flex-shrink-0">
-                            {item.guru.foto
-                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                            {(item.guru.foto_url || item.guru.foto)
+                              ? <img src={(item.guru.foto_url || item.guru.foto)} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
                               : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] flex items-center justify-center text-white font-bold text-sm">
                                   {item.guru.nama.charAt(0)}
                                 </div>
@@ -928,8 +928,8 @@ export default function AbsensiGuru() {
                             }
                           </div>
                           <div className="flex-shrink-0">
-                            {item.guru.foto
-                              ? <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+                            {(item.guru.foto_url || item.guru.foto)
+                              ? <img src={(item.guru.foto_url || item.guru.foto)} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
                               : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EF4444] to-[#F87171] flex items-center justify-center text-white font-bold text-sm">
                                   {item.guru.nama.charAt(0)}
                                 </div>
@@ -1079,8 +1079,8 @@ export default function AbsensiGuru() {
                           >
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                {item.guru.foto ? (
-                                  <img src={item.guru.foto} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-[#1F3A44] flex-shrink-0" />
+                                {(item.guru.foto_url || item.guru.foto) ? (
+                                  <img src={(item.guru.foto_url || item.guru.foto)} alt={item.guru.nama} className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-[#1F3A44] flex-shrink-0" />
                                 ) : (
                                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#10B981] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                     {item.guru.nama.charAt(0)}
