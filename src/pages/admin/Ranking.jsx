@@ -54,7 +54,7 @@ const PodiumBlock = ({ siswa, cfg, type, onProfileClick }) => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: cfg.rank * 0.08, type: 'spring', stiffness: 120 }}
       className="flex flex-col items-center gap-2">
-      <motion.div whileTap={{ scale: 0.93 }} className="relative cursor-pointer" onClick={() => onProfileClick(siswa)}>
+      <motion.div whileTap={{ scale: 0.93 }} className="relative cursor-pointer" onClick={() => onProfileClick({ ...siswa, posisi: cfg.rank })}>
         <div className={`ring-2 ${cfg.ring} ring-offset-2 ring-offset-white dark:ring-offset-slate-900 rounded-full`}>
           <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={cfg.rank === 1 ? 52 : 44} gradient={cfg.gradient} />
         </div>
@@ -84,7 +84,7 @@ const RankRow = ({ siswa, index, type, onProfileClick }) => {
   return (
     <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}
       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer active:scale-[0.98]"
-      onClick={() => onProfileClick(siswa)}>
+      onClick={() => onProfileClick({ ...siswa, posisi: index + 4 })}>
       <span className="w-5 text-center text-xs font-bold text-slate-400 tabular-nums flex-shrink-0">{index + 4}</span>
       <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={32} />
       <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ const WarningRow = ({ siswa, index, type, maxVal, onProfileClick }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer active:scale-[0.98]"
-      onClick={() => onProfileClick(siswa)}>
+      onClick={() => onProfileClick({ ...siswa, posisi: index + 1 })}>
       <span className={`w-5 text-center text-xs tabular-nums flex-shrink-0 ${numCfg}`}>{index + 1}</span>
       <Avatar src={siswa.foto_url || siswa.foto} name={siswa.nama_lengkap} size={36}
         gradient={isTerlambat ? 'from-amber-400 to-orange-500' : 'from-rose-400 to-red-500'} />
