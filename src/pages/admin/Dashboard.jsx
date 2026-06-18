@@ -71,6 +71,7 @@ import {
 } from 'recharts'
 import { adminApi } from '../../services/adminService'
 import DashboardVideo from '../../components/DashboardVideo'
+import { useThemeStore } from '../../stores/themeStore'
 
 // -- Avatar component · handles broken images gracefully ----------------------
 const Avatar = ({ src, name, size = 36, className = '', style = {} }) => {
@@ -376,31 +377,41 @@ const EnhancedStatCard = ({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -3, transition: { duration: 0.15 } }}
+      whileHover={{ y: -4, scale: 1.02, transition: { duration: 0.15 } }}
     >
-      <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-shadow"
-        style={{ height: 110 }}>
-        <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${gradient} opacity-70`} />
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.04] pointer-events-none`} />
+      <div
+        className="relative overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl transition-all"
+        style={{
+          height: 114,
+          boxShadow: `0 4px 20px ${color}15, inset 0 1px 0 rgba(255,255,255,0.12)`
+        }}>
+        {/* Top color accent */}
+        <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${gradient}`} />
+        {/* Subtle glow bg */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.06] pointer-events-none`} />
+        {/* Corner glow */}
+        <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full pointer-events-none"
+          style={{ background: `radial-gradient(circle, ${color}30 0%, transparent 70%)` }} />
 
         <div className="relative z-10 flex items-center justify-between h-full px-4">
           {/* Left: icon + mini chart */}
-          <div className="flex flex-col justify-between h-full py-3.5 w-[60px]">
-            <div className={`p-1.5 rounded-xl bg-gradient-to-br ${gradient} w-fit shadow-sm`}>
+          <div className="flex flex-col justify-between h-full py-3.5 w-[62px]">
+            <div className={`p-2 rounded-xl bg-gradient-to-br ${gradient} w-fit shadow-md`}
+              style={{ boxShadow: `0 4px 12px ${color}40` }}>
               <Icon className="w-3.5 h-3.5 text-white" />
             </div>
-            <div className="h-[28px] w-full">
+            <div className="h-[30px] w-full">
               {renderMiniChart()}
             </div>
           </div>
 
           {/* Right: value + label */}
           <div className="text-right flex-1 pl-2">
-            <p className="text-3xl font-black text-slate-800 dark:text-white tabular-nums leading-none">{value}</p>
-            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">{title}</p>
-            {subtitle && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
+            <p className="text-3xl font-black text-white tabular-nums leading-none drop-shadow-sm">{value}</p>
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mt-1">{title}</p>
+            {subtitle && <p className="text-[10px] text-white/45 mt-0.5">{subtitle}</p>}
             {trend && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold mt-0.5 ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-black mt-0.5 ${trendUp ? 'text-emerald-300' : 'text-rose-300'}`}>
                 {trendUp ? <ArrowUpRight size={9}/> : <ArrowDownRight size={9}/>}{trend}
               </span>
             )}
@@ -414,6 +425,7 @@ const EnhancedStatCard = ({
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { isDark } = useThemeStore()
   const [data, setData] = useState(null)
   const [periodData, setPeriodData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1037,42 +1049,34 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            {/* Outer container · aurora mesh background */}
+            {/* Outer container · deep space aurora */}
             <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-2xl"
-              style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #1e40af 60%, #0f766e 100%)' }}>
+              style={{ background: 'linear-gradient(135deg, #0d0929 0%, #130a2e 20%, #0e1a3d 40%, #071e35 60%, #0a1628 80%, #080e1e 100%)' }}>
 
               {/* Aurora blobs */}
               <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.55) 0%, transparent 70%)' }} />
               <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.45) 0%, transparent 70%)' }} />
               <div className="absolute -top-10 right-1/4 w-56 h-56 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, transparent 70%)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)' }} />
               <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.45) 0%, transparent 70%)' }} />
+              <div className="absolute bottom-0 right-1/4 w-40 h-40 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%)' }} />
 
-              {/* Noise texture overlay */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]">
-                <filter id="noise">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-                  <feColorMatrix type="saturate" values="0"/>
-                </filter>
-                <rect width="100%" height="100%" filter="url(#noise)"/>
-              </svg>
-
-              {/* Subtle grid lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.08]">
+              {/* Hex grid */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.07]">
                 <defs>
-                  <pattern id="grid" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
-                    <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5"/>
+                  <pattern id="stats-hex" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+                    <path d="M12 2 L22 7 L22 17 L12 22 L2 17 L2 7 Z" fill="none" stroke="white" strokeWidth="0.5"/>
                   </pattern>
                 </defs>
-                <rect width="100%" height="100%" fill="url(#grid)"/>
+                <rect width="100%" height="100%" fill="url(#stats-hex)"/>
               </svg>
-
-              {/* Top highlight */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"/>
-              <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"/>
+              {/* Top shine */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"/>
+              <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"/>
 
               <div className="relative grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
                 {stats.map((stat) => (
@@ -1132,23 +1136,314 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Video ambient · di kanan sebagai aksen */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 flex items-stretch">
-        {/* Teks kiri */}
-        <div className="flex-1 p-5 flex flex-col justify-center gap-2 z-10">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"/></span>
-            <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Live Dashboard</span>
+      {/* ══════════════════════════════════════════════════════════════════
+           ── LIVE DASHBOARD BANNER  (redesigned · ultra-premium) ──
+      ══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-3xl"
+        style={{
+          background: isDark
+            ? 'linear-gradient(135deg, #020817 0%, #0b1324 25%, #071523 50%, #0a1628 75%, #050c18 100%)'
+            : 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0fdff 50%, #f5f3ff 75%, #fef9f0 100%)',
+          boxShadow: isDark
+            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(16,185,129,0.18), inset 0 1px 0 rgba(255,255,255,0.04)'
+            : '0 16px 60px rgba(16,185,129,0.15), 0 0 0 1px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.8)'
+        }}
+      >
+        {/* ── Layered background FX ── */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Primary aurora blobs */}
+          <motion.div
+            animate={{ x: [0, 40, 0], y: [0, -30, 0], scale: [1, 1.15, 1] }}
+            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-24 -left-24 w-80 h-80 rounded-full"
+            style={{ background: isDark
+              ? 'radial-gradient(circle, rgba(16,185,129,0.45) 0%, transparent 65%)'
+              : 'radial-gradient(circle, rgba(16,185,129,0.30) 0%, transparent 65%)' }}
+          />
+          <motion.div
+            animate={{ x: [0, -30, 0], y: [0, 40, 0], scale: [1, 1.2, 1] }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+            className="absolute top-1/2 left-[30%] -translate-y-1/2 w-96 h-96 rounded-full"
+            style={{ background: isDark
+              ? 'radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 65%)'
+              : 'radial-gradient(circle, rgba(6,182,212,0.2) 0%, transparent 65%)' }}
+          />
+          <motion.div
+            animate={{ x: [0, 20, 0], y: [0, 20, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 8 }}
+            className="absolute -bottom-20 right-[25%] w-72 h-72 rounded-full"
+            style={{ background: isDark
+              ? 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 65%)'
+              : 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 65%)' }}
+          />
+          <motion.div
+            animate={{ x: [0, -15, 0], y: [0, -25, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="absolute top-0 right-[15%] w-56 h-56 rounded-full"
+            style={{ background: isDark
+              ? 'radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 65%)'
+              : 'radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 65%)' }}
+          />
+          {/* Circuit / hex grid */}
+          <svg className="absolute inset-0 w-full h-full" style={{ opacity: isDark ? 0.06 : 0.10 }}>
+            <defs>
+              <pattern id="ldv2-hex" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                <path d="M14 2 L26 9 L26 19 L14 26 L2 19 L2 9 Z" fill="none" stroke={isDark ? '#10b981' : '#059669'} strokeWidth="0.6"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#ldv2-hex)"/>
+          </svg>
+          {/* Horizontal scan lines */}
+          {[0, 1, 2].map(i => (
+            <motion.div key={i}
+              animate={{ y: ['-120%', '220%'] }}
+              transition={{ duration: 5 + i * 1.5, repeat: Infinity, ease: 'linear', delay: i * 1.8 }}
+              className="absolute inset-x-0 h-[1.5px]"
+              style={{ opacity: isDark ? 0.25 : 0.15, background: 'linear-gradient(90deg, transparent 5%, rgba(16,185,129,0.9) 40%, rgba(6,182,212,0.9) 60%, transparent 95%)' }}
+            />
+          ))}
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-24 h-24 pointer-events-none"
+            style={{ background: isDark ? 'radial-gradient(circle at 0% 0%, rgba(16,185,129,0.2), transparent 70%)' : 'radial-gradient(circle at 0% 0%, rgba(16,185,129,0.15), transparent 70%)' }}/>
+          <div className="absolute bottom-0 right-0 w-32 h-32 pointer-events-none"
+            style={{ background: isDark ? 'radial-gradient(circle at 100% 100%, rgba(6,182,212,0.2), transparent 70%)' : 'radial-gradient(circle at 100% 100%, rgba(6,182,212,0.15), transparent 70%)' }}/>
+        </div>
+
+        {/* ── Top iridescent border ── */}
+        <motion.div
+          animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+          className="absolute inset-x-0 top-0 h-[3px] pointer-events-none"
+          style={{ background: 'linear-gradient(90deg, #10b981, #06b6d4, #6366f1, #a855f7, #f59e0b, #10b981)', backgroundSize: '300% 100%' }}
+        />
+        {/* ── Bottom subtle border ── */}
+        <div className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
+          style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}
+        />
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-stretch gap-0">
+
+          {/* ── LEFT: Text + Stats ── */}
+          <div className="flex-1 p-5 sm:p-7 lg:p-8 flex flex-col justify-between gap-5">
+
+            {/* Badge row */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Live pill */}
+              <motion.div
+                animate={{ scale: [1, 1.03, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full backdrop-blur-md"
+                style={{
+                  background: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.12)',
+                  border: '1px solid rgba(16,185,129,0.4)',
+                  boxShadow: '0 0 16px rgba(16,185,129,0.2)'
+                }}>
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"/>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"/>
+                </span>
+                <span className="text-emerald-500 dark:text-emerald-400 text-[11px] font-black uppercase tracking-[0.12em]">Live Dashboard</span>
+              </motion.div>
+              {/* Real-time pill */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md text-[10px] font-bold"
+                style={{
+                  background: isDark ? 'rgba(6,182,212,0.12)' : 'rgba(6,182,212,0.1)',
+                  border: '1px solid rgba(6,182,212,0.35)',
+                  color: isDark ? '#67e8f9' : '#0891b2'
+                }}>
+                <Zap size={11} className="flex-shrink-0" />
+                Real-time
+              </div>
+              {/* Auto update */}
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md text-[10px] font-bold"
+                style={{
+                  background: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.1)',
+                  border: '1px solid rgba(99,102,241,0.35)',
+                  color: isDark ? '#a5b4fc' : '#4f46e5'
+                }}>
+                <Shield size={11} className="flex-shrink-0" />
+                Auto Update
+              </div>
+              {/* Date chip */}
+              <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md text-[10px] font-semibold"
+                style={{
+                  background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
+                  color: isDark ? '#94a3b8' : '#64748b'
+                }}>
+                <Calendar size={10} className="flex-shrink-0" />
+                {new Date().toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'})}
+              </div>
+            </div>
+
+            {/* Heading */}
+            <div>
+              <h2 className="font-black leading-[1.1] mb-3" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.8rem)' }}>
+                <span className={isDark ? 'text-white' : 'text-slate-900'}>Pantau Aktivitas </span>
+                <span style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #6366f1 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  display: 'inline-block'
+                }}>Sekolah</span>
+                <br />
+                <span style={{
+                  background: isDark
+                    ? 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)'
+                    : 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  display: 'inline-block'
+                }}>Secara Real-time</span>
+              </h2>
+              <p className={`text-sm sm:text-[15px] leading-relaxed max-w-lg ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                Data absensi diperbarui otomatis setiap hari. Monitor kehadiran, keterlambatan, dan alpha siswa secara instan dari sini.
+              </p>
+            </div>
+
+            {/* ── Mini stat pills ── */}
+            <div className="grid grid-cols-2 xs:grid-cols-4 gap-2.5">
+              {[
+                { label: 'Hadir',     value: siswaHadir,     color: '#10b981', icon: UserCheck,    bg: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.10)',  border: 'rgba(16,185,129,0.3)'  },
+                { label: 'Terlambat', value: siswaTerlambat, color: '#f59e0b', icon: Clock,        bg: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.3)'  },
+                { label: 'Alpha',     value: siswaAlpha,     color: '#ef4444', icon: AlertTriangle,bg: isDark ? 'rgba(239,68,68,0.12)'  : 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.3)'   },
+                { label: 'Pending',   value: izinPending,    color: '#a78bfa', icon: Bell,         bg: isDark ? 'rgba(167,139,250,0.12)': 'rgba(167,139,250,0.10)', border: 'rgba(167,139,250,0.3)' },
+              ].map((s, i) => (
+                <motion.div key={s.label}
+                  initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.25 + i * 0.08, type: 'spring', stiffness: 280, damping: 22 }}
+                  whileHover={{ y: -2, scale: 1.03, transition: { duration: 0.15 } }}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl backdrop-blur-md cursor-default"
+                  style={{ background: s.bg, border: `1px solid ${s.border}`, boxShadow: `0 4px 16px ${s.color}18` }}
+                >
+                  <div className="flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center"
+                    style={{ background: `${s.color}22` }}>
+                    <s.icon size={13} style={{ color: s.color }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-lg font-black tabular-nums leading-none" style={{ color: s.color }}>{s.value}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5 truncate" style={{ color: s.color, opacity: 0.65 }}>{s.label}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* ── Kehadiran progress bar ── */}
+            <div className="rounded-2xl p-3.5 backdrop-blur-sm"
+              style={{
+                background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.07)'
+              }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Target size={12} className="text-emerald-500 flex-shrink-0" />
+                  <span className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Tingkat Kehadiran {periodLabel}</span>
+                </div>
+                <span className="text-sm font-black text-emerald-500 tabular-nums">{kehadiranRate}%</span>
+              </div>
+              {/* Segmented bar */}
+              <div className="w-full h-2.5 rounded-full overflow-hidden flex gap-0.5"
+                style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                {[
+                  { val: siswaHadir,     color: '#10b981' },
+                  { val: siswaTerlambat, color: '#f59e0b' },
+                  { val: siswaIzin,      color: '#8b5cf6' },
+                  { val: siswaSakit,     color: '#ec4899' },
+                  { val: siswaAlpha,     color: '#ef4444' },
+                ].filter(s => s.val > 0 && totalSiswa > 0).map((s, idx) => {
+                  const pct = (s.val / totalSiswa) * 100
+                  return (
+                    <motion.div key={idx}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 1.2, delay: 0.5 + idx * 0.1, ease: 'easeOut' }}
+                      className="h-full first:rounded-l-full last:rounded-r-full"
+                      style={{ background: s.color, boxShadow: `0 0 8px ${s.color}60`, minWidth: '4px' }}
+                    />
+                  )
+                })}
+              </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  {siswaHadir + siswaTerlambat} dari {totalSiswa} siswa hadir
+                </p>
+                <div className="flex items-center gap-3">
+                  {[
+                    { color: '#10b981', label: 'H' },
+                    { color: '#f59e0b', label: 'T' },
+                    { color: '#ef4444', label: 'A' },
+                  ].map(l => (
+                    <span key={l.label} className="flex items-center gap-1 text-[9px]" style={{ color: isDark ? '#64748b' : '#94a3b8' }}>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: l.color }}/>
+                      {l.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-white font-bold text-base sm:text-lg leading-snug">Pantau Aktivitas<br/>Sekolah Real-time</p>
-          <p className="text-slate-400 text-xs">Data absensi diperbarui otomatis setiap hari</p>
+
+          {/* ── RIGHT: Premium Video Panel ── */}
+          <div className="relative w-full lg:w-[380px] xl:w-[440px] flex-shrink-0 min-h-[200px] lg:min-h-0">
+            {/* Fade left — desktop only */}
+            <div className="absolute inset-y-0 left-0 w-20 z-10 pointer-events-none hidden lg:block"
+              style={{ background: isDark
+                ? 'linear-gradient(to right, #020817, transparent)'
+                : 'linear-gradient(to right, #f0fdf4, transparent)' }}
+            />
+            {/* Fade top — mobile */}
+            <div className="absolute inset-x-0 top-0 h-16 z-10 pointer-events-none lg:hidden"
+              style={{ background: isDark
+                ? 'linear-gradient(to bottom, #020817, transparent)'
+                : 'linear-gradient(to bottom, #f0fdf4, transparent)' }}
+            />
+
+            {/* Video */}
+            <DashboardVideo className="w-full h-full rounded-b-3xl lg:rounded-b-none lg:rounded-r-3xl min-h-[200px] lg:min-h-full" />
+
+            {/* Dark vignette overlay */}
+            <div className="absolute inset-0 pointer-events-none rounded-b-3xl lg:rounded-b-none lg:rounded-r-3xl"
+              style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.12) 0%, transparent 40%, rgba(0,0,0,0.45) 100%)' }}
+            />
+            {/* Bottom gradient on video */}
+            <div className="absolute inset-x-0 bottom-0 h-24 pointer-events-none rounded-b-3xl lg:rounded-b-none lg:rounded-r-3xl"
+              style={{ background: 'linear-gradient(to top, rgba(2,8,23,0.95), transparent)' }}
+            />
+
+            {/* Floating overlay stats on video */}
+            <div className="absolute bottom-4 inset-x-4 z-20 flex items-end justify-between gap-2">
+              <div className="flex flex-col gap-1">
+                <span className="text-white/50 text-[9px] font-bold uppercase tracking-widest">Sistem Absensi Digital</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>
+                  <span className="text-emerald-400 text-[10px] font-bold">Online &amp; Aktif</span>
+                </div>
+              </div>
+              {/* Live kehadiran mini on video */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl backdrop-blur-md"
+                style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                <Activity size={11} className="text-emerald-400" />
+                <div>
+                  <p className="text-emerald-400 font-black text-sm tabular-nums leading-none">{kehadiranRate}%</p>
+                  <p className="text-emerald-400/60 text-[8px] font-semibold">Hadir</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Top-right floating time badge on video */}
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md"
+              style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <Clock size={9} className="text-white/70" />
+              <span className="text-white/80 text-[9px] font-semibold tabular-nums">
+                {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          </div>
         </div>
-        {/* Video kanan */}
-        <div className="w-48 sm:w-64 lg:w-80 flex-shrink-0 relative">
-          <DashboardVideo className="h-full min-h-[100px] rounded-none rounded-r-2xl"/>
-          <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-900 to-transparent pointer-events-none"/>
-        </div>
-      </div>
+      </motion.div>
 
 
       {/* Charts Section - Overview View */}
