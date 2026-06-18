@@ -306,6 +306,7 @@ const EnhancedStatCard = ({
   chartType = 'bar', chartData = [],
   glowColor = '#10B981',
 }) => {
+  const { isDark } = useThemeStore()
   const fallback = [{value:2},{value:5},{value:3},{value:7},{value:4},{value:6},{value:5},{value:8}]
   const d = chartData.length ? chartData : fallback
   const uid = glowColor.replace('#','')
@@ -380,10 +381,12 @@ const EnhancedStatCard = ({
       whileHover={{ y: -4, scale: 1.02, transition: { duration: 0.15 } }}
     >
       <div
-        className="relative overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl transition-all"
+        className="relative overflow-hidden rounded-2xl backdrop-blur-md border shadow-lg hover:shadow-xl transition-all"
         style={{
           height: 114,
-          boxShadow: `0 4px 20px ${color}15, inset 0 1px 0 rgba(255,255,255,0.12)`
+          background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.75)',
+          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)',
+          boxShadow: `0 4px 20px ${color}15, inset 0 1px 0 rgba(255,255,255,0.15)`
         }}>
         {/* Top color accent */}
         <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${gradient}`} />
@@ -407,11 +410,11 @@ const EnhancedStatCard = ({
 
           {/* Right: value + label */}
           <div className="text-right flex-1 pl-2">
-            <p className="text-3xl font-black text-white tabular-nums leading-none drop-shadow-sm">{value}</p>
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mt-1">{title}</p>
-            {subtitle && <p className="text-[10px] text-white/45 mt-0.5">{subtitle}</p>}
+            <p className={`text-3xl font-black tabular-nums leading-none drop-shadow-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{value}</p>
+            <p className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{title}</p>
+            {subtitle && <p className={`text-[10px] mt-0.5 ${isDark ? 'text-white/45' : 'text-slate-400'}`}>{subtitle}</p>}
             {trend && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] font-black mt-0.5 ${trendUp ? 'text-emerald-300' : 'text-rose-300'}`}>
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-black mt-0.5 ${trendUp ? 'text-emerald-500' : 'text-rose-400'}`}>
                 {trendUp ? <ArrowUpRight size={9}/> : <ArrowDownRight size={9}/>}{trend}
               </span>
             )}
@@ -1049,34 +1052,51 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            {/* Outer container · deep space aurora */}
+            {/* Outer container · galaxy — dark = deep space, light = soft cosmic */}
             <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-2xl"
-              style={{ background: 'linear-gradient(135deg, #0d0929 0%, #130a2e 20%, #0e1a3d 40%, #071e35 60%, #0a1628 80%, #080e1e 100%)' }}>
+              style={{
+                background: isDark
+                  ? 'linear-gradient(135deg, #0d0929 0%, #130a2e 20%, #0e1a3d 40%, #071e35 60%, #0a1628 80%, #080e1e 100%)'
+                  : 'linear-gradient(135deg, #e8e4f8 0%, #dde8f8 20%, #d6f0ef 40%, #dcf0e8 60%, #e4e8f8 80%, #ede4f8 100%)',
+              }}>
 
               {/* Aurora blobs */}
               <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.55) 0%, transparent 70%)' }} />
+                style={{ background: isDark
+                  ? 'radial-gradient(circle, rgba(139,92,246,0.55) 0%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(139,92,246,0.30) 0%, transparent 70%)' }} />
               <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.45) 0%, transparent 70%)' }} />
+                style={{ background: isDark
+                  ? 'radial-gradient(circle, rgba(59,130,246,0.45) 0%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)' }} />
               <div className="absolute -top-10 right-1/4 w-56 h-56 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)' }} />
+                style={{ background: isDark
+                  ? 'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, transparent 70%)' }} />
               <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.45) 0%, transparent 70%)' }} />
+                style={{ background: isDark
+                  ? 'radial-gradient(circle, rgba(99,102,241,0.45) 0%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)' }} />
               <div className="absolute bottom-0 right-1/4 w-40 h-40 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%)' }} />
+                style={{ background: isDark
+                  ? 'radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%)' }} />
 
               {/* Hex grid */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.07]">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ opacity: isDark ? 0.07 : 0.12 }}>
                 <defs>
                   <pattern id="stats-hex" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-                    <path d="M12 2 L22 7 L22 17 L12 22 L2 17 L2 7 Z" fill="none" stroke="white" strokeWidth="0.5"/>
+                    <path d="M12 2 L22 7 L22 17 L12 22 L2 17 L2 7 Z" fill="none"
+                      stroke={isDark ? 'white' : '#6366f1'} strokeWidth="0.5"/>
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#stats-hex)"/>
               </svg>
               {/* Top shine */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"/>
-              <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"/>
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"/>
+              <div className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
+                style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}/>
 
               <div className="relative grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
                 {stats.map((stat) => (
@@ -1150,11 +1170,14 @@ export default function AdminDashboard() {
           boxShadow: isDark ? '0 4px 32px rgba(0,0,0,0.4)' : '0 4px 32px rgba(0,0,0,0.07)'
         }}
       >
-        {/* Subtle glow top-left */}
+        {/* Subtle emerald glow top-left */}
         <div className="absolute -top-20 -left-20 w-56 h-56 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)' }} />
-        {/* Top accent line */}
-        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500 to-cyan-500" />
+          style={{ background: isDark
+            ? 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 70%)' }} />
+        {/* Top accent line — emerald */}
+        <div className="absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: 'linear-gradient(90deg, #10b981, #34d399, #06b6d4)' }} />
 
         <div className="relative z-10 flex flex-col md:flex-row">
 
@@ -1214,11 +1237,15 @@ export default function AdminDashboard() {
                     ? 'linear-gradient(to right, #0f172a, transparent)'
                     : 'linear-gradient(to right, #f8fafc, transparent)' }}
                 />
+                {/* emerald glow overlay on video */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.18) 0%, transparent 50%, rgba(6,182,212,0.10) 100%)' }}
+                />
                 {/* bottom label */}
                 <div className="absolute bottom-0 inset-x-0 px-3 py-2 flex items-center justify-between"
-                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}>
-                  <span className="text-white/70 text-[10px] font-medium">Sistem Absensi Digital</span>
-                  <span className="flex items-center gap-1 text-emerald-400 text-[10px] font-medium">
+                  style={{ background: 'linear-gradient(to top, rgba(4,47,46,0.75), rgba(6,78,59,0.3), transparent)' }}>
+                  <span className="text-emerald-100/80 text-[10px] font-medium">Sistem Absensi Digital</span>
+                  <span className="flex items-center gap-1 text-emerald-400 text-[10px] font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
                     Online
                   </span>
