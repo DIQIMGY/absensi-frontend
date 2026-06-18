@@ -7,7 +7,7 @@ import { usePengaturanStore } from '../stores/pengaturanStore'
  * Video dashboard — admin bisa upload via Pengaturan > tab Sekolah
  * Fallback ke /video/videodash.mp4 jika belum diset
  */
-export default function DashboardVideo({ className = '' }) {
+export default function DashboardVideo({ className = '', rounded = true }) {
   const { pengaturan } = usePengaturanStore()
   const videoRef  = useRef(null)
   const [muted, setMuted]     = useState(true)
@@ -36,7 +36,7 @@ export default function DashboardVideo({ className = '' }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative overflow-hidden rounded-2xl bg-slate-900 ${className}`}
+      className={`relative overflow-hidden bg-slate-900 h-full ${rounded ? 'rounded-2xl' : ''} ${className}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -49,6 +49,7 @@ export default function DashboardVideo({ className = '' }) {
         muted
         playsInline
         className="w-full h-full object-cover"
+        style={{ display: 'block' }}
       />
 
       {/* Vignette */}
