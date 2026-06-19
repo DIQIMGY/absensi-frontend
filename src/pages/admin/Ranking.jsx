@@ -206,29 +206,11 @@ const MiniStat = ({ label, value, color, bg, delay }) => (
 )
 
 // ── Helpers ekspor ────────────────────────────────────────────────────────────
-const buildExportRows = (rankingData) => {
-  const rajin     = (rankingData?.siswa_rajin || []).slice(0, 8)
-  const terlambat = [...(rankingData?.siswa_sering_terlambat || [])].sort((a, b) => b.total_terlambat - a.total_terlambat).slice(0, 8)
-  const alpha     = [...(rankingData?.siswa_sering_alpha || [])].sort((a, b) => b.total_alpha - a.total_alpha).slice(0, 8)
-  const maxLen    = Math.max(rajin.length, terlambat.length, alpha.length, 1)
-
-  return Array.from({ length: maxLen }, (_, i) => ({
-    no:                    i + 1,
-    // Rajin
-    nama_rajin:            rajin[i]?.nama_lengkap || '',
-    kelas_rajin:           rajin[i]?.kelas?.nama_kelas || '',
-    hadir_rajin:           rajin[i]?.total_hadir ?? '',
-    persen_rajin:          rajin[i]?.persentase_kehadiran != null ? `${rajin[i].persentase_kehadiran}%` : '',
-    // Terlambat
-    nama_terlambat:        terlambat[i]?.nama_lengkap || '',
-    kelas_terlambat:       terlambat[i]?.kelas?.nama_kelas || '',
-    total_terlambat:       terlambat[i]?.total_terlambat ?? '',
-    // Alpha
-    nama_alpha:            alpha[i]?.nama_lengkap || '',
-    kelas_alpha:           alpha[i]?.kelas?.nama_kelas || '',
-    total_alpha:           alpha[i]?.total_alpha ?? '',
-  }))
-}
+const buildLists = (rankingData) => ({
+  rajin:     (rankingData?.siswa_rajin || []).slice(0, 8),
+  terlambat: [...(rankingData?.siswa_sering_terlambat || [])].sort((a, b) => b.total_terlambat - a.total_terlambat).slice(0, 8),
+  alpha:     [...(rankingData?.siswa_sering_alpha     || [])].sort((a, b) => b.total_alpha     - a.total_alpha    ).slice(0, 8),
+})
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Ranking() {
@@ -285,40 +267,197 @@ export default function Ranking() {
     if (!rankingData) return toast.error('Belum ada data untuk diekspor')
     setExportLoading(true)
     try {
-      const rows  = buildExportRows(rankingData)
-      const title = `Ranking Siswa — ${periodeLabel} — ${tingkatLabel}`
-      const header = [
-        ['No', 'Paling Rajin', '', '', '', 'Sering Terlambat', '', '', 'Sering Alpha', '', ''],
-        ['',   'Nama', 'Kelas', 'Total Hadir', 'Persentase', 'Nama', 'Kelas', 'Total Terlambat', 'Nama', 'Kelas', 'Total Alpha'],
+      const { rajin, terlambat, alpha } = buildLists(rankingData)
+      const maxLen = Math.max(rajin.length, terlambat.length, alpha.length, 1)
+
+      // ── Sheet 1: Rekap Gabungan ──────────────────────────────────────────
+      const wsData = [
+        [`RANKING SISWA — ${periodeLabel.toUpperCase()} — ${tingkatLabel.toUpperCase()}`],
+        [`Dicetak: ${new Date().toLocaleString('id-ID')}`],
+        [],
+        ['NO', 'PALING RAJIN', '', '', '', '', 'SERING TERLAMBAT', '', '', 'SERING ALPHA', '', ''],
+        ['',   'Nama Siswa', 'Kelas', 'Total Hadir', 'Absen', '% Hadir', 'Nama Siswa', 'Kelas', 'Total Terlambat', 'Nama Siswa', 'Kelas', 'Total Alpha'],
+        ...Array.from({ length: maxLen }, (_, i) => [
+          i + 1,
+          rajin[i]?.nama_lengkap     || '', rajin[i]?.kelas?.nama_kelas   || '',
+          rajin[i]?.total_hadir      ?? '', rajin[i]?.total_alpha         ?? '',
+          rajin[i]?.persentase_kehadiran != null ? `${rajin[i].persentase_kehadiran}%` : '',
+          terlambat[i]?.nama_lengkap || '', terlambat[i]?.kelas?.nama_kelas || '',
+          terlambat[i]?.total_terlambat ?? '',
+          alpha[i]?.nama_lengkap     || '', alpha[i]?.kelas?.nama_kelas   || '',
+          alpha[i]?.total_alpha      ?? '',
+        ]),
       ]
-      const dataRows = rows.map(r => [
-        r.no,
-        r.nama_rajin, r.kelas_rajin, r.hadir_rajin, r.persen_rajin,
-        r.nama_terlambat, r.kelas_terlambat, r.total_terlambat,
-        r.nama_alpha, r.kelas_alpha, r.total_alpha,
-      ])
-      const wsData = [[title], [], ...header, ...dataRows]
       const ws = XLSX.utils.aoa_to_sheet(wsData)
 
       // Lebar kolom
       ws['!cols'] = [
         { wch: 4 },
-        { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
-        { wch: 22 }, { wch: 12 }, { wch: 16 },
-        { wch: 22 }, { wch: 12 }, { wch: 12 },
+        { wch: 26 }, { wch: 13 }, { wch: 13 }, { wch: 10 }, { wch: 10 },
+        { wch: 26 }, { wch: 13 }, { wch: 17 },
+        { wch: 26 }, { wch: 13 }, { wch: 13 },
       ]
-      // Merge judul
+      // Merge
       ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
-        { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } },   // No
-        { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },   // Paling Rajin
-        { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } },   // Sering Terlambat
-        { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } },  // Sering Alpha
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }, // judul
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }, // tanggal cetak
+        { s: { r: 3, c: 0 }, e: { r: 4, c: 0 } },  // NO
+        { s: { r: 3, c: 1 }, e: { r: 3, c: 5 } },  // Paling Rajin
+        { s: { r: 3, c: 6 }, e: { r: 3, c: 8 } },  // Sering Terlambat
+        { s: { r: 3, c: 9 }, e: { r: 3, c: 11 } }, // Sering Alpha
       ]
 
+      // ── Styling cells ─────────────────────────────────────────────────────
+      const C = (r, c) => XLSX.utils.encode_cell({ r, c })
+      const setStyle = (addr, style) => {
+        if (!ws[addr]) ws[addr] = { t: 's', v: '' }
+        ws[addr].s = style
+      }
+
+      // Judul
+      setStyle(C(0,0), {
+        font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '4F46E5' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: { bottom: { style: 'thin', color: { rgb: 'C7D2FE' } } },
+      })
+      // Dicetak
+      setStyle(C(1,0), {
+        font: { italic: true, sz: 9, color: { rgb: '64748B' } },
+        fill: { fgColor: { rgb: 'EEF2FF' } },
+        alignment: { horizontal: 'center' },
+      })
+
+      // Group header (baris 3)
+      const groupCfg = [
+        { col: 1, bg: '059669', label: 'PALING RAJIN' },    // emerald
+        { col: 6, bg: 'D97706', label: 'SERING TERLAMBAT' }, // amber
+        { col: 9, bg: 'DC2626', label: 'SERING ALPHA' },     // rose
+      ]
+      groupCfg.forEach(({ col, bg }) => {
+        const end = col === 1 ? 5 : col === 6 ? 8 : 11
+        for (let c = col; c <= end; c++) {
+          setStyle(C(3, c), {
+            font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: bg } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: { top: { style: 'thin', color: { rgb: 'FFFFFF' } }, bottom: { style: 'thin', color: { rgb: 'FFFFFF' } } },
+          })
+        }
+      })
+      // NO header
+      setStyle(C(3,0), {
+        font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '374151' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+      })
+
+      // Sub-header (baris 4)
+      const subHeaderBg = [
+        { cols: [0],      bg: '374151' },
+        { cols: [1,2,3,4,5],   bg: '065F46' },
+        { cols: [6,7,8],       bg: '92400E' },
+        { cols: [9,10,11],     bg: '7F1D1D' },
+      ]
+      subHeaderBg.forEach(({ cols, bg }) => cols.forEach(c => {
+        setStyle(C(4, c), {
+          font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: bg } },
+          alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+          border: { top: { style: 'thin', color: { rgb: 'FFFFFF' } }, bottom: { style: 'medium', color: { rgb: 'FFFFFF' } } },
+        })
+      }))
+
+      // Data rows
+      const rowBg   = { rajin: ['D1FAE5', 'A7F3D0'], terlambat: ['FEF3C7', 'FDE68A'], alpha: ['FFE4E6', 'FECDD3'] }
+      const dataStart = 5
+      for (let i = 0; i < maxLen; i++) {
+        const r  = dataStart + i
+        const alt = i % 2 === 1
+        const noStyle = { font: { bold: true, sz: 9, color: { rgb: '374151' } }, fill: { fgColor: { rgb: alt ? 'F8FAFC' : 'FFFFFF' } }, alignment: { horizontal: 'center' }, border: { right: { style: 'thin', color: { rgb: 'E2E8F0' } } } }
+        setStyle(C(r, 0), noStyle)
+        // Rajin cols
+        const rajinBg = alt ? rowBg.rajin[1] : rowBg.rajin[0]
+        ;[1,2,3,4,5].forEach(c => setStyle(C(r, c), { font: { sz: 9 }, fill: { fgColor: { rgb: rajinBg } }, alignment: { horizontal: c === 0 || c >= 3 ? 'center' : 'left', wrapText: true }, border: { right: { style: 'hair', color: { rgb: 'D1FAE5' } } } }))
+        // Terlambat cols
+        const terlBg = alt ? rowBg.terlambat[1] : rowBg.terlambat[0]
+        ;[6,7,8].forEach(c => setStyle(C(r, c), { font: { sz: 9 }, fill: { fgColor: { rgb: terlBg } }, alignment: { horizontal: c === 8 ? 'center' : 'left', wrapText: true }, border: { right: { style: 'hair', color: { rgb: 'FDE68A' } } } }))
+        // Alpha cols
+        const alphaBg = alt ? rowBg.alpha[1] : rowBg.alpha[0]
+        ;[9,10,11].forEach(c => setStyle(C(r, c), { font: { sz: 9 }, fill: { fgColor: { rgb: alphaBg } }, alignment: { horizontal: c === 11 ? 'center' : 'left', wrapText: true }, border: { right: { style: 'hair', color: { rgb: 'FECDD3' } } } }))
+      }
+
+      // Row heights
+      ws['!rows'] = [{ hpt: 28 }, { hpt: 16 }, { hpt: 6 }, { hpt: 22 }, { hpt: 22 }]
+
+      // ── Sheet 2-4: masing-masing kategori ────────────────────────────────
+      const makeSheetSingle = (list, cfg) => {
+        const shData = [
+          [`RANKING SISWA — ${cfg.label.toUpperCase()}`],
+          [`Periode: ${periodeLabel}   |   Angkatan: ${tingkatLabel}   |   Dicetak: ${new Date().toLocaleString('id-ID')}`],
+          [],
+          cfg.headers,
+          ...list.map((s, i) => cfg.row(s, i)),
+        ]
+        const sh = XLSX.utils.aoa_to_sheet(shData)
+        sh['!cols'] = cfg.cols
+        sh['!merges'] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: cfg.headers.length - 1 } },
+          { s: { r: 1, c: 0 }, e: { r: 1, c: cfg.headers.length - 1 } },
+        ]
+        sh['!rows'] = [{ hpt: 24 }, { hpt: 14 }, { hpt: 6 }, { hpt: 18 }]
+        const hdrStyle = { font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: cfg.color } }, alignment: { horizontal: 'center', wrapText: true }, border: { bottom: { style: 'medium', color: { rgb: 'FFFFFF' } } } }
+        cfg.headers.forEach((_, c) => {
+          const addr = XLSX.utils.encode_cell({ r: 3, c })
+          if (!sh[addr]) sh[addr] = { t: 's', v: '' }
+          sh[addr].s = hdrStyle
+        })
+        // Data styling
+        for (let i = 0; i < list.length; i++) {
+          const r   = 4 + i
+          const bg  = i % 2 === 0 ? cfg.bgLight : cfg.bgAlt
+          cfg.headers.forEach((_, c) => {
+            const addr = XLSX.utils.encode_cell({ r, c })
+            if (!sh[addr]) sh[addr] = { t: 's', v: '' }
+            sh[addr].s = { font: { sz: 9 }, fill: { fgColor: { rgb: bg } }, alignment: { horizontal: c === 0 ? 'center' : 'left' }, border: { bottom: { style: 'hair', color: { rgb: 'E2E8F0' } } } }
+          })
+        }
+        // Title style
+        const t0 = XLSX.utils.encode_cell({ r: 0, c: 0 })
+        if (!sh[t0]) sh[t0] = { t: 's', v: '' }
+        sh[t0].s = { font: { bold: true, sz: 13, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: cfg.color } }, alignment: { horizontal: 'center', vertical: 'center' } }
+        const t1 = XLSX.utils.encode_cell({ r: 1, c: 0 })
+        if (!sh[t1]) sh[t1] = { t: 's', v: '' }
+        sh[t1].s = { font: { italic: true, sz: 9, color: { rgb: '475569' } }, fill: { fgColor: { rgb: cfg.bgLight } }, alignment: { horizontal: 'center' } }
+        return sh
+      }
+
+      const shRajin = makeSheetSingle(rajin, {
+        label: 'Paling Rajin', color: '059669', bgLight: 'D1FAE5', bgAlt: 'A7F3D0',
+        headers: ['#', 'Nama Siswa', 'Kelas', 'Total Hadir', 'Total Absen', '% Hadir'],
+        cols: [{ wch: 5 }, { wch: 30 }, { wch: 14 }, { wch: 14 }, { wch: 13 }, { wch: 10 }],
+        row: (s, i) => [i+1, s.nama_lengkap, s.kelas?.nama_kelas||'-', s.total_hadir, s.total_alpha, `${s.persentase_kehadiran}%`],
+      })
+      const shTerlambat = makeSheetSingle(terlambat, {
+        label: 'Sering Terlambat', color: 'D97706', bgLight: 'FEF3C7', bgAlt: 'FDE68A',
+        headers: ['#', 'Nama Siswa', 'Kelas', 'Total Terlambat'],
+        cols: [{ wch: 5 }, { wch: 30 }, { wch: 14 }, { wch: 18 }],
+        row: (s, i) => [i+1, s.nama_lengkap, s.kelas?.nama_kelas||'-', `${s.total_terlambat}×`],
+      })
+      const shAlpha = makeSheetSingle(alpha, {
+        label: 'Sering Alpha', color: 'DC2626', bgLight: 'FFE4E6', bgAlt: 'FECDD3',
+        headers: ['#', 'Nama Siswa', 'Kelas', 'Total Alpha'],
+        cols: [{ wch: 5 }, { wch: 30 }, { wch: 14 }, { wch: 14 }],
+        row: (s, i) => [i+1, s.nama_lengkap, s.kelas?.nama_kelas||'-', `${s.total_alpha}×`],
+      })
+
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, 'Ranking')
-      const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      XLSX.utils.book_append_sheet(wb, ws, 'Rekap Gabungan')
+      XLSX.utils.book_append_sheet(wb, shRajin, 'Paling Rajin')
+      XLSX.utils.book_append_sheet(wb, shTerlambat, 'Sering Terlambat')
+      XLSX.utils.book_append_sheet(wb, shAlpha, 'Sering Alpha')
+
+      const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true })
       saveAs(new Blob([buf], { type: 'application/octet-stream' }), `Ranking_${periodeLabel}_${tingkatLabel}.xlsx`)
       toast.success('Berhasil ekspor Excel!')
     } catch (e) {
@@ -334,84 +473,182 @@ export default function Ranking() {
     if (!rankingData) return toast.error('Belum ada data untuk diekspor')
     setExportLoading(true)
     try {
-      const rows  = buildExportRows(rankingData)
-      const doc   = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+      const { rajin, terlambat, alpha } = buildLists(rankingData)
+      const doc  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const pW   = doc.internal.pageSize.getWidth()
+      const pH   = doc.internal.pageSize.getHeight()
+      const ml   = 14
+      const mr   = pW - ml
+      const now  = new Date().toLocaleString('id-ID')
 
-      // Header dokumen
-      doc.setFontSize(13)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Ranking Siswa', 14, 14)
+      // helper: gambar header halaman
+      const drawPageHeader = (pageTitle) => {
+        // strip ungu
+        doc.setFillColor(79, 70, 229)
+        doc.rect(0, 0, pW, 22, 'F')
+        doc.setFillColor(99, 102, 241)
+        doc.rect(0, 16, pW, 6, 'F')
+        // judul
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(14)
+        doc.setTextColor(255, 255, 255)
+        doc.text('RANKING SISWA', ml, 10)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.text(pageTitle, ml, 15)
+        // kanan
+        doc.setFontSize(7)
+        doc.text(`Periode: ${periodeLabel}`, mr, 8, { align: 'right' })
+        doc.text(`Angkatan: ${tingkatLabel}`, mr, 13, { align: 'right' })
+        doc.setTextColor(0, 0, 0)
+      }
 
-      doc.setFontSize(9)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(100)
-      doc.text(`Periode : ${periodeLabel}`, 14, 21)
-      doc.text(`Angkatan: ${tingkatLabel}`, 14, 26)
-      doc.setTextColor(0)
+      // helper: footer setiap halaman
+      const drawFooter = () => {
+        doc.setFillColor(241, 245, 249)
+        doc.rect(0, pH - 10, pW, 10, 'F')
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'italic')
+        doc.setTextColor(100, 116, 139)
+        doc.text(`Dicetak: ${now}`, ml, pH - 4)
+        doc.text(`Halaman ${doc.internal.getCurrentPageInfo().pageNumber}`, mr, pH - 4, { align: 'right' })
+        doc.setTextColor(0, 0, 0)
+      }
 
-      // Paling Rajin
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
-      doc.text('🏆 Paling Rajin', 14, 35)
+      // helper: section label pill
+      const drawSectionBadge = (label, y, color) => {
+        doc.setFillColor(...color)
+        doc.roundedRect(ml, y - 4.5, 68, 6.5, 2, 2, 'F')
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(255, 255, 255)
+        doc.text(label, ml + 3, y)
+        doc.setTextColor(0, 0, 0)
+      }
+
+      // helper: stat badge kanan section
+      const drawStatBadge = (label, val, x, y, color) => {
+        doc.setFillColor(...color, 30)
+        doc.roundedRect(x, y - 4.5, 36, 6.5, 2, 2, 'F')
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(7)
+        doc.setTextColor(...color)
+        doc.text(`${label}: ${val}`, x + 3, y)
+        doc.setTextColor(0, 0, 0)
+      }
+
+      // ── HALAMAN 1: Paling Rajin ──────────────────────────────────────────
+      drawPageHeader('Rekap Kehadiran')
+      drawSectionBadge('  Paling Rajin', 30, [5, 150, 105])
+      drawStatBadge('Total siswa', rajin.length, mr - 36, 30, [5, 150, 105])
+
       autoTable(doc, {
-        startY: 38,
-        head: [['#', 'Nama Siswa', 'Kelas', 'Total Hadir', 'Persentase']],
-        body: (rankingData.siswa_rajin || []).slice(0, 8).map((s, i) => [
-          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', s.total_hadir, `${s.persentase_kehadiran}%`,
+        startY: 34,
+        head: [['#', 'Nama Siswa', 'Kelas / Jurusan', 'Hadir', 'Alpha', '% Hadir']],
+        body: rajin.map((s, i) => [
+          i + 1,
+          s.nama_lengkap,
+          s.kelas?.nama_kelas || '-',
+          s.total_hadir ?? '-',
+          s.total_alpha ?? '-',
+          `${s.persentase_kehadiran ?? 0}%`,
         ]),
-        headStyles:  { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles:  { fontSize: 8 },
-        alternateRowStyles: { fillColor: [236, 253, 245] },
-        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 22 }, 4: { cellWidth: 24 } },
-        tableWidth: 110,
-        margin: { left: 14 },
+        headStyles: {
+          fillColor: [5, 150, 105], textColor: 255,
+          fontStyle: 'bold', fontSize: 8,
+          halign: 'center', valign: 'middle', cellPadding: 3,
+        },
+        bodyStyles:  { fontSize: 8, cellPadding: 2.5, valign: 'middle' },
+        alternateRowStyles: { fillColor: [209, 250, 229] },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 38, halign: 'center' },
+          3: { cellWidth: 18, halign: 'center' },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
+        },
+        margin: { left: ml, right: ml },
+        tableLineColor: [209, 250, 229],
+        tableLineWidth: 0.1,
+        didDrawPage: () => drawFooter(),
       })
 
-      const afterRajin = doc.lastAutoTable.finalY + 6
+      // ── HALAMAN 2: Sering Terlambat ──────────────────────────────────────
+      doc.addPage()
+      drawPageHeader('Rekap Keterlambatan')
+      drawSectionBadge('  Sering Terlambat', 30, [217, 119, 6])
+      drawStatBadge('Total siswa', terlambat.length, mr - 36, 30, [217, 119, 6])
 
-      // Sering Terlambat
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(10)
-      doc.text('⏰ Sering Terlambat', 14, afterRajin)
       autoTable(doc, {
-        startY: afterRajin + 3,
-        head: [['#', 'Nama Siswa', 'Kelas', 'Total Terlambat']],
-        body: [...(rankingData.siswa_sering_terlambat || [])].sort((a, b) => b.total_terlambat - a.total_terlambat).slice(0, 8).map((s, i) => [
-          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', `${s.total_terlambat}×`,
+        startY: 34,
+        head: [['#', 'Nama Siswa', 'Kelas / Jurusan', 'Total Terlambat', 'Hadir', '% Hadir']],
+        body: terlambat.map((s, i) => [
+          i + 1,
+          s.nama_lengkap,
+          s.kelas?.nama_kelas || '-',
+          `${s.total_terlambat ?? 0}×`,
+          s.total_hadir ?? '-',
+          `${s.persentase_kehadiran ?? 0}%`,
         ]),
-        headStyles:  { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles:  { fontSize: 8 },
-        alternateRowStyles: { fillColor: [255, 251, 235] },
-        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 28 } },
-        tableWidth: 110,
-        margin: { left: 14 },
+        headStyles: {
+          fillColor: [217, 119, 6], textColor: 255,
+          fontStyle: 'bold', fontSize: 8,
+          halign: 'center', valign: 'middle', cellPadding: 3,
+        },
+        bodyStyles:  { fontSize: 8, cellPadding: 2.5, valign: 'middle' },
+        alternateRowStyles: { fillColor: [254, 243, 199] },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 38, halign: 'center' },
+          3: { cellWidth: 28, halign: 'center', fontStyle: 'bold' },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 20, halign: 'center' },
+        },
+        margin: { left: ml, right: ml },
+        tableLineColor: [254, 243, 199],
+        tableLineWidth: 0.1,
+        didDrawPage: () => drawFooter(),
       })
 
-      const afterTerlambat = doc.lastAutoTable.finalY + 6
+      // ── HALAMAN 3: Sering Alpha ──────────────────────────────────────────
+      doc.addPage()
+      drawPageHeader('Rekap Ketidakhadiran')
+      drawSectionBadge('  Sering Alpha', 30, [220, 38, 38])
+      drawStatBadge('Total siswa', alpha.length, mr - 36, 30, [220, 38, 38])
 
-      // Sering Alpha
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(10)
-      doc.text('❌ Sering Alpha', 14, afterTerlambat)
       autoTable(doc, {
-        startY: afterTerlambat + 3,
-        head: [['#', 'Nama Siswa', 'Kelas', 'Total Alpha']],
-        body: [...(rankingData.siswa_sering_alpha || [])].sort((a, b) => b.total_alpha - a.total_alpha).slice(0, 8).map((s, i) => [
-          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', `${s.total_alpha}×`,
+        startY: 34,
+        head: [['#', 'Nama Siswa', 'Kelas / Jurusan', 'Total Alpha', 'Terlambat', '% Hadir']],
+        body: alpha.map((s, i) => [
+          i + 1,
+          s.nama_lengkap,
+          s.kelas?.nama_kelas || '-',
+          `${s.total_alpha ?? 0}×`,
+          s.total_terlambat ?? '-',
+          `${s.persentase_kehadiran ?? 0}%`,
         ]),
-        headStyles:  { fillColor: [239, 68, 68], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles:  { fontSize: 8 },
-        alternateRowStyles: { fillColor: [255, 241, 242] },
-        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 24 } },
-        tableWidth: 110,
-        margin: { left: 14 },
+        headStyles: {
+          fillColor: [220, 38, 38], textColor: 255,
+          fontStyle: 'bold', fontSize: 8,
+          halign: 'center', valign: 'middle', cellPadding: 3,
+        },
+        bodyStyles:  { fontSize: 8, cellPadding: 2.5, valign: 'middle' },
+        alternateRowStyles: { fillColor: [255, 228, 230] },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 38, halign: 'center' },
+          3: { cellWidth: 24, halign: 'center', fontStyle: 'bold' },
+          4: { cellWidth: 22, halign: 'center' },
+          5: { cellWidth: 20, halign: 'center' },
+        },
+        margin: { left: ml, right: ml },
+        tableLineColor: [255, 228, 230],
+        tableLineWidth: 0.1,
+        didDrawPage: () => drawFooter(),
       })
-
-      // Footer
-      const pageH = doc.internal.pageSize.getHeight()
-      doc.setFontSize(7)
-      doc.setTextColor(150)
-      doc.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 14, pageH - 5)
 
       doc.save(`Ranking_${periodeLabel}_${tingkatLabel}.pdf`)
       toast.success('Berhasil ekspor PDF!')
