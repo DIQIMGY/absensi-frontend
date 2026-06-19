@@ -15,6 +15,12 @@ const TABS = [
   { key:'alpha',     label:'Alpha',     color:'#ef4444', grad:'linear-gradient(135deg,#dc2626,#ef4444)', text:'text-rose-600 dark:text-rose-400',     icon:AlertTriangle, desc:'Paling sering alpha' },
 ]
 
+// Helper: normalise kelas field yang bisa berupa string atau object {id, nama_kelas}
+const getKelasLabel = (kelas) =>
+  typeof kelas === 'object' && kelas !== null
+    ? (kelas.nama_kelas || '-')
+    : (kelas || '-')
+
 const PODIUM_CFG = [
   { rank:1, size:64, ringColor:'#f59e0b', order:'order-2', baseH:'h-20', Icon:Trophy },
   { rank:2, size:52, ringColor:'#94a3b8', order:'order-1', baseH:'h-14', Icon:Medal },
@@ -75,9 +81,7 @@ function ProfileCardModal({ siswa, onClose, myId }) {
 
   const hasCover   = siswa.foto_cover_url && !coverErr
   // kelas bisa string atau {id, nama_kelas} — normalise agar tidak render object
-  const kelasLabel = typeof siswa.kelas === 'object' && siswa.kelas !== null
-    ? (siswa.kelas.nama_kelas || '-')
-    : (siswa.kelas || '-')
+  const kelasLabel = getKelasLabel(siswa.kelas)
   const initial    = (siswa.nama_lengkap || 'S').charAt(0).toUpperCase()
   const totalAbsen = (siswa.total_hadir || 0) + (siswa.total_terlambat || 0) + (siswa.total_alpha || 0)
   const pctHadir   = totalAbsen > 0 ? Math.round(((siswa.total_hadir || 0) + (siswa.total_terlambat || 0)) / totalAbsen * 100) : 0
@@ -507,7 +511,7 @@ function PodiumSection({ items, valKey, activeTab, myId, onAvatarClick }) {
                       {siswa.nama_lengkap.split(' ')[0]}
                     </p>
                     <p className="text-[9px] sm:text-[10px] truncate max-w-[80px] text-slate-400 dark:text-slate-500 mt-0.5">
-                      {kelasLabel}
+                      {getKelasLabel(siswa.kelas)}
                     </p>
                   </div>
 
@@ -814,7 +818,7 @@ export default function SiswaRankingPage() {
                         )}
                       </div>
                       <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                        <span className="font-medium">{kelasLabel}</span>
+                        <span className="font-medium">{getKelasLabel(siswa.kelas)}</span>
                         <span className="mx-1 opacity-50">/</span>
                         {siswa.nis}
                       </p>
