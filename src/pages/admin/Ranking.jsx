@@ -4,11 +4,15 @@ import {
   Trophy, TrendingDown, Award, Calendar,
   Crown, Clock, Users, CheckCircle, XCircle,
   RefreshCw, ChevronDown, GraduationCap, Info,
-  Filter, CalendarRange, School,
+  Filter, CalendarRange, School, FileSpreadsheet, FileText, Download,
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 import SiswaProfileModal from '../../components/SiswaProfileModal'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const BULAN = [
   'Januari','Februari','Maret','April','Mei','Juni',
@@ -201,6 +205,31 @@ const MiniStat = ({ label, value, color, bg, delay }) => (
   </motion.div>
 )
 
+// ── Helpers ekspor ────────────────────────────────────────────────────────────
+const buildExportRows = (rankingData) => {
+  const rajin     = (rankingData?.siswa_rajin || []).slice(0, 8)
+  const terlambat = [...(rankingData?.siswa_sering_terlambat || [])].sort((a, b) => b.total_terlambat - a.total_terlambat).slice(0, 8)
+  const alpha     = [...(rankingData?.siswa_sering_alpha || [])].sort((a, b) => b.total_alpha - a.total_alpha).slice(0, 8)
+  const maxLen    = Math.max(rajin.length, terlambat.length, alpha.length, 1)
+
+  return Array.from({ length: maxLen }, (_, i) => ({
+    no:                    i + 1,
+    // Rajin
+    nama_rajin:            rajin[i]?.nama_lengkap || '',
+    kelas_rajin:           rajin[i]?.kelas?.nama_kelas || '',
+    hadir_rajin:           rajin[i]?.total_hadir ?? '',
+    persen_rajin:          rajin[i]?.persentase_kehadiran != null ? `${rajin[i].persentase_kehadiran}%` : '',
+    // Terlambat
+    nama_terlambat:        terlambat[i]?.nama_lengkap || '',
+    kelas_terlambat:       terlambat[i]?.kelas?.nama_kelas || '',
+    total_terlambat:       terlambat[i]?.total_terlambat ?? '',
+    // Alpha
+    nama_alpha:            alpha[i]?.nama_lengkap || '',
+    kelas_alpha:           alpha[i]?.kelas?.nama_kelas || '',
+    total_alpha:           alpha[i]?.total_alpha ?? '',
+  }))
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Ranking() {
   const today = new Date()
@@ -213,6 +242,7 @@ export default function Ranking() {
   const [tanggalMulai, setTanggalMulai]   = useState('')
   const [tanggalSelesai, setTanggalSelesai] = useState('')
   const [selectedSiswa, setSelectedSiswa] = useState(null)
+  const [exportLoading, setExportLoading] = useState(false)
 
   useEffect(() => { fetchRanking() }, [bulan, tahun, tingkat])
 
@@ -250,6 +280,149 @@ export default function Ranking() {
 
   const tingkatLabel = TINGKAT_OPTIONS.find(t => t.value === tingkat)?.label || 'Semua Angkatan'
 
+  // ── Ekspor Excel ────────────────────────────────────────────────────────────
+  const exportExcel = () => {
+    if (!rankingData) return toast.error('Belum ada data untuk diekspor')
+    setExportLoading(true)
+    try {
+      const rows  = buildExportRows(rankingData)
+      const title = `Ranking Siswa — ${periodeLabel} — ${tingkatLabel}`
+      const header = [
+        ['No', 'Paling Rajin', '', '', '', 'Sering Terlambat', '', '', 'Sering Alpha', '', ''],
+        ['',   'Nama', 'Kelas', 'Total Hadir', 'Persentase', 'Nama', 'Kelas', 'Total Terlambat', 'Nama', 'Kelas', 'Total Alpha'],
+      ]
+      const dataRows = rows.map(r => [
+        r.no,
+        r.nama_rajin, r.kelas_rajin, r.hadir_rajin, r.persen_rajin,
+        r.nama_terlambat, r.kelas_terlambat, r.total_terlambat,
+        r.nama_alpha, r.kelas_alpha, r.total_alpha,
+      ])
+      const wsData = [[title], [], ...header, ...dataRows]
+      const ws = XLSX.utils.aoa_to_sheet(wsData)
+
+      // Lebar kolom
+      ws['!cols'] = [
+        { wch: 4 },
+        { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
+        { wch: 22 }, { wch: 12 }, { wch: 16 },
+        { wch: 22 }, { wch: 12 }, { wch: 12 },
+      ]
+      // Merge judul
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+        { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } },   // No
+        { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },   // Paling Rajin
+        { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } },   // Sering Terlambat
+        { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } },  // Sering Alpha
+      ]
+
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Ranking')
+      const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      saveAs(new Blob([buf], { type: 'application/octet-stream' }), `Ranking_${periodeLabel}_${tingkatLabel}.xlsx`)
+      toast.success('Berhasil ekspor Excel!')
+    } catch (e) {
+      console.error(e)
+      toast.error('Gagal ekspor Excel')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  // ── Ekspor PDF ──────────────────────────────────────────────────────────────
+  const exportPDF = () => {
+    if (!rankingData) return toast.error('Belum ada data untuk diekspor')
+    setExportLoading(true)
+    try {
+      const rows  = buildExportRows(rankingData)
+      const doc   = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+      // Header dokumen
+      doc.setFontSize(13)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Ranking Siswa', 14, 14)
+
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(100)
+      doc.text(`Periode : ${periodeLabel}`, 14, 21)
+      doc.text(`Angkatan: ${tingkatLabel}`, 14, 26)
+      doc.setTextColor(0)
+
+      // Paling Rajin
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('🏆 Paling Rajin', 14, 35)
+      autoTable(doc, {
+        startY: 38,
+        head: [['#', 'Nama Siswa', 'Kelas', 'Total Hadir', 'Persentase']],
+        body: (rankingData.siswa_rajin || []).slice(0, 8).map((s, i) => [
+          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', s.total_hadir, `${s.persentase_kehadiran}%`,
+        ]),
+        headStyles:  { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        bodyStyles:  { fontSize: 8 },
+        alternateRowStyles: { fillColor: [236, 253, 245] },
+        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 22 }, 4: { cellWidth: 24 } },
+        tableWidth: 110,
+        margin: { left: 14 },
+      })
+
+      const afterRajin = doc.lastAutoTable.finalY + 6
+
+      // Sering Terlambat
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.text('⏰ Sering Terlambat', 14, afterRajin)
+      autoTable(doc, {
+        startY: afterRajin + 3,
+        head: [['#', 'Nama Siswa', 'Kelas', 'Total Terlambat']],
+        body: [...(rankingData.siswa_sering_terlambat || [])].sort((a, b) => b.total_terlambat - a.total_terlambat).slice(0, 8).map((s, i) => [
+          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', `${s.total_terlambat}×`,
+        ]),
+        headStyles:  { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        bodyStyles:  { fontSize: 8 },
+        alternateRowStyles: { fillColor: [255, 251, 235] },
+        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 28 } },
+        tableWidth: 110,
+        margin: { left: 14 },
+      })
+
+      const afterTerlambat = doc.lastAutoTable.finalY + 6
+
+      // Sering Alpha
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.text('❌ Sering Alpha', 14, afterTerlambat)
+      autoTable(doc, {
+        startY: afterTerlambat + 3,
+        head: [['#', 'Nama Siswa', 'Kelas', 'Total Alpha']],
+        body: [...(rankingData.siswa_sering_alpha || [])].sort((a, b) => b.total_alpha - a.total_alpha).slice(0, 8).map((s, i) => [
+          i + 1, s.nama_lengkap, s.kelas?.nama_kelas || '-', `${s.total_alpha}×`,
+        ]),
+        headStyles:  { fillColor: [239, 68, 68], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        bodyStyles:  { fontSize: 8 },
+        alternateRowStyles: { fillColor: [255, 241, 242] },
+        columnStyles: { 0: { cellWidth: 8 }, 3: { cellWidth: 24 } },
+        tableWidth: 110,
+        margin: { left: 14 },
+      })
+
+      // Footer
+      const pageH = doc.internal.pageSize.getHeight()
+      doc.setFontSize(7)
+      doc.setTextColor(150)
+      doc.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 14, pageH - 5)
+
+      doc.save(`Ranking_${periodeLabel}_${tingkatLabel}.pdf`)
+      toast.success('Berhasil ekspor PDF!')
+    } catch (e) {
+      console.error(e)
+      toast.error('Gagal ekspor PDF')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-4">
 
@@ -272,10 +445,35 @@ export default function Ranking() {
             </p>
           </div>
         </div>
-        <button onClick={fetchRanking} disabled={loading}
-          className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors self-end sm:self-auto">
-          <RefreshCw size={13} className={`text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Ekspor Excel */}
+          <button
+            onClick={exportExcel}
+            disabled={loading || exportLoading || !rankingData}
+            title="Ekspor Excel"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <FileSpreadsheet size={13} />
+            <span className="hidden sm:inline">Excel</span>
+          </button>
+
+          {/* Ekspor PDF */}
+          <button
+            onClick={exportPDF}
+            disabled={loading || exportLoading || !rankingData}
+            title="Ekspor PDF"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <FileText size={13} />
+            <span className="hidden sm:inline">PDF</span>
+          </button>
+
+          {/* Refresh */}
+          <button onClick={fetchRanking} disabled={loading}
+            className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <RefreshCw size={13} className={`text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </motion.div>
 
       {/* ── Filter Panel ── */}

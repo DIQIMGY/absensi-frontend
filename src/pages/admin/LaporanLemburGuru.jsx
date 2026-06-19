@@ -4,7 +4,7 @@ import {
   Clock, Users, TrendingUp, TrendingDown, Minus,
   FileSpreadsheet, RefreshCw, Calendar, ChevronDown,
   ChevronUp, Info, Award, AlertTriangle, CheckCircle,
-  Search, Filter, BarChart3, Timer, Building2,
+  Search, Filter, BarChart3, Timer, Building2, CalendarRange,
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
@@ -261,29 +261,55 @@ export default function LaporanLemburGuru() {
   const [search, setSearch]       = useState('')
   const [filterStatus, setFilter] = useState('semua')
   const [sortBy, setSortBy]       = useState('nama')
+  // Date range
+  const [useRange, setUseRange]             = useState(false)
+  const [tanggalMulai, setTanggalMulai]     = useState('')
+  const [tanggalSelesai, setTanggalSelesai] = useState('')
 
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await adminApi.getLaporanLemburGuru({ bulan, tahun })
+      const params = { bulan, tahun }
+      if (useRange && tanggalMulai && tanggalSelesai) {
+        params.tanggal_mulai   = tanggalMulai
+        params.tanggal_selesai = tanggalSelesai
+      }
+      const res = await adminApi.getLaporanLemburGuru(params)
       setData(res.data.data)
     } catch (e) {
       toast.error(e.response?.data?.message || 'Gagal memuat data')
     } finally {
       setLoading(false)
     }
-  }, [bulan, tahun])
+  }, [bulan, tahun, useRange, tanggalMulai, tanggalSelesai])
 
   useEffect(() => { loadData() }, [loadData])
+
+  const handleApplyRange = () => {
+    if (useRange && (!tanggalMulai || !tanggalSelesai)) {
+      toast.error('Isi tanggal mulai dan selesai terlebih dahulu')
+      return
+    }
+    loadData()
+  }
+
+  const periodeLabel = useRange && tanggalMulai && tanggalSelesai
+    ? `${tanggalMulai} – ${tanggalSelesai}`
+    : `${BULAN_LIST[bulan - 1]} ${tahun}`
 
   const handleExport = async () => {
     setExporting(true)
     try {
-      const res = await adminApi.exportLemburGuruExcel({ bulan, tahun })
+      const params = { bulan, tahun }
+      if (useRange && tanggalMulai && tanggalSelesai) {
+        params.tanggal_mulai   = tanggalMulai
+        params.tanggal_selesai = tanggalSelesai
+      }
+      const res = await adminApi.exportLemburGuruExcel(params)
       const url  = window.URL.createObjectURL(new Blob([res.data]))
       const link = document.createElement('a')
       link.href  = url
-      link.setAttribute('download', `Laporan-Lembur-Guru-${String(bulan).padStart(2,'0')}-${tahun}.xlsx`)
+      link.setAttribute('download', `Laporan-Lembur-Guru-${periodeLabel}.xlsx`)
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -367,7 +393,7 @@ export default function LaporanLemburGuru() {
             <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
               <Calendar size={10} className="inline mr-1" />Bulan
             </label>
-            <select value={bulan} onChange={e => setBulan(+e.target.value)}
+            <select value={bulan} onChange={e => { setBulan(+e.target.value); setUseRange(false) }}
               className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
               {BULAN_LIST.map((b, i) => <option key={i} value={i+1}>{b}</option>)}
             </select>
@@ -377,7 +403,7 @@ export default function LaporanLemburGuru() {
             <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
               Tahun
             </label>
-            <select value={tahun} onChange={e => setTahun(+e.target.value)}
+            <select value={tahun} onChange={e => { setTahun(+e.target.value); setUseRange(false) }}
               className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
               {TAHUN_LIST.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -389,6 +415,52 @@ export default function LaporanLemburGuru() {
             Tampilkan
           </button>
         </div>
+
+        {/* ── Date Range Toggle ───────────────────────────────── */}
+        <div className="flex flex-wrap items-end gap-3 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <button onClick={() => setUseRange(!useRange)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              useRange
+                ? 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700'
+                : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500'
+            }`}>
+            <CalendarRange size={12} />
+            {useRange ? 'Pakai Date Range ✓' : 'Pakai Date Range'}
+          </button>
+
+          {useRange && (
+            <>
+              <div className="flex-1 min-w-[140px]">
+                <label className="block text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Dari Tanggal</label>
+                <input type="date" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" />
+              </div>
+              <div className="flex-1 min-w-[140px]">
+                <label className="block text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Sampai Tanggal</label>
+                <input type="date" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" />
+              </div>
+              <button onClick={handleApplyRange}
+                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all">
+                <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+                Tampilkan
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Pill aktif filter */}
+        {useRange && tanggalMulai && tanggalSelesai && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <span className="flex items-center gap-1 px-2.5 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full text-[10px] font-semibold">
+              <CalendarRange size={9} /> {tanggalMulai} – {tanggalSelesai}
+              <button onClick={() => { setUseRange(false); setTanggalMulai(''); setTanggalSelesai('') }} className="ml-0.5 hover:text-teal-900">×</button>
+            </span>
+            <span className="text-[10px] text-slate-400 self-center">
+              · Hari libur & non-hari-kerja tidak dihitung otomatis
+            </span>
+          </div>
+        )}
       </motion.div>
 
       {/* ── INFO BOX PENGATURAN ──────────────────────────────────── */}
