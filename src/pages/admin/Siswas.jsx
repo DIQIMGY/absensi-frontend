@@ -379,12 +379,8 @@ export default function Siswas() {
   const handleImportFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      const allowedTypes = [
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      ]
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('File harus berupa Excel (.xls atau .xlsx)')
+      if (!file.name.match(/\.(xls|xlsx|csv)$/i)) {
+        toast.error('File harus berupa Excel (.xls, .xlsx) atau CSV (.csv)')
         return
       }
       setImportFile(file)
@@ -1409,7 +1405,7 @@ export default function Siswas() {
                 </label>
                 <input
                   type="file"
-                  accept=".xls,.xlsx"
+                  accept=".xls,.xlsx,.csv"
                   onChange={handleImportFileChange}
                   className="w-full text-xs text-slate-900 dark:text-white bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-emerald-500/20 file:text-emerald-600 hover:file:bg-emerald-500/30 dark:file:bg-emerald-500/20 dark:file:text-emerald-400 cursor-pointer focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all hover:border-emerald-500/50 dark:hover:border-emerald-500/50"
                   disabled={loading}
