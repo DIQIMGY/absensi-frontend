@@ -74,6 +74,9 @@ export const adminApi = {
   getTrashedGurus: (params) => api.get('/admin/gurus-trashed', { params }),
   restoreGuru: (id) => api.post(`/admin/gurus/${id}/restore`),
   forceDeleteGuru: (id) => api.delete(`/admin/gurus/${id}/force-delete`),
+  importGurus: (data) => api.post('/admin/gurus/import', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   
   // Master Data
   getKelasStats: () => api.get('/admin/kelas-stats'),

@@ -1375,10 +1375,31 @@ export default function Siswas() {
             size="sm"
           >
             <form onSubmit={handleImport} className="space-y-4 p-5">
-              <div className="bg-emerald-500/10 dark:bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30 dark:border-emerald-500/30 shadow-sm">
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-start gap-1.5 font-medium">
-                  <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>File Excel harus memiliki kolom: NIS, NISN, Nama Lengkap, Kelas ID, Jenis Kelamin, Email, Password</span>
+              {/* Format Panduan */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+                <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-2">📋 Format Kolom Excel (Header Baris 1)</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { col: 'nis', ket: 'Wajib, unik' },
+                    { col: 'nama_lengkap', ket: 'Wajib' },
+                    { col: 'email', ket: 'Wajib, unik' },
+                    { col: 'kelas', ket: 'Wajib, nama kelas' },
+                    { col: 'jenis_kelamin', ket: 'Wajib: L atau P' },
+                    { col: 'nisn', ket: 'Opsional, unik' },
+                    { col: 'password', ket: 'Opsional (default: password123)' },
+                    { col: 'tanggal_lahir', ket: 'Opsional: YYYY-MM-DD' },
+                    { col: 'no_hp', ket: 'Opsional' },
+                    { col: 'alamat', ket: 'Opsional' },
+                    { col: 'nama_ortu', ket: 'Opsional' },
+                  ].map(item => (
+                    <div key={item.col} className="flex items-start gap-1.5">
+                      <span className="font-mono text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-1.5 py-0.5 rounded flex-shrink-0">{item.col}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.ket}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
+                  Kolom <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">kelas</code> diisi dengan nama kelas yang sudah ada, contoh: <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">X IPA 1</code>
                 </p>
               </div>
 

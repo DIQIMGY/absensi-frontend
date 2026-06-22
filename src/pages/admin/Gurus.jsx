@@ -6,6 +6,7 @@ import {
   Trash2, 
   RotateCcw, 
   Archive,
+  Upload,
   Users,
   BookOpen,
   Calendar,
@@ -208,6 +209,8 @@ export default function Gurus() {
   const [fingerprintGuru, setFingerprintGuru] = useState(null)
   const [fpLoading, setFpLoading] = useState(false)
   const [fpStatus, setFpStatus] = useState(null)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [importFile, setImportFile] = useState(null)
   const [stats, setStats] = useState({
     total: 0,
     wali_kelas: 0,
@@ -566,6 +569,52 @@ export default function Gurus() {
     }
   }
 
+  // ============= IMPORT HANDLERS =============
+  const handleImport = async (e) => {
+    e.preventDefault()
+    if (!importFile) {
+      toast.error('Pilih file Excel terlebih dahulu')
+      return
+    }
+    try {
+      setLoading(true)
+      const fd = new FormData()
+      fd.append('file', importFile)
+      await adminApi.importGurus(fd)
+      toast.success('Data guru berhasil diimport')
+      setIsImportModalOpen(false)
+      setImportFile(null)
+      await fetchGurus()
+      await fetchStats()
+    } catch (error) {
+      console.error('Error importing:', error)
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0][0]
+        toast.error(firstError)
+      } else {
+        toast.error(error.response?.data?.message || 'Gagal import data')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleImportFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const allowedTypes = [
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+      ]
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+        toast.error('File harus berupa Excel (.xls, .xlsx) atau CSV')
+        return
+      }
+      setImportFile(file)
+    }
+  }
+
   const columns = [
     {
       header: 'Guru',
@@ -706,10 +755,16 @@ export default function Gurus() {
             <Archive size={12}/><span className="hidden sm:inline">{showTrashed ? 'Data Aktif' : 'Trash'}</span>
           </button>
           {!showTrashed && (
-            <button onClick={() => openModal()}
-              className="px-3 py-1.5 text-white rounded-xl flex items-center gap-1.5 text-xs font-bold" style={{ background:'#10b981' }}>
-              <Plus size={12}/><span className="hidden sm:inline">Tambah Guru</span>
-            </button>
+            <>
+              <button onClick={() => setIsImportModalOpen(true)} disabled={loading}
+                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-colors border border-slate-200 dark:border-slate-700">
+                <Upload size={12}/><span className="hidden sm:inline">Import</span>
+              </button>
+              <button onClick={() => openModal()}
+                className="px-3 py-1.5 text-white rounded-xl flex items-center gap-1.5 text-xs font-bold" style={{ background:'#10b981' }}>
+                <Plus size={12}/><span className="hidden sm:inline">Tambah Guru</span>
+              </button>
+            </>
           )}
         </div>
       </motion.div>
@@ -1530,6 +1585,125 @@ export default function Gurus() {
                   </button>
                 </div>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ===== MODAL IMPORT GURU ===== */}
+      <AnimatePresence>
+        {isImportModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) { setIsImportModalOpen(false); setImportFile(null) } }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Upload size={18} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-white">Import Data Guru</h3>
+                      <p className="text-xs text-white/70 mt-0.5">Upload file Excel untuk daftar massal</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setIsImportModalOpen(false); setImportFile(null) }}
+                    className="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={handleImport} className="p-5 space-y-5">
+                {/* Format Panduan */}
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800 p-4">
+                  <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-2">📋 Format Kolom Excel (Header Baris 1)</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { col: 'nama_lengkap', ket: 'Wajib' },
+                      { col: 'email', ket: 'Wajib, unik' },
+                      { col: 'jenis_kelamin', ket: 'Wajib: L atau P' },
+                      { col: 'nip', ket: 'Opsional, unik' },
+                      { col: 'nuptk', ket: 'Opsional, unik' },
+                      { col: 'password', ket: 'Opsional (default: password123)' },
+                      { col: 'tanggal_lahir', ket: 'Opsional, format YYYY-MM-DD' },
+                      { col: 'no_hp', ket: 'Opsional' },
+                      { col: 'alamat', ket: 'Opsional' },
+                      { col: 'kelas_wali', ket: 'Opsional, nama kelas wali' },
+                      { col: 'mata_pelajaran', ket: 'Opsional, pisah koma' },
+                    ].map(item => (
+                      <div key={item.col} className="flex items-start gap-1.5">
+                        <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 rounded flex-shrink-0">{item.col}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.ket}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2.5">
+                    Contoh <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">mata_pelajaran</code>: <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Matematika,Fisika</code>
+                  </p>
+                </div>
+
+                {/* Upload Area */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Pilih File Excel / CSV
+                  </label>
+                  <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-emerald-300 dark:border-emerald-700 rounded-xl p-6 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors">
+                    <Upload size={24} className="text-emerald-400" />
+                    {importFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{importFile.name}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{(importFile.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Klik untuk pilih file</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">.xlsx, .xls, .csv — maks 5MB</p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      onChange={handleImportFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={() => { setIsImportModalOpen(false); setImportFile(null) }}
+                    className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold transition-colors border border-slate-200 dark:border-slate-700">
+                    Batal
+                  </button>
+                  <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    disabled={loading || !importFile}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" />
+                        Mengimport...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={14} />
+                        Import Guru
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
