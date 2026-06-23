@@ -5,9 +5,10 @@ import {
   Phone, MapPin, Calendar, User, Award,
   UserCheck, UserX, QrCode, Download, Fingerprint,
   CheckCircle, AlertTriangle, X, Loader, AlertCircle,
-  ChevronLeft, ChevronRight, Hash, BookOpen,
+  ChevronLeft, ChevronRight, Hash, BookOpen, Filter,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
+import { useGuruJabatan } from '../../hooks/useGuruJabatan'
 import { confirmDelete } from '../../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 
@@ -439,6 +440,7 @@ function SiswaCard({ siswa, onDetail, onQr, onFingerprint, onDownloadQr }) {
 
 // ─── Main ─────────────────────────────────────────────────────
 export default function DataSiswa() {
+  const { isKepsek } = useGuruJabatan()
   const [siswas, setSiswas]         = useState([])
   const [loading, setLoading]       = useState(false)
   const [pagination, setPagination] = useState(null)
@@ -447,6 +449,9 @@ export default function DataSiswa() {
   const [searchInput, setSearchInput] = useState('')
   const [kelasInfo, setKelasInfo]   = useState(null)
   const [stats, setStats]           = useState({ total: 0, laki_laki: 0, perempuan: 0 })
+  // Kepsek: daftar semua kelas untuk filter
+  const [kelasList, setKelasList]   = useState([])
+  const [selectedKelas, setSelectedKelas] = useState('')
   const debRef = useRef(null)
 
   // modals
@@ -454,7 +459,18 @@ export default function DataSiswa() {
   const [qrSiswa, setQrSiswa]               = useState(null)
   const [fpSiswa, setFpSiswa]               = useState(null)
 
-  useEffect(() => { fetchAll() }, [page, search])
+  useEffect(() => { fetchAll() }, [page, search, selectedKelas])
+
+  // Kepsek: fetch daftar kelas saat pertama load
+  useEffect(() => {
+    if (isKepsek) {
+      import('../../services/publicApi').then(({ publicApi }) => {
+        publicApi.getKelas().then(r => {
+          setKelasList(r.data?.data || [])
+        }).catch(() => {})
+      })
+    }
+  }, [isKepsek])
 
   useEffect(() => {
     if (debRef.current) clearTimeout(debRef.current)
@@ -465,8 +481,11 @@ export default function DataSiswa() {
   const fetchAll = async () => {
     setLoading(true)
     try {
+      const params = { page, search, per_page: 15 }
+      if (isKepsek && selectedKelas) params.kelas_id = selectedKelas
+
       const [sRes, stRes] = await Promise.all([
-        guruApi.getSiswas({ page, search, per_page: 15 }),
+        guruApi.getSiswas(params),
         guruApi.getSiswaStats(),
       ])
       const d = sRes.data?.data
@@ -528,10 +547,13 @@ export default function DataSiswa() {
               <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">Data Siswa</p>
             </div>
             <h1 className="text-xl font-black text-white leading-tight">
-              {kelasInfo ? `Kelas ${kelasInfo.nama_kelas}` : 'Kelas Anda'}
+              {isKepsek ? 'Semua Siswa' : (kelasInfo ? `Kelas ${kelasInfo.nama_kelas}` : 'Kelas Anda')}
             </h1>
-            {kelasInfo?.jurusan && (
+            {!isKepsek && kelasInfo?.jurusan && (
               <p className="text-white/60 text-[11px] mt-0.5">{kelasInfo.jurusan}</p>
+            )}
+            {isKepsek && (
+              <p className="text-white/60 text-[11px] mt-0.5">👑 Kepala Sekolah — Akses Semua Kelas</p>
             )}
           </div>
           <motion.button whileTap={{ scale: 0.9 }} onClick={fetchAll} disabled={loading}
@@ -556,8 +578,9 @@ export default function DataSiswa() {
       </motion.div>
 
       {/* ── Search ─────────────────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <div className="relative">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+        className="flex gap-2">
+        <div className="relative flex-1">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" placeholder="Cari nama, NIS, NISN..."
             value={searchInput} onChange={e => setSearchInput(e.target.value)}
@@ -569,6 +592,22 @@ export default function DataSiswa() {
             </button>
           )}
         </div>
+        {/* Kepsek: filter per kelas */}
+        {isKepsek && kelasList.length > 0 && (
+          <div className="relative">
+            <Filter size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <select
+              value={selectedKelas}
+              onChange={e => { setSelectedKelas(e.target.value); setPage(1) }}
+              className="pl-8 pr-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all shadow-sm appearance-none cursor-pointer min-w-[140px]"
+            >
+              <option value="">Semua Kelas</option>
+              {kelasList.map(k => (
+                <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </motion.div>
 
       {/* ── Content ────────────────────────────────────── */}

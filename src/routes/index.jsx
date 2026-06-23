@@ -51,6 +51,7 @@ import GuruIzins from '../pages/guru/Izins'
 import GuruRiwayatAbsensi from '../pages/guru/RiwayatAbsensi'
 import GuruNaikKelas from '../pages/guru/NaikKelas'
 import GuruPulangSiswa from '../pages/guru/PulangSiswa'
+import GuruRoute from '../components/GuruRoute'
 
 // Siswa Pages
 import SiswaDashboard from '../pages/siswa/Dashboard'
@@ -130,15 +131,15 @@ export const router = createBrowserRouter([
       { index: true,              element: <Navigate to="/guru/dashboard" replace /> },
       { path: 'dashboard',        element: <GuruDashboard /> },
       { path: 'absensi',          element: <GuruAbsensi /> },
-      { path: 'ranking',          element: <GuruRanking /> },
+      { path: 'ranking',          element: <GuruRoute><GuruRanking /></GuruRoute> },
       { path: 'ranking-guru',     element: <GuruRankingGuru /> },
-      { path: 'rekap-harian',     element: <GuruRekapHarian /> },
-      { path: 'statistik-kelas',  element: <GuruStatistikKelas /> },
-      { path: 'data-siswa',       element: <GuruDataSiswa /> },
-      { path: 'izins',            element: <GuruIzins /> },
+      { path: 'rekap-harian',     element: <GuruRoute><GuruRekapHarian /></GuruRoute> },
+      { path: 'statistik-kelas',  element: <GuruRoute><GuruStatistikKelas /></GuruRoute> },
+      { path: 'data-siswa',       element: <GuruRoute><GuruDataSiswa /></GuruRoute> },
+      { path: 'izins',            element: <GuruRoute><GuruIzins /></GuruRoute> },
       { path: 'riwayat-absensi',  element: <GuruRiwayatAbsensi /> },
-      { path: 'naik-kelas',       element: <GuruNaikKelas /> },
-      { path: 'pulang-siswa',     element: <GuruPulangSiswa /> },
+      { path: 'naik-kelas',       element: <GuruRoute><GuruNaikKelas /></GuruRoute> },
+      { path: 'pulang-siswa',     element: <GuruRoute><GuruPulangSiswa /></GuruRoute> },
       { path: 'profil',           element: <GuruProfil /> },
     ],
   },

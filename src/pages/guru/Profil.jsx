@@ -385,7 +385,7 @@ export default function GuruProfil() {
         <div className="flex flex-wrap items-center gap-2 mb-1">
           <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white leading-tight">{profile.nama_lengkap}</h1>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800/40">
-            <Shield size={9}/> Guru
+            <Shield size={9}/> {profile.jabatan_label || 'Guru'}
           </span>
           {profile.is_wali_kelas && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold border border-amber-200 dark:border-amber-800/40">

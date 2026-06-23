@@ -43,6 +43,23 @@ import { confirmDelete, showSuccess } from '../../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 import Select from 'react-select'
 
+// Badge jabatan dengan warna berbeda per level
+const JabatanBadge = ({ jabatan }) => {
+  const cfg = {
+    kepsek:     { label: 'Kepala Sekolah', bg: 'bg-amber-500/10 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', icon: '👑' },
+    wali_kelas: { label: 'Wali Kelas',     bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', icon: '🎓' },
+    guru_mapel: { label: 'Guru Mapel',     bg: 'bg-blue-500/10',    text: 'text-blue-600 dark:text-blue-400',       border: 'border-blue-500/30',    icon: '📚' },
+    karyawan:   { label: 'Karyawan',       bg: 'bg-slate-500/10',   text: 'text-slate-600 dark:text-slate-400',     border: 'border-slate-500/30',   icon: '💼' },
+  }
+  const c = cfg[jabatan] || cfg.guru_mapel
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 ${c.bg} ${c.text} rounded-lg text-[10px] font-medium border ${c.border} shadow-sm`}>
+      <span>{c.icon}</span>
+      <span>{c.label}</span>
+    </span>
+  )
+}
+
 // Badge Component untuk Wali Kelas - EMERALD
 const WaliKelasBadge = ({ guru }) => {
   if (!guru.is_wali_kelas) {
@@ -220,6 +237,7 @@ export default function Gurus() {
   const [formData, setFormData] = useState({
     nip: '',
     nuptk: '',
+    jabatan: 'guru_mapel',
     nama_lengkap: '',
     jenis_kelamin: 'L',
     tanggal_lahir: '',
@@ -489,6 +507,7 @@ export default function Gurus() {
       setFormData({
         nip: guru.nip || '',
         nuptk: guru.nuptk || '',
+        jabatan: guru.jabatan || 'guru_mapel',
         nama_lengkap: guru.nama_lengkap || '',
         jenis_kelamin: guru.jenis_kelamin || 'L',
         tanggal_lahir: guru.tanggal_lahir || '',
@@ -513,6 +532,7 @@ export default function Gurus() {
     setFormData({
       nip: '',
       nuptk: '',
+      jabatan: 'guru_mapel',
       nama_lengkap: '',
       jenis_kelamin: 'L',
       tanggal_lahir: '',
@@ -658,6 +678,10 @@ export default function Gurus() {
         </div>
       ),
     }] : [{
+      header: 'Jabatan',
+      accessor: 'jabatan',
+      cell: (row) => <JabatanBadge jabatan={row.jabatan || 'guru_mapel'} />,
+    }, {
       header: 'Wali Kelas',
       accessor: 'is_wali_kelas',
       cell: (row) => <WaliKelasBadge guru={row} />,
@@ -872,6 +896,9 @@ export default function Gurus() {
                     <Award size={12} className="text-emerald-500" />
                     {viewingGuru.nip || 'NIP tidak tersedia'}
                   </p>
+                  <div className="flex justify-center mt-2">
+                    <JabatanBadge jabatan={viewingGuru.jabatan || 'guru_mapel'} />
+                  </div>
                 </div>
 
                 {/* Data Detail */}
@@ -1114,6 +1141,37 @@ export default function Gurus() {
                       className="w-full pl-8 pr-3 py-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-xs text-slate-900 dark:text-white placeholder-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
                       placeholder="Nomor Unik PTK"
                     />
+                  </div>
+                </div>
+
+                {/* Jabatan / Security Level - span 2 kolom */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Jabatan <span className="text-emerald-500">*</span>
+                    <span className="ml-2 text-[10px] text-slate-400 font-normal">(menentukan akses menu yang tersedia)</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh semua kelas', icon: '👑', color: 'emerald' },
+                      { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Akses kelas yang diampu',  icon: '🎓', color: 'teal' },
+                      { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya fitur absensi',      icon: '📚', color: 'blue' },
+                      { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya fitur absensi',      icon: '💼', color: 'slate' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, jabatan: opt.value })}
+                        className={`p-2.5 rounded-lg border text-left transition-all ${
+                          formData.jabatan === opt.value
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600'
+                        }`}
+                      >
+                        <span className="text-base">{opt.icon}</span>
+                        <p className={`text-[11px] font-bold mt-1 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'}`}>{opt.label}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{opt.desc}</p>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -1634,6 +1692,7 @@ export default function Gurus() {
                       { col: 'nama_lengkap', ket: 'Wajib' },
                       { col: 'email', ket: 'Wajib, unik' },
                       { col: 'jenis_kelamin', ket: 'Wajib: L atau P' },
+                      { col: 'jabatan', ket: 'Opsional: kepsek/wali_kelas/guru_mapel/karyawan' },
                       { col: 'nip', ket: 'Opsional, unik' },
                       { col: 'nuptk', ket: 'Opsional, unik' },
                       { col: 'password', ket: 'Opsional (default: password123)' },

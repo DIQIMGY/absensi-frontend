@@ -11,11 +11,12 @@ import {
   BookOpen, ClipboardList, BarChart2, Star, FileText,
   AlertTriangle, TrendingUp, Award, Calendar, Activity, Crown,
   Zap, GraduationCap, UserCheck, Bell, ArrowUpRight,
-  Target, Sparkles, Shield,
+  Target, Sparkles, Shield, ShieldCheck,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import { publicApi } from '../../services/publicApi'
 import { usePengaturanStore } from '../../stores/pengaturanStore'
+import { useGuruJabatan } from '../../hooks/useGuruJabatan'
 import LiburCountdown from '../../components/LiburCountdown'
 import EventCountdown from '../../components/EventCountdown'
 import DashboardVideo from '../../components/DashboardVideo'
@@ -106,6 +107,7 @@ const RankRow = ({ s, i, valKey, colors }) => {
 export default function GuruDashboard() {
   const navigate = useNavigate()
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
+  const { isAbsensiOnly, hasFullAccess, isKepsek, jabatanLabel, jabatan } = useGuruJabatan()
   const [data, setData] = useState(null)
   const [statistik, setStatistik] = useState(null)
   const [izinPending, setIzinPending] = useState([])
@@ -135,25 +137,33 @@ export default function GuruDashboard() {
         if (Array.isArray(evts))  setEvents(evts)
         if (Array.isArray(fotos)) setEventFotos(fotos)
       } catch(e) { /* ignore */ }
-      const [dashRes, rankingRes, izinRes, absensiRes] = await Promise.allSettled([
-        guruApi.getDashboard(),
-        guruApi.getRankingSiswa(),
-        guruApi.getIzins({ status: 'pending', per_page: 5 }),
-        guruApi.getAbsensis({ per_page: 8 }),
-      ])
+
+      // Guru mapel & karyawan hanya perlu data dashboard (absensi diri sendiri)
+      const promises = [guruApi.getDashboard()]
+      if (!isAbsensiOnly) {
+        promises.push(
+          guruApi.getRankingSiswa(),
+          guruApi.getIzins({ status: 'pending', per_page: 5 }),
+          guruApi.getAbsensis({ per_page: 8 }),
+        )
+      }
+
+      const results = await Promise.allSettled(promises)
+      const [dashRes, rankingRes, izinRes, absensiRes] = results
+
       if (dashRes.status === 'fulfilled') setData(dashRes.value.data?.data || dashRes.value.data)
-      if (rankingRes.status === 'fulfilled') setStatistik(rankingRes.value.data?.data || null)
-      if (izinRes.status === 'fulfilled') {
+      if (rankingRes?.status === 'fulfilled') setStatistik(rankingRes.value.data?.data || null)
+      if (izinRes?.status === 'fulfilled') {
         const d = izinRes.value.data?.data
         setIzinPending(Array.isArray(d) ? d : (d?.data || []))
       }
-      if (absensiRes.status === 'fulfilled') {
+      if (absensiRes?.status === 'fulfilled') {
         const d = absensiRes.value.data?.data
         setAbsensiTerbaru(Array.isArray(d) ? d : (d?.data || []))
       }
     } catch (err) { console.error(err) }
     finally { setLoading(false); setRefreshing(false) }
-  }, [])
+  }, [isAbsensiOnly])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -248,7 +258,11 @@ export default function GuruDashboard() {
                     {cfgStatus.label}
                     {absensiHariIni?.jam_masuk && <span className="opacity-70">· {absensiHariIni.jam_masuk}</span>}
                   </button>
-                  {rekapKelas.slice(0,3).map(k => (
+                  {/* Badge Jabatan */}
+                  <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] px-2.5 py-0.5 rounded-full border border-white/30 font-semibold">
+                    <ShieldCheck size={9}/>{jabatanLabel}
+                  </span>
+                  {!isAbsensiOnly && rekapKelas.slice(0,3).map(k => (
                     <span key={k.kelas_id} className="inline-flex items-center gap-1 bg-white/15 text-white/80 text-[10px] px-2 py-0.5 rounded-full border border-white/20">
                       <GraduationCap size={9}/>{k.nama_kelas}
                     </span>
@@ -273,6 +287,7 @@ export default function GuruDashboard() {
                 </button>
               </div>
               {/* Kehadiran % besar */}
+              {!isAbsensiOnly && (
               <div className="text-right">
                 <p className="text-white/50 text-xs mb-0.5">Kehadiran Siswa Hari Ini</p>
                 <div className="flex items-end gap-1 justify-end">
@@ -286,6 +301,7 @@ export default function GuruDashboard() {
                 </div>
                 <p className="text-white/40 text-[10px] mt-1">{totalHadir+totalTerlambat} / {totalSiswa} siswa</p>
               </div>
+              )}
             </div>
           </div>
 
@@ -299,8 +315,7 @@ export default function GuruDashboard() {
               <span className="text-white/70 text-[11px] font-mono">{fmtTime(now)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-white font-black text-2xl tabular-nums">{pctHadir}%</span>
-              <span className="text-white/50 text-xs">hadir</span>
+              {!isAbsensiOnly && <><span className="text-white font-black text-2xl tabular-nums">{pctHadir}%</span><span className="text-white/50 text-xs">hadir</span></>}
               <button onClick={() => fetchData(true)} disabled={refreshing}
                 className="p-1.5 rounded-full bg-white/15 border border-white/20">
                 <RefreshCw size={12} className={`text-white/70 ${refreshing ? 'animate-spin' : ''}`} />
@@ -308,7 +323,8 @@ export default function GuruDashboard() {
             </div>
           </div>
 
-          {/* Quick stat pills di bawah banner */}
+          {/* Quick stat pills di bawah banner — hanya untuk yang punya akses data siswa */}
+          {!isAbsensiOnly && (
           <div className="grid grid-cols-4 gap-2 mt-4">
             {[
               { label:'Hadir',     val:totalHadir,     color:'text-emerald-200', bg:'bg-emerald-500/20 border-emerald-400/30' },
@@ -322,6 +338,7 @@ export default function GuruDashboard() {
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
 
@@ -341,7 +358,8 @@ export default function GuruDashboard() {
         )}
 
 
-        {/* Video + Stat Cards */}
+        {/* Video + Stat Cards — hanya tampil untuk yang punya akses data siswa */}
+        {!isAbsensiOnly && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-stretch">
           <DashboardVideo className="aspect-video w-full lg:h-auto lg:aspect-auto lg:col-span-1"/>
           <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -394,6 +412,7 @@ export default function GuruDashboard() {
           })}
           </div>
         </div>
+        )} {/* end !isAbsensiOnly stat cards */}
 
         {/* Row 2: Absensi Guru 7 Hari + Statistik + Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -473,6 +492,7 @@ export default function GuruDashboard() {
 
           {/* Quick Actions */}
           <div className="flex flex-col gap-3">
+            {hasFullAccess && (
             <motion.button whileHover={{ y:-2, scale:1.01 }} whileTap={{ scale:0.97 }}
               onClick={() => navigate('/guru/izins')}
               className="relative overflow-hidden rounded-2xl p-4 text-left flex-1 shadow-lg"
@@ -492,6 +512,7 @@ export default function GuruDashboard() {
                 <span>Kelola izin</span><ArrowUpRight size={10}/>
               </div>
             </motion.button>
+            )}
             <motion.button whileHover={{ y:-2, scale:1.01 }} whileTap={{ scale:0.97 }}
               onClick={() => navigate('/guru/absensi')}
               className="relative overflow-hidden rounded-2xl p-4 text-left flex-1 shadow-lg"
@@ -500,22 +521,22 @@ export default function GuruDashboard() {
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-black text-white tabular-nums leading-none">{totalAlpha}</p>
-                  <p className="text-red-100 text-[11px] font-semibold mt-1">Alpha Hari Ini</p>
+                  <p className="text-3xl font-black text-white tabular-nums leading-none">{hasFullAccess ? totalAlpha : 0}</p>
+                  <p className="text-red-100 text-[11px] font-semibold mt-1">{isAbsensiOnly ? 'Absensi Saya' : 'Alpha Hari Ini'}</p>
                 </div>
                 <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center">
                   <AlertTriangle size={20} className="text-white" />
                 </div>
               </div>
               <div className="flex items-center gap-1 mt-2 text-red-100/70 text-[10px] font-medium">
-                <span>Lihat detail</span><ArrowUpRight size={10}/>
+                <span>{isAbsensiOnly ? 'Lihat riwayat' : 'Lihat detail'}</span><ArrowUpRight size={10}/>
               </div>
             </motion.button>
           </div>
         </div>
 
-        {/* Row 3: Kelas Diampu + Distribusi Chart */}
-        {rekapKelas.length > 0 && (
+        {/* Row 3: Kelas Diampu + Distribusi Chart — hanya untuk yang punya akses data siswa */}
+        {!isAbsensiOnly && rekapKelas.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             {/* Kelas cards */}
             <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
@@ -623,7 +644,9 @@ export default function GuruDashboard() {
 
       {/* ══════════════════════════════════════════════════════════════════
           SECTION 3 — GRAFIK TREN + RANKING SISWA
+          Hanya tampil untuk kepsek & wali kelas (hasFullAccess)
       ══════════════════════════════════════════════════════════════════ */}
+      {!isAbsensiOnly && (
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-5 gap-4">
 
         {/* Grafik Tren Kehadiran */}
@@ -777,10 +800,13 @@ export default function GuruDashboard() {
           </div>
         </div>
       </div>
+      )} {/* end !isAbsensiOnly Section 3 */}
 
       {/* ══════════════════════════════════════════════════════════════════
           SECTION 4 — IZIN PENDING + ABSENSI TERBARU + RINGKASAN BULAN
+          Hanya tampil untuk kepsek & wali kelas
       ══════════════════════════════════════════════════════════════════ */}
+      {!isAbsensiOnly && (
       <div className="px-4 sm:px-6 mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Izin Pending */}
@@ -950,6 +976,7 @@ export default function GuruDashboard() {
           </div>
         </div>
       </div>
+      )} {/* end !isAbsensiOnly Section 4 */}
 
       {/* ══════════════════════════════════════════════════════════════════
           SECTION 5 — MENU CEPAT
@@ -972,13 +999,16 @@ export default function GuruDashboard() {
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
           {[
-            { icon:ClipboardList, label:'Absensi',      to:'/guru/absensi',        color:'#667eea', bg:'bg-indigo-50 dark:bg-indigo-900/20',   border:'border-indigo-100 dark:border-indigo-800/40',   tc:'text-indigo-600 dark:text-indigo-400' },
-            { icon:FileText,      label:'Izin Siswa',   to:'/guru/izins',           color:'#f59e0b', bg:'bg-amber-50 dark:bg-amber-900/20',     border:'border-amber-100 dark:border-amber-800/40',     tc:'text-amber-600 dark:text-amber-400' },
-            { icon:BarChart2,     label:'Rekap Harian', to:'/guru/rekap-harian',    color:'#10b981', bg:'bg-emerald-50 dark:bg-emerald-900/20', border:'border-emerald-100 dark:border-emerald-800/40', tc:'text-emerald-600 dark:text-emerald-400' },
-            { icon:Star,          label:'Ranking',      to:'/guru/ranking',         color:'#8b5cf6', bg:'bg-violet-50 dark:bg-violet-900/20',   border:'border-violet-100 dark:border-violet-800/40',   tc:'text-violet-600 dark:text-violet-400' },
-            { icon:Users,         label:'Data Siswa',   to:'/guru/data-siswa',      color:'#3b82f6', bg:'bg-blue-50 dark:bg-blue-900/20',       border:'border-blue-100 dark:border-blue-800/40',       tc:'text-blue-600 dark:text-blue-400' },
-            { icon:Activity,      label:'Statistik',    to:'/guru/statistik-kelas', color:'#64748b', bg:'bg-slate-100 dark:bg-slate-800',       border:'border-slate-200 dark:border-slate-700',        tc:'text-slate-600 dark:text-slate-400' },
-          ].map((item, i) => (
+            // Menu yang selalu ada
+            { icon:ClipboardList, label:'Absensi',      to:'/guru/absensi',        color:'#667eea', bg:'bg-indigo-50 dark:bg-indigo-900/20',   border:'border-indigo-100 dark:border-indigo-800/40',   tc:'text-indigo-600 dark:text-indigo-400',   show: true },
+            { icon:Activity,      label:'Riwayat',      to:'/guru/riwayat-absensi', color:'#64748b', bg:'bg-slate-100 dark:bg-slate-800',       border:'border-slate-200 dark:border-slate-700',        tc:'text-slate-600 dark:text-slate-400',     show: isAbsensiOnly },
+            // Menu hanya untuk full access
+            { icon:FileText,      label:'Izin Siswa',   to:'/guru/izins',           color:'#f59e0b', bg:'bg-amber-50 dark:bg-amber-900/20',     border:'border-amber-100 dark:border-amber-800/40',     tc:'text-amber-600 dark:text-amber-400',     show: hasFullAccess },
+            { icon:BarChart2,     label:'Rekap Harian', to:'/guru/rekap-harian',    color:'#10b981', bg:'bg-emerald-50 dark:bg-emerald-900/20', border:'border-emerald-100 dark:border-emerald-800/40', tc:'text-emerald-600 dark:text-emerald-400', show: hasFullAccess },
+            { icon:Star,          label:'Ranking',      to:'/guru/ranking',         color:'#8b5cf6', bg:'bg-violet-50 dark:bg-violet-900/20',   border:'border-violet-100 dark:border-violet-800/40',   tc:'text-violet-600 dark:text-violet-400',   show: hasFullAccess },
+            { icon:Users,         label:'Data Siswa',   to:'/guru/data-siswa',      color:'#3b82f6', bg:'bg-blue-50 dark:bg-blue-900/20',       border:'border-blue-100 dark:border-blue-800/40',       tc:'text-blue-600 dark:text-blue-400',       show: hasFullAccess },
+            { icon:Activity,      label:'Statistik',    to:'/guru/statistik-kelas', color:'#64748b', bg:'bg-slate-100 dark:bg-slate-800',       border:'border-slate-200 dark:border-slate-700',        tc:'text-slate-600 dark:text-slate-400',     show: hasFullAccess },
+          ].filter(item => item.show).map((item, i) => (
             <motion.button key={item.to}
               initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
               transition={{ delay:i*0.05 }}

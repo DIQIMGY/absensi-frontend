@@ -158,6 +158,7 @@ export default function Register() {
     admin_code: '', nis: '', nisn: '', kelas_id: '', nama_lengkap: '',
     jenis_kelamin: 'L', tanggal_lahir: '', alamat: '', no_hp: '', nama_ortu: '',
     foto: null, nip: '', mata_pelajaran_ids: [],
+    jabatan: 'guru_mapel', // default untuk guru
   })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -289,7 +290,7 @@ export default function Register() {
     } else if (roleType === 'guru') {
       if (!formData.nip) newErrors.nip = 'NIP wajib diisi'
       if (!formData.nama_lengkap) newErrors.nama_lengkap = 'Nama lengkap wajib diisi'
-      if (!formData.mata_pelajaran_ids || formData.mata_pelajaran_ids.length === 0) newErrors.mata_pelajaran_ids = 'Minimal pilih 1 mata pelajaran'
+      if (!formData.jabatan) newErrors.jabatan = 'Jabatan wajib dipilih'
     }
     
     setErrors(newErrors)
@@ -325,6 +326,7 @@ export default function Register() {
         submitData.append('nip', formData.nip)
         submitData.append('nama_lengkap', formData.nama_lengkap)
         submitData.append('jenis_kelamin', formData.jenis_kelamin)
+        submitData.append('jabatan', formData.jabatan || 'guru_mapel')
         if (formData.tanggal_lahir) submitData.append('tanggal_lahir', formData.tanggal_lahir)
         if (formData.alamat) submitData.append('alamat', formData.alamat)
         if (formData.no_hp) submitData.append('no_hp', formData.no_hp)
@@ -1043,6 +1045,48 @@ export default function Register() {
                       setFocusedField={setFocusedField}
                       isDark={isDark}
                     />
+                    {/* Jabatan / Security Level */}
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <label className={`block text-sm font-semibold flex items-center gap-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                        <Shield size={14} className="text-emerald-500" />
+                        Jabatan <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>*</span>
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[
+                          { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh', icon: '👑' },
+                          { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Kelas diampu', icon: '🎓' },
+                          { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya absensi', icon: '📚' },
+                          { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya absensi', icon: '💼' },
+                        ].map(opt => (
+                          <motion.button
+                            key={opt.value}
+                            type="button"
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleInputChange('jabatan', opt.value)}
+                            className={`p-3 rounded-xl border-2 text-left transition-all ${
+                              formData.jabatan === opt.value
+                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                                : isDark
+                                  ? 'border-emerald-500/20 bg-slate-900 hover:border-emerald-500/40'
+                                  : 'border-emerald-200 bg-white hover:border-emerald-400'
+                            }`}
+                          >
+                            <span className="text-lg">{opt.icon}</span>
+                            <p className={`text-xs font-bold mt-1 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : isDark ? 'text-slate-300' : 'text-slate-700'}`}>{opt.label}</p>
+                            <p className={`text-[10px] mt-0.5 ${formData.jabatan === opt.value ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>{opt.desc}</p>
+                          </motion.button>
+                        ))}
+                      </div>
+                      <AnimatePresence>
+                        {errors.jabatan && (
+                          <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                            className="text-xs text-orange-500 font-medium flex items-center gap-1">
+                            <AlertCircle size={12} />{errors.jabatan}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     <div className="sm:col-span-2 space-y-1.5">
                       <label className={`block text-sm font-semibold flex items-center gap-1 ${
                         isDark ? 'text-slate-300' : 'text-slate-700'

@@ -4,25 +4,23 @@ import {
   BarChart3, GraduationCap, FileText, History, BookOpen, TrendingUp, LogOut, Award,
 } from 'lucide-react'
 import { guruApi } from '../services/guruService'
+import { useGuruJabatan } from '../hooks/useGuruJabatan'
 
-const menuGroups = [
-  {
-    title: '',
-    items: [
-      { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard' },
-      { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi' },
-      { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa' },
-      { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa' },
-      { path: '/guru/izins',            icon: FileText,        label: 'Izin' },
-      { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa' },
-      { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru' },
-      { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian' },
-      { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas' },
-      { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi' },
-      { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas' },
-      { path: '/guru/profil',           icon: User,            label: 'Profil' },
-    ],
-  },
+// Semua menu yang mungkin muncul, dengan flag `requireFullAccess`
+// Menu dengan requireFullAccess:true disembunyikan untuk guru_mapel & karyawan
+const ALL_MENU_ITEMS = [
+  { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard',       requireFullAccess: false },
+  { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi',          requireFullAccess: false },
+  { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa',     requireFullAccess: true  },
+  { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa',       requireFullAccess: true  },
+  { path: '/guru/izins',            icon: FileText,        label: 'Izin',             requireFullAccess: true  },
+  { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa',    requireFullAccess: true  },
+  { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru',     requireFullAccess: false },
+  { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian',     requireFullAccess: true  },
+  { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas',  requireFullAccess: true  },
+  { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi',  requireFullAccess: false },
+  { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas',       requireFullAccess: true  },
+  { path: '/guru/profil',           icon: User,            label: 'Profil',           requireFullAccess: false },
 ]
 
 const accent = {
@@ -64,11 +62,26 @@ async function guruNotifLoader() {
 }
 
 export default function GuruLayout() {
+  const { isAbsensiOnly, jabatanLabel, jabatan } = useGuruJabatan()
+
+  // Filter menu berdasarkan jabatan
+  const visibleItems = ALL_MENU_ITEMS.filter(item =>
+    !item.requireFullAccess || !isAbsensiOnly
+  )
+
+  const menuGroups = [
+    {
+      // Tampilkan label jabatan sebagai subtitle di sidebar
+      title: '',
+      items: visibleItems,
+    },
+  ]
+
   return (
     <AppLayout
       menuGroups={menuGroups}
       accent={accent}
-      roleLabel="Panel Guru"
+      roleLabel={isAbsensiOnly ? jabatanLabel : 'Panel Guru'}
       roleIcon={<BookOpen size={9} className="text-indigo-500"/>}
       notifLoader={guruNotifLoader}
       notifMarkRead={(id) => saveReadId('guruNotifRead', id)}
