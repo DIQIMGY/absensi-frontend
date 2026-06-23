@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight, Hash, BookOpen, Filter,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
+import { publicApi } from '../../services/publicApi'
 import { useGuruJabatan } from '../../hooks/useGuruJabatan'
 import { confirmDelete } from '../../components/ConfirmDialog'
 import toast from 'react-hot-toast'
@@ -464,11 +465,9 @@ export default function DataSiswa() {
   // Kepsek: fetch daftar kelas saat pertama load
   useEffect(() => {
     if (isKepsek) {
-      import('../../services/publicApi').then(({ publicApi }) => {
-        publicApi.getKelas().then(r => {
-          setKelasList(r.data?.data || [])
-        }).catch(() => {})
-      })
+      publicApi.getKelas().then(r => {
+        setKelasList(r.data?.data || [])
+      }).catch(() => {})
     }
   }, [isKepsek])
 
