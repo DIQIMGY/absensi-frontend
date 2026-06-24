@@ -2,25 +2,26 @@ import AppLayout from './AppLayout'
 import {
   LayoutDashboard, ClipboardList, User, Trophy, Calendar,
   BarChart3, GraduationCap, FileText, History, BookOpen, TrendingUp, LogOut, Award,
+  ShieldCheck,
 } from 'lucide-react'
 import { guruApi } from '../services/guruService'
 import { useGuruJabatan } from '../hooks/useGuruJabatan'
 
-// Semua menu yang mungkin muncul, dengan flag `requireFullAccess`
-// Menu dengan requireFullAccess:true disembunyikan untuk guru_mapel & karyawan
+// Semua menu yang mungkin muncul, dengan flag `requireFullAccess` dan `kepsekOnly`
 const ALL_MENU_ITEMS = [
-  { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard',       requireFullAccess: false },
-  { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi',          requireFullAccess: false },
-  { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa',     requireFullAccess: true  },
-  { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa',       requireFullAccess: true  },
-  { path: '/guru/izins',            icon: FileText,        label: 'Izin',             requireFullAccess: true  },
-  { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa',    requireFullAccess: true  },
-  { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru',     requireFullAccess: false },
-  { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian',     requireFullAccess: true  },
-  { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas',  requireFullAccess: true  },
-  { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi',  requireFullAccess: false },
-  { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas',       requireFullAccess: true  },
-  { path: '/guru/profil',           icon: User,            label: 'Profil',           requireFullAccess: false },
+  { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard',            requireFullAccess: false, kepsekOnly: false },
+  { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi',               requireFullAccess: false, kepsekOnly: false },
+  { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa',          requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa',            requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/izins',            icon: FileText,        label: 'Izin',                  requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa',         requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru',          requireFullAccess: false, kepsekOnly: false },
+  { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian',          requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas',       requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/absensi-guru',     icon: ShieldCheck,     label: 'Pantau Absensi Guru',   requireFullAccess: true,  kepsekOnly: true  },
+  { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi',       requireFullAccess: false, kepsekOnly: false },
+  { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas',            requireFullAccess: true,  kepsekOnly: false },
+  { path: '/guru/profil',           icon: User,            label: 'Profil',                requireFullAccess: false, kepsekOnly: false },
 ]
 
 const accent = {
@@ -65,9 +66,13 @@ export default function GuruLayout() {
   const { isAbsensiOnly, jabatanLabel, jabatan } = useGuruJabatan()
 
   // Filter menu berdasarkan jabatan
-  const visibleItems = ALL_MENU_ITEMS.filter(item =>
-    !item.requireFullAccess || !isAbsensiOnly
-  )
+  const visibleItems = ALL_MENU_ITEMS.filter(item => {
+    // Menu kepsekOnly hanya tampil untuk kepsek
+    if (item.kepsekOnly && !isKepsek) return false
+    // Menu requireFullAccess disembunyikan untuk isAbsensiOnly
+    if (item.requireFullAccess && isAbsensiOnly) return false
+    return true
+  })
 
   const menuGroups = [
     {

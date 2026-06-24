@@ -68,4 +68,11 @@ export const guruApi = {
   markPesanDispenRead: () => api.post('/guru/pesan-dispen/mark-read'),
   approvePesanDispen: (id, data) => api.post(`/guru/pesan-dispen/${id}/approve`, data),
   rejectPesanDispen: (id, data) => api.post(`/guru/pesan-dispen/${id}/reject`, data),
+
+  // ─── KEPSEK: Pantau absensi semua guru ──────────────────────────────
+  kepsekGetAbsensiMasukGuru: (params) => api.get('/guru/kepsek/absensi-guru', { params }),
+  kepsekGetAbsensiMasukStatistik: (params) => api.get('/guru/kepsek/absensi-guru/statistik', { params, silent: true }),
+  kepsekGetAbsensiMasukRekap: (params) => api.get('/guru/kepsek/absensi-guru/rekap', { params, silent: true }),
+  kepsekGetAbsensiPulangGuru: (params) => api.get('/guru/kepsek/absensi-guru-pulang', { params }),
+  kepsekGetAbsensiPulangStatistik: (params) => api.get('/guru/kepsek/absensi-guru-pulang/statistik', { params, silent: true }),
 }
