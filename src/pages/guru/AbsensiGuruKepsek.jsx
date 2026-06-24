@@ -339,7 +339,7 @@ export default function AbsensiGuruKepsek() {
 
           {/* Stat pills */}
           <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-            {tab === 'masuk' ? [
+            {(tab === 'masuk' ? [
               { label:'Hadir',     val:statM.total_hadir,     bg:'bg-emerald-500/25' },
               { label:'Terlambat', val:statM.total_terlambat, bg:'bg-amber-500/25' },
               { label:'Alpha',     val:statM.total_alpha,     bg:'bg-rose-500/25' },
@@ -349,7 +349,7 @@ export default function AbsensiGuruKepsek() {
               { label:'Belum Pulang', val:statP.total_belum_pulang ?? statP.belum_pulang, bg:'bg-rose-500/25' },
               { label:'Lembur',       val:statP.total_lembur,  bg:'bg-violet-500/25' },
               { label:'Pulang Cepat', val:statP.total_cepat,   bg:'bg-amber-500/25' },
-            ].map(s => (
+            ]).map(s => (
               <div key={s.label} className={`${s.bg} border border-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm`}>
                 <p className="text-lg font-black text-white tabular-nums leading-none">{s.val ?? 0}</p>
                 <p className="text-white/50 text-[9px] mt-0.5 font-medium">{s.label}</p>
