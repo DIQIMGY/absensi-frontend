@@ -63,7 +63,7 @@ async function guruNotifLoader() {
 }
 
 export default function GuruLayout() {
-  const { isAbsensiOnly, jabatanLabel, jabatan } = useGuruJabatan()
+  const { isAbsensiOnly, isKepsek, jabatanLabel, jabatan } = useGuruJabatan()
 
   // Filter menu berdasarkan jabatan
   const visibleItems = ALL_MENU_ITEMS.filter(item => {
