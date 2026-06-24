@@ -34,6 +34,11 @@ import {
   Fingerprint,
   CheckCircle,
   Loader,
+  Crown,
+  GraduationCap,
+  BookMarked,
+  Briefcase,
+  ShieldCheck,
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import Modal from '../../components/Modal'
@@ -46,15 +51,15 @@ import Select from 'react-select'
 // Badge jabatan dengan warna berbeda per level
 const JabatanBadge = ({ jabatan }) => {
   const cfg = {
-    kepsek:     { label: 'Kepala Sekolah', bg: 'bg-amber-500/10 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', icon: '👑' },
-    wali_kelas: { label: 'Wali Kelas',     bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', icon: '🎓' },
-    guru_mapel: { label: 'Guru Mapel',     bg: 'bg-blue-500/10',    text: 'text-blue-600 dark:text-blue-400',       border: 'border-blue-500/30',    icon: '📚' },
-    karyawan:   { label: 'Karyawan',       bg: 'bg-slate-500/10',   text: 'text-slate-600 dark:text-slate-400',     border: 'border-slate-500/30',   icon: '💼' },
+    kepsek:     { label: 'Kepala Sekolah', bg: 'bg-amber-500/10 dark:bg-amber-500/10',   text: 'text-amber-600 dark:text-amber-400',   border: 'border-amber-500/30',   Icon: Crown },
+    wali_kelas: { label: 'Wali Kelas',     bg: 'bg-emerald-500/10',                       text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', Icon: GraduationCap },
+    guru_mapel: { label: 'Guru Mapel',     bg: 'bg-blue-500/10',                          text: 'text-blue-600 dark:text-blue-400',       border: 'border-blue-500/30',    Icon: BookMarked },
+    karyawan:   { label: 'Karyawan',       bg: 'bg-slate-500/10',                         text: 'text-slate-600 dark:text-slate-400',     border: 'border-slate-500/30',   Icon: Briefcase },
   }
   const c = cfg[jabatan] || cfg.guru_mapel
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 ${c.bg} ${c.text} rounded-lg text-[10px] font-medium border ${c.border} shadow-sm`}>
-      <span>{c.icon}</span>
+      <c.Icon size={9} />
       <span>{c.label}</span>
     </span>
   )
@@ -546,6 +551,18 @@ export default function Gurus() {
       foto: null,
     })
     setPreviewFoto(null)
+  }
+
+  // Reset field kondisional saat jabatan berubah
+  const handleJabatanChange = (jabatan) => {
+    setFormData(prev => ({
+      ...prev,
+      jabatan,
+      // Reset field yang tidak relevan per jabatan
+      is_wali_kelas: jabatan === 'wali_kelas' ? prev.is_wali_kelas : false,
+      kelas_id: jabatan === 'wali_kelas' ? prev.kelas_id : '',
+      mata_pelajaran_ids: (jabatan === 'wali_kelas' || jabatan === 'guru_mapel') ? prev.mata_pelajaran_ids : [],
+    }))
   }
 
   // ============= FINGERPRINT HANDLERS =============
@@ -1152,23 +1169,22 @@ export default function Gurus() {
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh semua kelas', icon: '👑', color: 'emerald' },
-                      { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Akses kelas yang diampu',  icon: '🎓', color: 'teal' },
-                      { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya fitur absensi',      icon: '📚', color: 'blue' },
-                      { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya fitur absensi',      icon: '💼', color: 'slate' },
+                      { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh semua kelas', Icon: Crown,         color: 'emerald' },
+                      { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Akses kelas yang diampu', Icon: GraduationCap, color: 'teal' },
+                      { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya fitur absensi',     Icon: BookMarked,    color: 'blue' },
+                      { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya fitur absensi',     Icon: Briefcase,     color: 'slate' },
                     ].map(opt => (
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => setFormData({ ...formData, jabatan: opt.value })}
+                        onClick={() => handleJabatanChange(opt.value)}
                         className={`p-2.5 rounded-lg border text-left transition-all ${
                           formData.jabatan === opt.value
                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30'
                             : 'border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600'
-                        }`}
-                      >
-                        <span className="text-base">{opt.icon}</span>
-                        <p className={`text-[11px] font-bold mt-1 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'}`}>{opt.label}</p>
+                        }`}                      >
+                        <opt.Icon size={16} className={formData.jabatan === opt.value ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                        <p className={`text-[11px] font-bold mt-1.5 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'}`}>{opt.label}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{opt.desc}</p>
                       </button>
                     ))}
@@ -1245,10 +1261,11 @@ export default function Gurus() {
                   </div>
                 </div>
 
-                {/* Mata Pelajaran */}
+                {/* Mata Pelajaran — hanya untuk wali_kelas dan guru_mapel */}
+                {(formData.jabatan === 'wali_kelas' || formData.jabatan === 'guru_mapel') && (
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Mata Pelajaran
+                    Mata Pelajaran {formData.jabatan === 'wali_kelas' && <span className="text-emerald-500">*</span>}
                   </label>
                   <Select
                     isMulti
@@ -1264,8 +1281,30 @@ export default function Gurus() {
                     styles={customSelectStyles}
                   />
                 </div>
+                )}
 
-                {/* Wali Kelas Checkbox */}
+                {/* Kepsek: info otomatis */}
+                {formData.jabatan === 'kepsek' && (
+                <div className="sm:col-span-2 flex items-start gap-2.5 p-3 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-700/40 rounded-lg">
+                  <Crown size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    Kepala sekolah otomatis mendapat akses semua kelas dan seluruh fitur tanpa perlu pilih kelas atau mata pelajaran.
+                  </p>
+                </div>
+                )}
+
+                {/* Karyawan: info hanya absensi */}
+                {formData.jabatan === 'karyawan' && (
+                <div className="sm:col-span-2 flex items-start gap-2.5 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg">
+                  <Briefcase size={14} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Karyawan hanya dapat absensi diri sendiri. Tidak perlu memilih mata pelajaran atau kelas.
+                  </p>
+                </div>
+                )}
+
+                {/* Wali Kelas Checkbox — hanya untuk jabatan wali_kelas */}
+                {formData.jabatan === 'wali_kelas' && (
                 <div className="sm:col-span-2">
                   <label className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-500/10 dark:hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all">
                     <input
@@ -1276,18 +1315,19 @@ export default function Gurus() {
                     />
                     <div>
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Wali Kelas
+                        Tetapkan sebagai Wali Kelas
                       </span>
                       <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Centang jika guru ini menjadi wali kelas
+                        Centang untuk menentukan kelas yang dipegangnya
                       </p>
                     </div>
                   </label>
                 </div>
+                )}
 
-                {/* Kelas (untuk wali kelas) */}
+                {/* Kelas — hanya tampil saat wali_kelas dan is_wali_kelas dicentang */}
                 <AnimatePresence>
-                  {formData.is_wali_kelas && (
+                  {formData.jabatan === 'wali_kelas' && formData.is_wali_kelas && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -1295,7 +1335,7 @@ export default function Gurus() {
                       className="sm:col-span-2"
                     >
                       <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Kelas yang Dijaga
+                        Kelas yang Dijaga <span className="text-emerald-500">*</span>
                       </label>
                       <Select
                         options={kelasList}

@@ -467,7 +467,7 @@ export default function GuruDashboard() {
                 <span className="text-3xl font-black text-white tabular-nums leading-none">{statGuru.persentase_kehadiran || 0}</span>
                 <span className="text-white/60 text-sm mb-0.5">%</span>
                 <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${(statGuru.persentase_kehadiran||0) >= 80 ? 'bg-emerald-400/25 text-emerald-200' : 'bg-rose-400/25 text-rose-200'}`}>
-                  {(statGuru.persentase_kehadiran||0) >= 80 ? '✓ Baik' : '⚠ Perlu'}
+                  {(statGuru.persentase_kehadiran||0) >= 80 ? 'Baik' : 'Perlu Perhatian'}
                 </span>
               </div>
               <div className="mt-2.5 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">

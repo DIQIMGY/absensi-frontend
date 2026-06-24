@@ -340,7 +340,7 @@ function DetailModal({ siswa, onClose, onQr, onFingerprint }) {
             {[
               { icon: Hash,     label: 'NIS',          val: siswa.nis },
               { icon: Hash,     label: 'NISN',         val: siswa.nisn || '-' },
-              { icon: User,     label: 'Jenis Kelamin', val: siswa.jenis_kelamin === 'L' ? '♂ Laki-laki' : '♀ Perempuan' },
+              { icon: User,     label: 'Jenis Kelamin', val: siswa.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
               { icon: Calendar, label: 'Tanggal Lahir', val: siswa.tanggal_lahir ? new Date(siswa.tanggal_lahir).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' },
               { icon: Phone,    label: 'No. HP',        val: siswa.no_hp || '-' },
               { icon: User,     label: 'Orang Tua',     val: siswa.nama_ortu || '-' },
@@ -552,7 +552,7 @@ export default function DataSiswa() {
               <p className="text-white/60 text-[11px] mt-0.5">{kelasInfo.jurusan}</p>
             )}
             {isKepsek && (
-              <p className="text-white/60 text-[11px] mt-0.5">👑 Kepala Sekolah — Akses Semua Kelas</p>
+              <p className="text-white/60 text-[11px] mt-0.5">Kepala Sekolah — Akses Semua Kelas</p>
             )}
           </div>
           <motion.button whileTap={{ scale: 0.9 }} onClick={fetchAll} disabled={loading}

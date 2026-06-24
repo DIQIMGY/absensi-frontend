@@ -15,7 +15,11 @@ import {
   LogOut,
   TrendingDown,
   TrendingUp,
-  Minus
+  Minus,
+  Fingerprint,
+  QrCode,
+  Pencil,
+  Settings,
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import { guruApi } from '../../services/guruService'
@@ -185,13 +189,17 @@ export default function GuruRiwayatAbsensi() {
       accessor: 'metode',
       cell: (row) => {
         const metodeMap = {
-          fingerprint: { label: '🖐 Sidik Jari', cls: 'text-cyan-700 dark:text-cyan-300' },
-          qr_code:     { label: '📷 QR Code',    cls: 'text-blue-600 dark:text-blue-400' },
-          manual:      { label: '✍️ Manual',      cls: 'text-slate-600 dark:text-slate-400' },
-          sistem:      { label: '⚙️ Sistem',      cls: 'text-slate-500 dark:text-slate-500' },
+          fingerprint: { label: 'Sidik Jari', Icon: Fingerprint, cls: 'text-cyan-700 dark:text-cyan-300' },
+          qr_code:     { label: 'QR Code',    Icon: QrCode,      cls: 'text-blue-600 dark:text-blue-400' },
+          manual:      { label: 'Manual',     Icon: Pencil,      cls: 'text-slate-600 dark:text-slate-400' },
+          sistem:      { label: 'Sistem',     Icon: Settings,    cls: 'text-slate-500 dark:text-slate-500' },
         }
-        const m = metodeMap[row.metode] || { label: row.metode || '—', cls: 'text-slate-500' }
-        return <span className={`text-xs font-medium ${m.cls}`}>{m.label}</span>
+        const m = metodeMap[row.metode] || { label: row.metode || '—', Icon: Pencil, cls: 'text-slate-500' }
+        return (
+          <span className={`inline-flex items-center gap-1 text-xs font-medium ${m.cls}`}>
+            <m.Icon size={11} />{m.label}
+          </span>
+        )
       },
     },
   ]

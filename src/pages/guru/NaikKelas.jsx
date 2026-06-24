@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, Users, CheckCircle, AlertCircle, Send, X, Search, RefreshCw, ChevronDown, ChevronUp, Info, GraduationCap, BookOpen, Sparkles, Clock, BarChart3, UserX, MessageSquare, Check, School, Award, ShieldAlert, Eye, EyeOff, Trash2 } from "lucide-react"
+import { TrendingUp, Users, CheckCircle, AlertCircle, Send, X, Search, RefreshCw, ChevronDown, ChevronUp, Info, GraduationCap, BookOpen, Sparkles, Clock, BarChart3, UserX, MessageSquare, Check, School, Award, ShieldAlert, Eye, EyeOff, Trash2, Ban } from "lucide-react"
 import { guruApi } from "../../services/guruService"
 import toast from "react-hot-toast"
 
@@ -596,7 +596,12 @@ export default function GuruNaikKelas() {
                             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                             : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                         }`}>
-                          {r.status === "pending" ? "⏳ Menunggu" : r.status === "diproses" ? "✓ Disetujui" : "✕ Ditolak"}
+                          {r.status === "pending"
+                            ? <><Clock size={9} className="inline mr-0.5" />Menunggu</>
+                            : r.status === "diproses"
+                            ? <><Check size={9} className="inline mr-0.5" />Disetujui</>
+                            : <><Ban size={9} className="inline mr-0.5" />Ditolak</>
+                          }
                         </span>
                       </div>
 

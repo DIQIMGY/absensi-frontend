@@ -6,7 +6,8 @@ import {
   ChevronLeft, QrCode, Download, CheckCircle, Upload, Image as ImageIcon, 
   Users, GraduationCap, UserCheck, Key, Phone, MapPin, BookOpen,
   ArrowRight, Sparkles, Moon, Sun, Shield, Fingerprint, Award,
-  Camera, X, Globe, Clock, Bell, Heart, Star, FileText, Info
+  Camera, X, Globe, Clock, Bell, Heart, Star, FileText, Info,
+  Crown, BookMarked, Briefcase,
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { useThemeStore } from '../../stores/themeStore'
@@ -219,8 +220,21 @@ export default function Register() {
 
   useEffect(() => {
     if (roleType === 'siswa') fetchKelas()
-    else if (roleType === 'guru') fetchMataPelajaran()
+    else if (roleType === 'guru') {
+      // Mata pelajaran hanya diperlukan untuk wali_kelas dan guru_mapel
+      const jabatanNeedMapel = ['wali_kelas', 'guru_mapel']
+      if (jabatanNeedMapel.includes(formData.jabatan)) {
+        fetchMataPelajaran()
+      }
+    }
   }, [roleType])
+
+  // Fetch mata pelajaran saat jabatan berubah ke wali_kelas/guru_mapel
+  useEffect(() => {
+    if (roleType === 'guru' && ['wali_kelas', 'guru_mapel'].includes(formData.jabatan) && mataPelajaranList.length === 0) {
+      fetchMataPelajaran()
+    }
+  }, [formData.jabatan])
 
   const fetchKelas = async () => {
     try {
@@ -291,6 +305,10 @@ export default function Register() {
       if (!formData.nip) newErrors.nip = 'NIP wajib diisi'
       if (!formData.nama_lengkap) newErrors.nama_lengkap = 'Nama lengkap wajib diisi'
       if (!formData.jabatan) newErrors.jabatan = 'Jabatan wajib dipilih'
+      // Wali kelas wajib pilih mapel; guru mapel opsional; kepsek & karyawan tidak perlu mapel
+      if (formData.jabatan === 'wali_kelas' && (!formData.mata_pelajaran_ids || formData.mata_pelajaran_ids.length === 0)) {
+        newErrors.mata_pelajaran_ids = 'Wali kelas wajib memilih minimal 1 mata pelajaran'
+      }
     }
     
     setErrors(newErrors)
@@ -1053,10 +1071,10 @@ export default function Register() {
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {[
-                          { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh', icon: '👑' },
-                          { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Kelas diampu', icon: '🎓' },
-                          { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya absensi', icon: '📚' },
-                          { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya absensi', icon: '💼' },
+                          { value: 'kepsek',     label: 'Kepala Sekolah', desc: 'Akses penuh semua kelas', Icon: Crown },
+                          { value: 'wali_kelas', label: 'Wali Kelas',     desc: 'Kelas yang diampu',       Icon: GraduationCap },
+                          { value: 'guru_mapel', label: 'Guru Mapel',     desc: 'Hanya absensi diri',      Icon: BookMarked },
+                          { value: 'karyawan',   label: 'Karyawan',       desc: 'Hanya absensi diri',      Icon: Briefcase },
                         ].map(opt => (
                           <motion.button
                             key={opt.value}
@@ -1072,8 +1090,8 @@ export default function Register() {
                                   : 'border-emerald-200 bg-white hover:border-emerald-400'
                             }`}
                           >
-                            <span className="text-lg">{opt.icon}</span>
-                            <p className={`text-xs font-bold mt-1 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : isDark ? 'text-slate-300' : 'text-slate-700'}`}>{opt.label}</p>
+                            <opt.Icon size={18} className={formData.jabatan === opt.value ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                            <p className={`text-xs font-bold mt-1.5 ${formData.jabatan === opt.value ? 'text-emerald-700 dark:text-emerald-300' : isDark ? 'text-slate-300' : 'text-slate-700'}`}>{opt.label}</p>
                             <p className={`text-[10px] mt-0.5 ${formData.jabatan === opt.value ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>{opt.desc}</p>
                           </motion.button>
                         ))}
@@ -1087,34 +1105,67 @@ export default function Register() {
                         )}
                       </AnimatePresence>
                     </div>
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <label className={`block text-sm font-semibold flex items-center gap-1 ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
+
+                    {/* Kepsek: tidak perlu pilih kelas / mapel — info saja */}
+                    {formData.jabatan === 'kepsek' && (
+                      <div className={`sm:col-span-2 flex items-start gap-3 p-4 rounded-xl border ${
+                        isDark ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200'
                       }`}>
-                        <BookOpen size={14} className="text-emerald-500" />
-                        Mata Pelajaran <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>*</span>
-                      </label>
-                      <Select
-                        isMulti
-                        options={mataPelajaranList}
-                        onChange={(options) => handleInputChange('mata_pelajaran_ids', options ? options.map(o => o.value) : [])}
-                        placeholder="Pilih mata pelajaran (bisa lebih dari 1)"
-                        styles={customSelectStyles(isDark, !!errors.mata_pelajaran_ids)}
-                      />
-                      <AnimatePresence>
-                        {errors.mata_pelajaran_ids && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-xs text-orange-500 font-medium flex items-center gap-1"
-                          >
-                            <AlertCircle size={12} />
-                            {errors.mata_pelajaran_ids}
-                          </motion.p>
+                        <Crown size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className={`text-sm font-semibold ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>Kepala Sekolah</p>
+                          <p className={`text-xs mt-0.5 ${isDark ? 'text-amber-400/70' : 'text-amber-600/80'}`}>
+                            Kepala sekolah otomatis mendapat akses ke semua kelas dan seluruh fitur. Tidak perlu memilih kelas atau mata pelajaran.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Wali Kelas: pilih mata pelajaran saja — kelas diisi admin */}
+                    {(formData.jabatan === 'wali_kelas' || formData.jabatan === 'guru_mapel') && (
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className={`block text-sm font-semibold flex items-center gap-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <BookOpen size={14} className="text-emerald-500" />
+                          Mata Pelajaran
+                          {formData.jabatan === 'wali_kelas' && <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>*</span>}
+                        </label>
+                        <Select
+                          isMulti
+                          options={mataPelajaranList}
+                          onChange={(options) => handleInputChange('mata_pelajaran_ids', options ? options.map(o => o.value) : [])}
+                          placeholder="Pilih mata pelajaran yang diajarkan"
+                          styles={customSelectStyles(isDark, !!errors.mata_pelajaran_ids)}
+                        />
+                        {formData.jabatan === 'wali_kelas' && (
+                          <p className={`text-[11px] flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            <Info size={11} /> Penetapan kelas wali akan dilakukan oleh Admin setelah registrasi.
+                          </p>
                         )}
-                      </AnimatePresence>
-                    </div>
+                        <AnimatePresence>
+                          {errors.mata_pelajaran_ids && (
+                            <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                              className="text-xs text-orange-500 font-medium flex items-center gap-1">
+                              <AlertCircle size={12} />{errors.mata_pelajaran_ids}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+
+                    {/* Karyawan: tidak perlu mapel maupun kelas */}
+                    {formData.jabatan === 'karyawan' && (
+                      <div className={`sm:col-span-2 flex items-start gap-3 p-4 rounded-xl border ${
+                        isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <Briefcase size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Karyawan / Tenaga Kependidikan</p>
+                          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                            Akun karyawan hanya untuk absensi diri sendiri. Tidak perlu memilih mata pelajaran atau kelas.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       <label className={`block text-sm font-semibold flex items-center gap-1 ${
                         isDark ? 'text-slate-300' : 'text-slate-700'

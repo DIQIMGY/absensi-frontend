@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LogOut, Clock, Search, Filter, Calendar, CheckCircle,
   AlertCircle, RefreshCw, Sparkles, TrendingDown, TrendingUp,
-  Minus, BarChart3, ChevronDown, Users, GraduationCap
+  Minus, BarChart3, ChevronDown, Users, GraduationCap,
+  FileText, Activity, Heart,
 } from 'lucide-react'
 import DataTable from '../../components/DataTable'
 import { guruApi } from '../../services/guruService'
@@ -25,24 +26,32 @@ const statusPulangBadge = (s, menit) => {
   const abs = Math.abs(menit ?? 0), jam = Math.floor(abs/60), sisa = abs%60
   const dur = jam > 0 ? (sisa > 0 ? `${jam}j ${sisa}m` : `${jam} jam`) : `${abs} mnt`
   const cfg = {
-    cepat:  { cls:'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',       lbl:`⏩ Cepat ${dur}` },
-    lembur: { cls:'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',   lbl:`🌙 Lembur ${dur}` },
-    tepat:  { cls:'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',           lbl:'✅ Tepat Waktu' },
+    cepat:  { cls:'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',     lbl:`Cepat ${dur}`,  Icon: TrendingDown },
+    lembur: { cls:'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300', lbl:`Lembur ${dur}`, Icon: TrendingUp },
+    tepat:  { cls:'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',         lbl:'Tepat Waktu',   Icon: Minus },
   }
   const c = cfg[s] || cfg.tepat
-  return <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${c.cls}`}>{c.lbl}</span>
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${c.cls}`}>
+      <c.Icon size={10}/>{c.lbl}
+    </span>
+  )
 }
 
 const statusMasukBadge = (s) => {
   const cfg = {
-    hadir:     { cls:'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', lbl:'✅ Hadir' },
-    terlambat: { cls:'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',         lbl:'⏰ Terlambat' },
-    alpha:     { cls:'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',                 lbl:'❌ Alpha' },
-    izin:      { cls:'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',             lbl:'📋 Izin' },
-    sakit:     { cls:'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',     lbl:'🤒 Sakit' },
+    hadir:     { cls:'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', lbl:'Hadir',     Icon: CheckCircle },
+    terlambat: { cls:'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',         lbl:'Terlambat', Icon: Clock },
+    alpha:     { cls:'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',                 lbl:'Alpha',     Icon: AlertCircle },
+    izin:      { cls:'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',             lbl:'Izin',      Icon: FileText },
+    sakit:     { cls:'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',     lbl:'Sakit',     Icon: Activity },
   }
   const c = cfg[s] || cfg.alpha
-  return <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${c.cls}`}>{c.lbl}</span>
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${c.cls}`}>
+      <c.Icon size={10}/>{c.lbl}
+    </span>
+  )
 }
 
 export default function GuruPulangSiswa() {

@@ -6,6 +6,7 @@ import {
   X, Eye, AlertCircle, BookOpen, School,
   Award, Briefcase, Users, Shield, Sparkles,
   MessageSquare, CheckCircle, XCircle, Clock, Send,
+  Check, Ban, Hourglass,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import { useAuthStore } from '../../stores/authStore'
@@ -737,7 +738,12 @@ export default function GuruProfil() {
                         : selectedPesan.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
                         : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
                       }`}>
-                        {selectedPesan.status === 'approved' ? '✓ Disetujui' : selectedPesan.status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
+                        {selectedPesan.status === 'approved'
+                          ? <><Check size={9} className="inline mr-0.5" />Disetujui</>
+                          : selectedPesan.status === 'rejected'
+                          ? <><Ban size={9} className="inline mr-0.5" />Ditolak</>
+                          : <><Clock size={9} className="inline mr-0.5" />Menunggu</>
+                        }
                       </span>
                     </div>
 
@@ -834,7 +840,12 @@ export default function GuruProfil() {
                                 : p.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
                                 : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
                               }`}>
-                                {p.status === 'approved' ? '✓' : p.status === 'rejected' ? '✗' : '⏳'}
+                                {p.status === 'approved'
+                                  ? <Check size={8} />
+                                  : p.status === 'rejected'
+                                  ? <Ban size={8} />
+                                  : <Clock size={8} />
+                                }
                               </span>
                             </div>
                             <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{p.judul}</p>
