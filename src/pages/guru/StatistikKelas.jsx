@@ -19,15 +19,19 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  BookOpen
+  BookOpen,
+  Filter,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
+import { useGuruJabatan } from '../../hooks/useGuruJabatan'
 import toast from 'react-hot-toast'
 
 export default function GuruStatistikKelas() {
+  const { isKepsek } = useGuruJabatan()
   const [loading, setLoading] = useState(false)
   const [statistikData, setStatistikData] = useState(null)
   const [kelasAmpu, setKelasAmpu] = useState(null)
+  const [kelasList, setKelasList] = useState([])
   const [showGrafik, setShowGrafik] = useState(true)
   const [filters, setFilters] = useState({
     bulan: new Date().getMonth() + 1,
@@ -50,11 +54,12 @@ export default function GuruStatistikKelas() {
       const kelasData = response.data.data || []
       
       if (kelasData.length === 0) {
-        toast.error('Anda belum memiliki kelas yang diampu.')
+        toast.error('Tidak ada kelas yang tersedia.')
         return
       }
-      
-      // Ambil kelas pertama (karena guru hanya mengampu 1 kelas)
+
+      setKelasList(kelasData)
+      // Ambil kelas pertama sebagai default
       setKelasAmpu(kelasData[0])
     } catch (error) {
       console.error('Error fetching kelas:', error)
@@ -166,6 +171,24 @@ export default function GuruStatistikKelas() {
           )}
           
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Kepsek: dropdown pilih kelas */}
+            {isKepsek && kelasList.length > 1 && (
+              <>
+                <Filter size={14} className="text-slate-400 flex-shrink-0" />
+                <select
+                  value={kelasAmpu?.id || ''}
+                  onChange={(e) => {
+                    const kelas = kelasList.find(k => String(k.id) === String(e.target.value))
+                    if (kelas) setKelasAmpu(kelas)
+                  }}
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                >
+                  {kelasList.map(k => (
+                    <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                  ))}
+                </select>
+              </>
+            )}
             <Calendar size={14} className="text-slate-400 flex-shrink-0" />
             <select
               value={filters.bulan}

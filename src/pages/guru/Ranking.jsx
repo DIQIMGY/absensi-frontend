@@ -284,6 +284,7 @@ export default function GuruRanking() {
   const [loading, setLoading]           = useState(false)
   const [rankingData, setRankingData]   = useState(null)
   const [kelasAmpu, setKelasAmpu]       = useState(null)
+  const [kelasList, setKelasList]       = useState([])
   const [showStats, setShowStats]       = useState(true)
   const [scope, setScope]               = useState('kelas')
   const [bulan, setBulan]               = useState(new Date().getMonth() + 1)
@@ -300,7 +301,9 @@ export default function GuruRanking() {
   const fetchKelasDiampu = async () => {
     try {
       const res = await guruApi.getKelasDiampu()
-      setKelasAmpu((res.data.data || [])[0] || null)
+      const data = res.data.data || []
+      setKelasList(data)
+      setKelasAmpu(data[0] || null)
     } catch {
       toast.error('Gagal memuat kelas')
       setKelasAmpu(null)
@@ -404,6 +407,24 @@ export default function GuruRanking() {
               </button>
             ))}
           </div>
+          {/* Kepsek: tambah dropdown pilih kelas spesifik saat scope = kelas */}
+          {scope === 'kelas' && kelasList.length > 1 && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <Filter size={10} className="text-slate-400" />
+              <select
+                value={kelasAmpu?.id || ''}
+                onChange={e => {
+                  const k = kelasList.find(x => String(x.id) === String(e.target.value))
+                  if (k) setKelasAmpu(k)
+                }}
+                className="text-xs px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                {kelasList.map(k => (
+                  <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* PERIODE */}

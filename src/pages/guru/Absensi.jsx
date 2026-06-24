@@ -21,11 +21,12 @@ import {
   Bell,
   Eye,
   XCircle,
-  Heart
+  Heart,
 } from 'lucide-react'
 import Select from 'react-select'
 import DataTable from '../../components/DataTable'
 import { guruApi } from '../../services/guruService'
+import { useGuruJabatan } from '../../hooks/useGuruJabatan'
 import toast from 'react-hot-toast'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -40,8 +41,10 @@ const STATUS_OPTIONS = [
 ]
 
 export default function GuruAbsensi() {
+  const { isKepsek } = useGuruJabatan()
   const [absensis, setAbsensis] = useState([])
   const [kelasAmpu, setKelasAmpu] = useState(null)
+  const [kelasList, setKelasList] = useState([])
   const [pendingIzins, setPendingIzins] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingIzin, setLoadingIzin] = useState(false)
@@ -105,11 +108,12 @@ export default function GuruAbsensi() {
       const kelasData = response.data.data || []
       
       if (kelasData.length === 0) {
-        toast.error('Anda belum memiliki kelas yang diampu.')
+        toast.error('Tidak ada kelas yang tersedia.')
         return
       }
-      
-      // Ambil kelas pertama (karena guru hanya mengampu 1 kelas)
+
+      setKelasList(kelasData)
+      // Ambil kelas pertama sebagai default
       setKelasAmpu(kelasData[0])
     } catch (error) {
       console.error('Error fetching kelas:', error)
@@ -684,14 +688,32 @@ export default function GuruAbsensi() {
               <ChevronDown size={14} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Kelas Info Badge */}
+            {/* Kelas Info Badge / Kepsek Dropdown */}
             {kelasAmpu && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                <Users size={14} className="text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                  {kelasAmpu.nama_kelas}
-                </span>
-              </div>
+              isKepsek && kelasList.length > 1 ? (
+                <div className="flex items-center gap-2">
+                  <Filter size={13} className="text-slate-400" />
+                  <select
+                    value={kelasAmpu?.id || ''}
+                    onChange={(e) => {
+                      const k = kelasList.find(x => String(x.id) === String(e.target.value))
+                      if (k) setKelasAmpu(k)
+                    }}
+                    className="text-xs px-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-700 dark:text-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    {kelasList.map(k => (
+                      <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                  <Users size={14} className="text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                    {kelasAmpu.nama_kelas}
+                  </span>
+                </div>
+              )
             )}
           </div>
 
