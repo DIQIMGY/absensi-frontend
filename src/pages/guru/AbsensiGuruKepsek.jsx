@@ -111,12 +111,12 @@ function TabelMasuk({ data, loading, pagination, onPageChange }) {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 overflow-hidden">
-                      {row.guru?.foto_url
-                        ? <img src={row.guru.foto_url} alt="" className="w-full h-full object-cover"/>
-                        : (row.guru?.nama_lengkap || '?').charAt(0)}
+                      {row.guru?.foto_url || row.guru?.foto
+                        ? <img src={row.guru?.foto_url || row.guru?.foto} alt={row.guru?.nama_lengkap || row.guru?.nama || ''} className="w-full h-full object-cover"/>
+                        : (row.guru?.nama_lengkap || row.guru?.nama || '?').charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[130px]">{row.guru?.nama_lengkap || '-'}</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[130px]">{row.guru?.nama_lengkap || row.guru?.nama || '-'}</p>
                       <p className="text-[10px] text-slate-400 font-mono">{row.guru?.nip || '-'}</p>
                     </div>
                   </div>
@@ -172,12 +172,12 @@ function TabelPulang({ data, loading, pagination, onPageChange }) {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 overflow-hidden">
-                      {row.guru?.foto_url
-                        ? <img src={row.guru.foto_url} alt="" className="w-full h-full object-cover"/>
-                        : (row.guru?.nama_lengkap || '?').charAt(0)}
+                      {row.guru?.foto_url || row.guru?.foto
+                        ? <img src={row.guru?.foto_url || row.guru?.foto} alt={row.guru?.nama_lengkap || row.guru?.nama || ''} className="w-full h-full object-cover"/>
+                        : (row.guru?.nama_lengkap || row.guru?.nama || '?').charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[130px]">{row.guru?.nama_lengkap || '-'}</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[130px]">{row.guru?.nama_lengkap || row.guru?.nama || '-'}</p>
                       <p className="text-[10px] text-slate-400 font-mono">{row.guru?.nip || '-'}</p>
                     </div>
                   </div>
