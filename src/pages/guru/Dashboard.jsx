@@ -107,7 +107,7 @@ const RankRow = ({ s, i, valKey, colors }) => {
 export default function GuruDashboard() {
   const navigate = useNavigate()
   const { pengaturan, fetchPengaturan } = usePengaturanStore()
-  const { isAbsensiOnly, hasFullAccess, isKepsek, jabatanLabel, jabatan } = useGuruJabatan()
+  const { isAbsensiOnly, hasFullAccess, isKepsek, jabatanLabel } = useGuruJabatan()
   const [data, setData] = useState(null)
   const [statistik, setStatistik] = useState(null)
   const [izinPending, setIzinPending] = useState([])
