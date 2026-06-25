@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Calendar, 
@@ -19,12 +19,17 @@ import {
   Sparkles,
   Award,
   BookOpen,
-  X
+  X,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import toast from 'react-hot-toast'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+
+const PAGE_SIZE = 6
 
 export default function GuruRekapHarian() {
   const [loading, setLoading] = useState(false)
@@ -32,6 +37,10 @@ export default function GuruRekapHarian() {
   const [tanggal, setTanggal] = useState(new Date())
   const [selectedKelas, setSelectedKelas] = useState(null)
   const [showDetail, setShowDetail] = useState(false)
+  // Search + pagination
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const searchRef = useRef(null)
 
   useEffect(() => {
     fetchRekap()
@@ -396,22 +405,103 @@ export default function GuruRekapHarian() {
           </p>
         </div>
       ) : rekapData?.rekap_per_kelas && rekapData.rekap_per_kelas.length > 0 ? (
-        <>
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {rekapData.rekap_per_kelas.map((kelas, index) => (
-              <KelasCard
-                key={kelas.kelas_id}
-                kelas={kelas}
-                index={index}
-                onClick={() => {
-                  setSelectedKelas(kelas)
-                  setShowDetail(true)
-                }}
-                isSelected={selectedKelas?.kelas_id === kelas.kelas_id}
-              />
-            ))}
-          </div>
+        (() => {
+          // Filtered + paginated kelas
+          const allKelas = rekapData.rekap_per_kelas
+          const filtered = allKelas.filter(k =>
+            k.nama_kelas?.toLowerCase().includes(search.toLowerCase()) ||
+            k.jurusan?.toLowerCase().includes(search.toLowerCase())
+          )
+          const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+          const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+          return (
+          <>
+            {/* Search bar — tampil hanya bila kelas >= 4 */}
+            {allKelas.length >= 4 && (
+              <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+                className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+                <Search size={14} className="text-slate-400 flex-shrink-0"/>
+                <input
+                  ref={searchRef}
+                  type="text"
+                  placeholder={`Cari dari ${allKelas.length} kelas...`}
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1) }}
+                  className="flex-1 bg-transparent text-xs sm:text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none"
+                />
+                {search && (
+                  <button onClick={() => { setSearch(''); setPage(1); searchRef.current?.focus() }}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+                    <X size={12}/>
+                  </button>
+                )}
+                {search && (
+                  <span className="text-[10px] text-slate-400 flex-shrink-0 font-medium">{filtered.length} hasil</span>
+                )}
+              </motion.div>
+            )}
+
+            {/* No results */}
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center py-12 gap-2 text-slate-400">
+                <School size={28} className="opacity-30"/>
+                <p className="text-sm">Kelas "{search}" tidak ditemukan</p>
+                <button onClick={() => setSearch('')}
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">Reset pencarian</button>
+              </div>
+            ) : (
+              <>
+                {/* Cards Grid — responsif 1 kolom mobile, 2 kolom tablet+ */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {paged.map((kelas, index) => (
+                    <KelasCard
+                      key={kelas.kelas_id}
+                      kelas={kelas}
+                      index={index}
+                      onClick={() => {
+                        setSelectedKelas(kelas)
+                        setShowDetail(true)
+                      }}
+                      isSelected={selectedKelas?.kelas_id === kelas.kelas_id}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <motion.div initial={{opacity:0}} animate={{opacity:1}}
+                    className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm px-3 sm:px-4 py-2.5 flex items-center justify-between">
+                    <p className="text-[10px] sm:text-xs text-slate-400">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                        {(page-1)*PAGE_SIZE+1}–{Math.min(page*PAGE_SIZE, filtered.length)}
+                      </span>{' '}dari <span className="font-semibold text-slate-600 dark:text-slate-300">{filtered.length}</span> kelas
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page<=1}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <ChevronLeft size={13}/>
+                      </button>
+                      {Array.from({length:totalPages},(_,i)=>i+1)
+                        .filter(n => n===1||n===totalPages||Math.abs(n-page)<=1)
+                        .reduce((acc,n,i,arr) => { if(i>0&&arr[i-1]!==n-1) acc.push('...'); acc.push(n); return acc },[])
+                        .map((n,i) =>
+                          n==='...'
+                            ? <span key={`e${i}`} className="w-7 h-7 flex items-center justify-center text-[10px] text-slate-400">…</span>
+                            : <button key={n} onClick={() => setPage(n)}
+                                className={`w-7 h-7 rounded-lg text-[10px] font-bold transition-colors ${page===n ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                                {n}
+                              </button>
+                        )}
+                      <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page>=totalPages}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <ChevronRight size={13}/>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </>
+            )}
 
           {/* Summary Card */}
           <motion.div
@@ -426,19 +516,21 @@ export default function GuruRekapHarian() {
               </div>
               <div className="min-w-0">
                 <h4 className="text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-0.5 truncate">
-                  Ringkasan
+                  Ringkasan Semua Kelas
                 </h4>
                 <p className="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 truncate">
-                  Total {rekapData.rekap_per_kelas.reduce((acc, k) => acc + k.total_siswa, 0)} siswa • 
-                  Hadir: {rekapData.rekap_per_kelas.reduce((acc, k) => acc + k.hadir, 0)} • 
-                  Telat: {rekapData.rekap_per_kelas.reduce((acc, k) => acc + k.terlambat, 0)} • 
-                  Izin: {rekapData.rekap_per_kelas.reduce((acc, k) => acc + k.izin, 0)} • 
-                  Alpha: {rekapData.rekap_per_kelas.reduce((acc, k) => acc + k.alpha, 0)}
+                  Total {allKelas.reduce((acc, k) => acc + k.total_siswa, 0)} siswa · 
+                  Hadir: {allKelas.reduce((acc, k) => acc + k.hadir, 0)} · 
+                  Telat: {allKelas.reduce((acc, k) => acc + k.terlambat, 0)} · 
+                  Izin: {allKelas.reduce((acc, k) => acc + k.izin, 0)} · 
+                  Alpha: {allKelas.reduce((acc, k) => acc + k.alpha, 0)}
                 </p>
               </div>
             </div>
           </motion.div>
-        </>
+          </>
+          )
+        })()
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

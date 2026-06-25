@@ -7,11 +7,11 @@ import {
   ResponsiveContainer, RadialBarChart, RadialBar, Cell,
 } from 'recharts'
 import {
-  Users, CheckCircle, Clock, XCircle, RefreshCw, ChevronRight,
+  Users, CheckCircle, Clock, XCircle, RefreshCw, ChevronRight, ChevronLeft,
   BookOpen, ClipboardList, BarChart2, Star, FileText,
   AlertTriangle, TrendingUp, Award, Calendar, Activity, Crown,
   Zap, GraduationCap, UserCheck, Bell, ArrowUpRight,
-  Target, Sparkles, Shield, ShieldCheck,
+  Target, Sparkles, Shield, ShieldCheck, Search, X,
 } from 'lucide-react'
 import { guruApi } from '../../services/guruService'
 import { publicApi } from '../../services/publicApi'
@@ -101,6 +101,151 @@ const RankRow = ({ s, i, valKey, colors }) => {
       </div>
       <div className={`relative z-10 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums flex-shrink-0 ${a.countBg} ${a.countC}`}>{s[valKey]}×</div>
     </motion.div>
+  )
+}
+
+// ─── KelasSection: Kelas Diampu dengan search + pagination ──────────
+const PAGE_SIZE_KELAS = 6
+
+function KelasSection({ rekapKelas, navigate, pct }) {
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+
+  const filtered = rekapKelas.filter(k =>
+    k.nama_kelas?.toLowerCase().includes(search.toLowerCase())
+  )
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE_KELAS)
+  const paged = filtered.slice((page - 1) * PAGE_SIZE_KELAS, page * PAGE_SIZE_KELAS)
+
+  // Reset page saat search berubah
+  const handleSearch = (val) => { setSearch(val); setPage(1) }
+
+  return (
+    <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+            <BookOpen size={13} className="text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">Kelas Diampu</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-400">Kehadiran hari ini</p>
+          </div>
+          <span className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+            {filtered.length}
+          </span>
+        </div>
+        {/* Search */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-48">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari kelas..."
+              value={search}
+              onChange={e => handleSearch(e.target.value)}
+              className="w-full pl-7 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 placeholder-slate-400 text-slate-700 dark:text-slate-200 transition-all"
+            />
+            {search && (
+              <button onClick={() => handleSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={11}/>
+              </button>
+            )}
+          </div>
+          <button onClick={() => navigate('/guru/rekap-harian')}
+            className="text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 flex items-center gap-0.5 transition-colors whitespace-nowrap flex-shrink-0">
+            Rekap <ChevronRight size={10}/>
+          </button>
+        </div>
+      </div>
+
+      {/* Grid Cards */}
+      {paged.length === 0 ? (
+        <div className="flex flex-col items-center py-10 gap-2 text-slate-400">
+          <BookOpen size={24} className="opacity-30"/>
+          <p className="text-xs">{search ? `Kelas "${search}" tidak ditemukan` : 'Tidak ada kelas'}</p>
+        </div>
+      ) : (
+        <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+          {paged.map((k, i) => {
+            const hadir = k.hadir||0, terlambat = k.terlambat||0, total = k.total_siswa||0
+            const p = pct(hadir+terlambat, total)
+            const accentColor = p >= 80 ? '#10b981' : p >= 60 ? '#f59e0b' : '#ef4444'
+            const statItems = [
+              { label:'Hadir',     val:hadir,      c:'text-emerald-600 dark:text-emerald-400', bg:'bg-emerald-50 dark:bg-emerald-900/20', color:'#10b981' },
+              { label:'Terlambat', val:terlambat,  c:'text-amber-600 dark:text-amber-400',     bg:'bg-amber-50 dark:bg-amber-900/20',   color:'#f59e0b' },
+              { label:'Izin',      val:k.izin||0,  c:'text-blue-600 dark:text-blue-400',       bg:'bg-blue-50 dark:bg-blue-900/20',     color:'#3b82f6' },
+              { label:'Alpha',     val:k.alpha||0, c:'text-rose-600 dark:text-rose-400',       bg:'bg-rose-50 dark:bg-rose-900/20',     color:'#ef4444' },
+            ]
+            return (
+              <motion.div key={k.kelas_id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:i*0.04 }}
+                className="relative overflow-hidden bg-slate-50 dark:bg-slate-800/60 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3 sm:p-4">
+                <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl sm:rounded-t-2xl" style={{ background:accentColor }} />
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <p className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">{k.nama_kelas}</p>
+                  <span className="text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full flex-shrink-0 ml-2"
+                    style={{ background:accentColor+'18', color:accentColor }}>{p}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full overflow-hidden flex gap-0.5 mb-2 sm:mb-3">
+                  {statItems.filter(x=>x.val>0).map((x,xi) => (
+                    <div key={xi} className="h-full rounded-full"
+                      style={{ width:`${pct(x.val,total)}%`, backgroundColor:x.color, minWidth:pct(x.val,total)>0?'4px':0 }} />
+                  ))}
+                </div>
+                <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
+                  {statItems.map(s => (
+                    <div key={s.label} className={`${s.bg} rounded-lg sm:rounded-xl py-1.5 sm:py-2 text-center`}>
+                      <p className={`text-xs sm:text-sm font-black ${s.c}`}>{s.val}</p>
+                      <p className="text-[7px] sm:text-[8px] text-slate-400 font-medium mt-0.5">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-[10px] text-slate-400">
+            Halaman <span className="font-semibold text-slate-600 dark:text-slate-300">{page}</span> dari{' '}
+            <span className="font-semibold text-slate-600 dark:text-slate-300">{totalPages}</span>
+            {' '}· {filtered.length} kelas
+          </p>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page <= 1}
+              className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <ChevronLeft size={13}/>
+            </button>
+            {Array.from({length: totalPages}, (_, i) => i + 1).filter(n =>
+              n === 1 || n === totalPages || Math.abs(n - page) <= 1
+            ).reduce((acc, n, idx, arr) => {
+              if (idx > 0 && arr[idx-1] !== n - 1) acc.push('...')
+              acc.push(n)
+              return acc
+            }, []).map((n, i) =>
+              n === '...'
+                ? <span key={`ellipsis-${i}`} className="w-7 h-7 flex items-center justify-center text-[10px] text-slate-400">…</span>
+                : <button key={n} onClick={() => setPage(n)}
+                    className={`w-7 h-7 rounded-lg text-[10px] font-bold transition-colors ${
+                      page === n
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}>{n}</button>
+            )}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page >= totalPages}
+              className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <ChevronRight size={13}/>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -538,64 +683,8 @@ export default function GuruDashboard() {
         {/* Row 3: Kelas Diampu + Distribusi Chart — hanya untuk yang punya akses data siswa */}
         {!isAbsensiOnly && rekapKelas.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {/* Kelas cards */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                    <BookOpen size={15} className="text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Kelas Diampu</p>
-                    <p className="text-[10px] text-slate-400">Kehadiran hari ini</p>
-                  </div>
-                  <span className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full">{rekapKelas.length}</span>
-                </div>
-                <button onClick={() => navigate('/guru/rekap-harian')}
-                  className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 flex items-center gap-0.5 transition-colors">
-                  Rekap <ChevronRight size={12}/>
-                </button>
-              </div>
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {rekapKelas.map((k, i) => {
-                  const hadir = k.hadir||0, terlambat = k.terlambat||0, total = k.total_siswa||0
-                  const p = pct(hadir+terlambat, total)
-                  const accentColor = p >= 80 ? '#10b981' : p >= 60 ? '#f59e0b' : '#ef4444'
-                  const statItems = [
-                    { label:'Hadir', val:hadir, c:'text-emerald-600 dark:text-emerald-400', bg:'bg-emerald-50 dark:bg-emerald-900/20', color:'#10b981' },
-                    { label:'Terlambat', val:terlambat, c:'text-amber-600 dark:text-amber-400', bg:'bg-amber-50 dark:bg-amber-900/20', color:'#f59e0b' },
-                    { label:'Izin', val:k.izin||0, c:'text-blue-600 dark:text-blue-400', bg:'bg-blue-50 dark:bg-blue-900/20', color:'#3b82f6' },
-                    { label:'Alpha', val:k.alpha||0, c:'text-rose-600 dark:text-rose-400', bg:'bg-rose-50 dark:bg-rose-900/20', color:'#ef4444' },
-                  ]
-                  return (
-                    <motion.div key={k.kelas_id} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
-                      transition={{ delay:i*0.05 }}
-                      className="relative overflow-hidden bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4">
-                      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl" style={{ background:accentColor }} />
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{k.nama_kelas}</p>
-                        <span className="text-xs font-black px-2.5 py-0.5 rounded-full"
-                          style={{ background:accentColor+'18', color:accentColor }}>{p}%</span>
-                      </div>
-                      {/* Stacked bar */}
-                      <div className="w-full h-2 rounded-full overflow-hidden flex gap-0.5 mb-3">
-                        {statItems.filter(x=>x.val>0).map((x,xi) => (
-                          <div key={xi} className="h-full rounded-full" style={{ width:`${pct(x.val,total)}%`, backgroundColor:x.color, minWidth:pct(x.val,total)>0?'4px':0 }} />
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {statItems.map(s => (
-                          <div key={s.label} className={`${s.bg} rounded-xl py-2 text-center`}>
-                            <p className={`text-sm font-black ${s.c}`}>{s.val}</p>
-                            <p className="text-[8px] text-slate-400 font-medium mt-0.5">{s.label}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </div>
+            {/* Kelas cards dengan search + pagination */}
+            <KelasSection rekapKelas={rekapKelas} navigate={navigate} pct={pct} />
 
             {/* Distribusi stacked bar */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">

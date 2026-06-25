@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   UserCheck, LogOut, Search, Filter, Calendar, RefreshCw,
@@ -185,7 +185,7 @@ function TabelPulang({ data, loading, pagination, onPageChange }) {
                 <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">{fmtDate(row.tanggal)}</td>
                 <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{row.jam_masuk ? row.jam_masuk.slice(0,5) : '-'}</td>
                 <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-700 dark:text-slate-100">{row.jam_pulang ? row.jam_pulang.slice(0,5) : <span className="text-slate-400">Belum</span>}</td>
-                <td className="px-4 py-3">{statusBadge(row.status)}</td>
+                <td className="px-4 py-3">{statusBadge(row.status_masuk || row.status)}</td>
                 <td className="px-4 py-3">{pulangBadge(row.status_pulang, row.menit_pulang_cepat)}</td>
                 <td className="px-4 py-3">{row.metode_pulang ? metodeBadge(row.metode_pulang) : <span className="text-[10px] text-slate-400">-</span>}</td>
               </motion.tr>
@@ -252,7 +252,7 @@ export default function AbsensiGuruKepsek() {
   const [statistikPulang, setStatistikPulang] = useState(null)
 
   // Build shared params
-  const buildParams = useCallback((page) => {
+  const buildParams = (page) => {
     const p = { page, per_page: 15 }
     if (search.trim()) p.search = search.trim()
     if (filterMode === 'tanggal' && tanggal) {
@@ -262,14 +262,23 @@ export default function AbsensiGuruKepsek() {
       p.tahun = tahun
     }
     return p
-  }, [search, filterMode, tanggal, bulan, tahun])
+  }
 
   // Fetch masuk
-  const fetchMasuk = useCallback(async (page = pageMasuk) => {
+  const fetchMasuk = async (page = 1) => {
     setLoadingMasuk(true)
     try {
+      const params = { page, per_page: 15 }
+      if (search.trim()) params.search = search.trim()
+      if (filterMode === 'tanggal' && tanggal) {
+        params.tanggal = tanggal
+      } else {
+        params.bulan = bulan
+        params.tahun = tahun
+      }
+
       const [dataRes, statRes] = await Promise.allSettled([
-        guruApi.kepsekGetAbsensiMasukGuru(buildParams(page)),
+        guruApi.kepsekGetAbsensiMasukGuru(params),
         guruApi.kepsekGetAbsensiMasukStatistik({ bulan, tahun }),
       ])
       if (dataRes.status === 'fulfilled') {
@@ -280,14 +289,23 @@ export default function AbsensiGuruKepsek() {
       if (statRes.status === 'fulfilled') setStatistikMasuk(statRes.value.data?.data || null)
     } catch (e) { toast.error('Gagal memuat data absensi masuk') }
     finally { setLoadingMasuk(false) }
-  }, [buildParams, pageMasuk, bulan, tahun])
+  }
 
   // Fetch pulang
-  const fetchPulang = useCallback(async (page = pagePulang) => {
+  const fetchPulang = async (page = 1) => {
     setLoadingPulang(true)
     try {
+      const params = { page, per_page: 15 }
+      if (search.trim()) params.search = search.trim()
+      if (filterMode === 'tanggal' && tanggal) {
+        params.tanggal = tanggal
+      } else {
+        params.bulan = bulan
+        params.tahun = tahun
+      }
+
       const [dataRes, statRes] = await Promise.allSettled([
-        guruApi.kepsekGetAbsensiPulangGuru(buildParams(page)),
+        guruApi.kepsekGetAbsensiPulangGuru(params),
         guruApi.kepsekGetAbsensiPulangStatistik({ bulan, tahun }),
       ])
       if (dataRes.status === 'fulfilled') {
@@ -298,15 +316,19 @@ export default function AbsensiGuruKepsek() {
       if (statRes.status === 'fulfilled') setStatistikPulang(statRes.value.data?.data || null)
     } catch (e) { toast.error('Gagal memuat data absensi pulang') }
     finally { setLoadingPulang(false) }
-  }, [buildParams, pagePulang, bulan, tahun])
+  }
 
   // Initial load & refetch on filter change
-  useEffect(() => { setPageMasuk(1); fetchMasuk(1) }, [bulan, tahun, tanggal, filterMode, search])
-  useEffect(() => { setPagePulang(1); fetchPulang(1) }, [bulan, tahun, tanggal, filterMode, search])
+  useEffect(() => {
+    setPageMasuk(1)
+    fetchMasuk(1)
+    setPagePulang(1)
+    fetchPulang(1)
+  }, [bulan, tahun, tanggal, filterMode, search])
 
   const handleRefresh = () => {
-    if (tab === 'masuk') fetchMasuk(pageMasuk)
-    else fetchPulang(pagePulang)
+    fetchMasuk(pageMasuk)
+    fetchPulang(pagePulang)
   }
 
   const statM = statistikMasuk?.statistik || statistikMasuk || {}
