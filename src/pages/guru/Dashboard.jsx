@@ -659,7 +659,7 @@ export default function GuruDashboard() {
             </motion.button>
             )}
             <motion.button whileHover={{ y:-2, scale:1.01 }} whileTap={{ scale:0.97 }}
-              onClick={() => navigate('/guru/absensi')}
+              onClick={() => navigate(isAbsensiOnly ? '/guru/riwayat-absensi' : '/guru/absensi')}
               className="relative overflow-hidden rounded-2xl p-4 text-left flex-1 shadow-lg"
               style={{ background:'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
               <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/10" />
@@ -1089,7 +1089,7 @@ export default function GuruDashboard() {
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
           {[
             // Menu yang selalu ada
-            { icon:ClipboardList, label:'Absensi',      to:'/guru/absensi',        color:'#667eea', bg:'bg-indigo-50 dark:bg-indigo-900/20',   border:'border-indigo-100 dark:border-indigo-800/40',   tc:'text-indigo-600 dark:text-indigo-400',   show: true },
+            { icon:ClipboardList, label:'Absensi',      to:'/guru/absensi',        color:'#667eea', bg:'bg-indigo-50 dark:bg-indigo-900/20',   border:'border-indigo-100 dark:border-indigo-800/40',   tc:'text-indigo-600 dark:text-indigo-400',   show: !isAbsensiOnly },
             { icon:Activity,      label:'Riwayat',      to:'/guru/riwayat-absensi', color:'#64748b', bg:'bg-slate-100 dark:bg-slate-800',       border:'border-slate-200 dark:border-slate-700',        tc:'text-slate-600 dark:text-slate-400',     show: isAbsensiOnly },
             // Menu hanya untuk full access
             { icon:FileText,      label:'Izin Siswa',   to:'/guru/izins',           color:'#f59e0b', bg:'bg-amber-50 dark:bg-amber-900/20',     border:'border-amber-100 dark:border-amber-800/40',     tc:'text-amber-600 dark:text-amber-400',     show: hasFullAccess },

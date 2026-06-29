@@ -131,7 +131,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true,              element: <Navigate to="/guru/dashboard" replace /> },
       { path: 'dashboard',        element: <GuruDashboard /> },
-      { path: 'absensi',          element: <GuruAbsensi /> },
+      { path: 'absensi',          element: <GuruRoute requireFullAccess={false} kepsekOnly={false} hideForAbsensiOnly={true}><GuruAbsensi /></GuruRoute> },
       { path: 'ranking',          element: <GuruRoute><GuruRanking /></GuruRoute> },
       { path: 'ranking-guru',     element: <GuruRankingGuru /> },
       { path: 'rekap-harian',     element: <GuruRoute><GuruRekapHarian /></GuruRoute> },

@@ -9,19 +9,19 @@ import { useGuruJabatan } from '../hooks/useGuruJabatan'
 
 // Semua menu yang mungkin muncul, dengan flag `requireFullAccess` dan `kepsekOnly`
 const ALL_MENU_ITEMS = [
-  { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard',            requireFullAccess: false, kepsekOnly: false },
-  { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi',               requireFullAccess: false, kepsekOnly: false },
-  { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa',          requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa',            requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/izins',            icon: FileText,        label: 'Izin',                  requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa',         requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru',          requireFullAccess: false, kepsekOnly: false },
-  { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian',          requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas',       requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/absensi-guru',     icon: ShieldCheck,     label: 'Pantau Absensi Guru',   requireFullAccess: true,  kepsekOnly: true  },
-  { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi',       requireFullAccess: false, kepsekOnly: false },
-  { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas',            requireFullAccess: true,  kepsekOnly: false },
-  { path: '/guru/profil',           icon: User,            label: 'Profil',                requireFullAccess: false, kepsekOnly: false },
+  { path: '/guru/dashboard',        icon: LayoutDashboard, label: 'Dashboard',            requireFullAccess: false, kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/absensi',          icon: ClipboardList,   label: 'Absensi',               requireFullAccess: false, kepsekOnly: false, hideForAbsensiOnly: true  },
+  { path: '/guru/pulang-siswa',     icon: LogOut,          label: 'Pulang Siswa',          requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/data-siswa',       icon: GraduationCap,   label: 'Data Siswa',            requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/izins',            icon: FileText,        label: 'Izin',                  requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/ranking',          icon: Trophy,          label: 'Ranking Siswa',         requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/ranking-guru',     icon: Award,           label: 'Ranking Guru',          requireFullAccess: false, kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/rekap-harian',     icon: Calendar,        label: 'Rekap Harian',          requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/statistik-kelas',  icon: BarChart3,       label: 'Statistik Kelas',       requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/absensi-guru',     icon: ShieldCheck,     label: 'Pantau Absensi Guru',   requireFullAccess: true,  kepsekOnly: true,  hideForAbsensiOnly: false },
+  { path: '/guru/riwayat-absensi',  icon: History,         label: 'Riwayat Absensi',       requireFullAccess: false, kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/naik-kelas',       icon: TrendingUp,      label: 'Naik Kelas',            requireFullAccess: true,  kepsekOnly: false, hideForAbsensiOnly: false },
+  { path: '/guru/profil',           icon: User,            label: 'Profil',                requireFullAccess: false, kepsekOnly: false, hideForAbsensiOnly: false },
 ]
 
 const accent = {
@@ -71,6 +71,8 @@ export default function GuruLayout() {
     if (item.kepsekOnly && !isKepsek) return false
     // Menu requireFullAccess disembunyikan untuk isAbsensiOnly
     if (item.requireFullAccess && isAbsensiOnly) return false
+    // Menu hideForAbsensiOnly disembunyikan untuk guru_mapel & karyawan
+    if (item.hideForAbsensiOnly && isAbsensiOnly) return false
     return true
   })
 
