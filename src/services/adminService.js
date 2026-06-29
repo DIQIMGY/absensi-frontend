@@ -134,11 +134,13 @@ export const adminApi = {
   getLaporanPerSiswa: (siswaId, params) => api.get(`/admin/laporan/siswa/${siswaId}`, { params }),
   exportPdf: (params) => api.get('/admin/laporan/export-pdf', { 
     params,
-    responseType: 'blob' 
+    responseType: 'blob',
+    timeout: 120000,
   }),
   exportExcel: (params) => api.get('/admin/laporan/export-excel', { 
     params,
-    responseType: 'blob' 
+    responseType: 'blob',
+    timeout: 120000,
   }),
   
   // Libur Sekolah (per bulan, 7 slot)
@@ -157,11 +159,13 @@ export const adminApi = {
   exportLemburGuruExcel: (params) => api.get('/admin/laporan-guru/lembur/export-excel', { params, responseType: 'blob' }),
   exportGuruPdf: (params) => api.get('/admin/laporan-guru/export-pdf', { 
     params,
-    responseType: 'blob' 
+    responseType: 'blob',
+    timeout: 120000,
   }),
   exportGuruExcel: (params) => api.get('/admin/laporan-guru/export-excel', { 
     params,
-    responseType: 'blob' 
+    responseType: 'blob',
+    timeout: 120000,
   }),
   
   // Import Siswa
