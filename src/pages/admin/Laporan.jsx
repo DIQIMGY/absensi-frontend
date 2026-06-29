@@ -1,102 +1,72 @@
-import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { motion } from 'framer-motion'
 import {
   Download, FileText, Calendar, Filter, FileSpreadsheet,
   Users, Clock, CheckCircle, XCircle, AlertCircle, ChevronDown,
   RefreshCw, BarChart3, Eye, EyeOff, Info, Search, X as XIcon,
-  AlertTriangle
 } from 'lucide-react'
 import { adminApi } from '../../services/adminService'
 import toast from 'react-hot-toast'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import Select from 'react-select'
+import ExportPreviewModal from '../../components/ExportPreviewModal'
 
-/* ─── Download helper: handle blob + JSON-error dari backend ─── */
+/* download helper */
 async function downloadBlob(apiFn, fileName, mimeType) {
   const response = await apiFn()
-  const contentType = response.headers?.['content-type'] || ''
-
-  // Backend bisa return JSON error walau responseType: blob
-  if (contentType.includes('application/json')) {
+  const ct = response.headers?.['content-type'] || ''
+  if (ct.includes('application/json')) {
     const text = await response.data.text()
-    const json = JSON.parse(text)
-    throw new Error(json.message || 'Gagal ekspor')
+    throw new Error(JSON.parse(text).message || 'Gagal ekspor')
   }
-
   const blob = new Blob([response.data], { type: mimeType })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
+  a.href = url; a.download = fileName
+  document.body.appendChild(a); a.click(); a.remove()
   window.URL.revokeObjectURL(url)
 }
 
-/* ─── Modal konfirmasi download ─── */
-function DownloadModal({ isOpen, onClose, onConfirm, format, loading, previewData, dateRange }) {
-  if (!isOpen) return null
-  const isPdf = format === 'pdf'
-  return (
-    <AnimatePresence>
-      <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        <motion.div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md z-10"
-          initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
-          <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl ${isPdf ? 'bg-rose-100 dark:bg-rose-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>
-                {isPdf ? <FileText size={18} className="text-rose-600" /> : <FileSpreadsheet size={18} className="text-emerald-600" />}
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">Download {isPdf ? 'PDF' : 'Excel'}</h3>
-                <p className="text-xs text-slate-500">Laporan Absensi Siswa</p>
-              </div>
-            </div>
-            <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><XIcon size={16} /></button>
-          </div>
-          <div className="p-5 space-y-3">
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-2">
-              <div className="flex justify-between text-sm"><span className="text-slate-500">Periode</span><span className="font-medium text-slate-900 dark:text-white">{dateRange}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-slate-500">Total Siswa</span><span className="font-medium text-slate-900 dark:text-white">{previewData?.length || 0} siswa</span></div>
-              <div className="flex justify-between text-sm"><span className="text-slate-500">Format</span><span className={`font-bold ${isPdf ? 'text-rose-600' : 'text-emerald-600'}`}>.{isPdf ? 'pdf' : 'xlsx'}</span></div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 text-center">File akan langsung diunduh ke perangkat kamu.</p>
-          </div>
-          <div className="p-5 pt-0 flex gap-3">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Batal</button>
-            <button onClick={onConfirm} disabled={loading}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 ${isPdf ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30'} shadow-lg`}>
-              {loading ? <><RefreshCw size={14} className="animate-spin" />Memproses...</> : <><Download size={14} />Download</>}
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  )
-}
+const EXCEL_COLUMNS = [
+  { key: 'nis',           label: 'NIS',      mono: true },
+  { key: 'nama_lengkap',  label: 'Nama Siswa', bold: true },
+  { key: 'kelas',         label: 'Kelas' },
+  { key: 'hadir',         label: 'Hadir',     center: true, color: 'text-emerald-600 font-semibold' },
+  { key: 'terlambat',     label: 'Terlambat', center: true, color: 'text-amber-600 font-semibold' },
+  { key: 'izin',          label: 'Izin',      center: true, color: 'text-blue-600 font-semibold' },
+  { key: 'sakit',         label: 'Sakit',     center: true, color: 'text-purple-600 font-semibold' },
+  { key: 'alpha',         label: 'Alpha',     center: true, color: 'text-rose-600 font-semibold' },
+  { key: 'total_absensi', label: 'Total',     center: true, bold: true },
+]
 
 export default function Laporan() {
-  const [loading, setLoading] = useState(false)
-  const [loadingFormat, setLoadingFormat] = useState(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
-  const [previewData, setPreviewData] = useState(null)
-  const [showPreview, setShowPreview] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [downloadModal, setDownloadModal] = useState({ open: false, format: 'pdf' })
+  const [previewLoading, setPreviewLoading]   = useState(false)
+  const [previewData, setPreviewData]         = useState(null)
+  const [showPreview, setShowPreview]         = useState(true)
+  const [searchQuery, setSearchQuery]         = useState('')
+  const [kelasList, setKelasList]             = useState([])
+  const [stats, setStats]                     = useState({ total_absensi:0, hadir:0, sakit:0, izin:0, alpha:0, terlambat:0 })
+
+  // modal state
+  const [modal, setModal]                     = useState({ open: false, type: 'pdf' }) // 'pdf'|'excel'
+  const [pdfBlobUrl, setPdfBlobUrl]           = useState(null)
+  const [pdfLoading, setPdfLoading]           = useState(false)
+  const [pdfError, setPdfError]               = useState(null)
+  const [downloadLoading, setDownloadLoading] = useState(false)
+  const pdfBlobRef                            = useRef(null)  // track blob untuk revoke
+
   const [filters, setFilters] = useState({
     start_date: new Date(new Date().setDate(1)),
-    end_date: new Date(),
-    kelas_id: '',
+    end_date:   new Date(),
+    kelas_id:   '',
   })
-  const [kelasList, setKelasList] = useState([])
-  const [stats, setStats] = useState({ total_absensi: 0, hadir: 0, sakit: 0, izin: 0, alpha: 0, terlambat: 0 })
 
   useEffect(() => { fetchKelas(); fetchPreview() }, [])
   useEffect(() => { fetchPreview() }, [filters.start_date, filters.end_date, filters.kelas_id])
+
+  // Revoke blob URL saat unmount
+  useEffect(() => () => { if (pdfBlobRef.current) window.URL.revokeObjectURL(pdfBlobRef.current) }, [])
 
   const fetchKelas = async () => {
     try {
@@ -105,124 +75,153 @@ export default function Laporan() {
     } catch {}
   }
 
+  const getParams = useCallback(() => {
+    const p = {
+      start_date: filters.start_date.toISOString().split('T')[0],
+      end_date:   filters.end_date.toISOString().split('T')[0],
+    }
+    if (filters.kelas_id) p.kelas_id = filters.kelas_id
+    return p
+  }, [filters])
+
   const fetchPreview = useCallback(async () => {
     setPreviewLoading(true)
     try {
-      const params = {
-        start_date: filters.start_date.toISOString().split('T')[0],
-        end_date: filters.end_date.toISOString().split('T')[0],
-      }
-      if (filters.kelas_id) params.kelas_id = filters.kelas_id
-      const res = await adminApi.getLaporanBulanan(params)
+      const res  = await adminApi.getLaporanBulanan(getParams())
       const data = res.data.data || []
       setPreviewData(data)
       setStats({
-        total_absensi: data.reduce((s, i) => s + (i.total_absensi || 0), 0),
-        hadir:         data.reduce((s, i) => s + (i.hadir || 0), 0),
-        sakit:         data.reduce((s, i) => s + (i.sakit || 0), 0),
-        izin:          data.reduce((s, i) => s + (i.izin || 0), 0),
-        alpha:         data.reduce((s, i) => s + (i.alpha || 0), 0),
-        terlambat:     data.reduce((s, i) => s + (i.terlambat || 0), 0),
+        total_absensi: data.reduce((s,i) => s + (i.total_absensi||0), 0),
+        hadir:         data.reduce((s,i) => s + (i.hadir||0), 0),
+        sakit:         data.reduce((s,i) => s + (i.sakit||0), 0),
+        izin:          data.reduce((s,i) => s + (i.izin||0), 0),
+        alpha:         data.reduce((s,i) => s + (i.alpha||0), 0),
+        terlambat:     data.reduce((s,i) => s + (i.terlambat||0), 0),
       })
-    } catch (e) {
-      toast.error('Gagal memuat data preview')
-    } finally {
-      setPreviewLoading(false)
-    }
-  }, [filters])
+    } catch { toast.error('Gagal memuat data preview') }
+    finally { setPreviewLoading(false) }
+  }, [getParams])
 
-  const handleExport = async (format) => {
-    setLoadingFormat(format)
-    setLoading(true)
+  /* ─── Buka modal PDF: load preview PDF dulu ─── */
+  const openPdfModal = async () => {
+    setModal({ open: true, type: 'pdf' })
+    setPdfError(null)
+    setPdfLoading(true)
+    if (pdfBlobRef.current) { window.URL.revokeObjectURL(pdfBlobRef.current); pdfBlobRef.current = null }
+    setPdfBlobUrl(null)
     try {
-      const params = {
-        start_date: filters.start_date.toISOString().split('T')[0],
-        end_date: filters.end_date.toISOString().split('T')[0],
-      }
-      if (filters.kelas_id) params.kelas_id = filters.kelas_id
-      const sDate = params.start_date, eDate = params.end_date
-      if (format === 'pdf') {
-        await downloadBlob(() => adminApi.exportPdf(params), `Laporan-Absensi-${sDate}-sd-${eDate}.pdf`, 'application/pdf')
-      } else {
-        await downloadBlob(() => adminApi.exportExcel(params), `Laporan-Absensi-${sDate}-sd-${eDate}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      }
-      toast.success(`Laporan ${format.toUpperCase()} berhasil diunduh!`)
-      setDownloadModal({ open: false, format })
+      const res = await adminApi.previewPdf(getParams())
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const url  = window.URL.createObjectURL(blob)
+      pdfBlobRef.current = url
+      setPdfBlobUrl(url)
     } catch (e) {
-      toast.error(e.message || 'Gagal mengunduh laporan')
+      setPdfError(e.message || 'Gagal generate preview PDF')
     } finally {
-      setLoading(false)
-      setLoadingFormat(null)
+      setPdfLoading(false)
+    }
+  }
+
+  /* ─── Buka modal Excel ─── */
+  const openExcelModal = () => setModal({ open: true, type: 'excel' })
+
+  /* ─── Close modal ─── */
+  const closeModal = () => {
+    setModal(m => ({ ...m, open: false }))
+  }
+
+  /* ─── Download dari dalam modal ─── */
+  const handleDownload = async (format) => {
+    setDownloadLoading(true)
+    const p = getParams()
+    const sDate = p.start_date, eDate = p.end_date
+    try {
+      if (format === 'pdf') {
+        await downloadBlob(() => adminApi.exportPdf(p), `Laporan-Absensi-${sDate}-sd-${eDate}.pdf`, 'application/pdf')
+      } else {
+        await downloadBlob(() => adminApi.exportExcel(p), `Laporan-Absensi-${sDate}-sd-${eDate}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      }
+      toast.success(`Berhasil diunduh!`)
+    } catch (e) {
+      toast.error(e.message || 'Gagal mengunduh')
+    } finally {
+      setDownloadLoading(false)
     }
   }
 
   const quickFilter = (type) => {
     const today = new Date()
     const map = {
-      today: [new Date(today), new Date(today)],
-      week:  [new Date(today.setDate(today.getDate() - today.getDay())), new Date()],
+      today: [new Date(), new Date()],
+      week:  [new Date(new Date().setDate(new Date().getDate() - new Date().getDay())), new Date()],
       month: [new Date(today.getFullYear(), today.getMonth(), 1), new Date()],
       year:  [new Date(today.getFullYear(), 0, 1), new Date()],
     }
-    const [s, e] = map[type]
+    const [s,e] = map[type]
     setFilters(f => ({ ...f, start_date: s, end_date: e }))
   }
 
   const pct = (v) => stats.total_absensi === 0 ? 0 : Math.round((v / stats.total_absensi) * 100)
   const dateRange = () => {
-    const fmt = (d) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    return `${fmt(filters.start_date)} - ${fmt(filters.end_date)}`
+    const fmt = (d) => d.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })
+    return `${fmt(filters.start_date)} – ${fmt(filters.end_date)}`
   }
 
-  const filteredPreview = (previewData || []).filter(item => {
+  const filteredPreview = (previewData||[]).filter(item => {
     if (!searchQuery) return true
     const q = searchQuery.toLowerCase()
-    return (item.nama_lengkap || '').toLowerCase().includes(q) ||
-           (item.nis || '').toLowerCase().includes(q) ||
-           (item.kelas || '').toLowerCase().includes(q)
+    return (item.nama_lengkap||'').toLowerCase().includes(q) ||
+           (item.nis||'').toLowerCase().includes(q) ||
+           (item.kelas||'').toLowerCase().includes(q)
   })
 
   const QUICK_FILTERS = [
-    { key: 'today', label: 'Hari Ini' },
-    { key: 'week',  label: 'Minggu Ini' },
-    { key: 'month', label: 'Bulan Ini' },
-    { key: 'year',  label: 'Tahun Ini' },
+    { key:'today', label:'Hari Ini' }, { key:'week', label:'Minggu Ini' },
+    { key:'month', label:'Bulan Ini' }, { key:'year', label:'Tahun Ini' },
   ]
 
   const STAT_CARDS = [
-    { label: 'Total',      value: stats.total_absensi, pctVal: null,                 color: 'slate',   Icon: Users },
-    { label: 'Hadir',      value: stats.hadir,         pctVal: pct(stats.hadir),     color: 'emerald', Icon: CheckCircle },
-    { label: 'Terlambat',  value: stats.terlambat,     pctVal: pct(stats.terlambat), color: 'amber',   Icon: Clock },
-    { label: 'Izin',       value: stats.izin,          pctVal: pct(stats.izin),      color: 'blue',    Icon: FileText },
-    { label: 'Sakit',      value: stats.sakit,         pctVal: pct(stats.sakit),     color: 'purple',  Icon: AlertCircle },
-    { label: 'Alpha',      value: stats.alpha,         pctVal: pct(stats.alpha),     color: 'rose',    Icon: XCircle },
+    { label:'Total',     value:stats.total_absensi, pctVal:null,              color:'slate',   Icon:Users },
+    { label:'Hadir',     value:stats.hadir,         pctVal:pct(stats.hadir),  color:'emerald', Icon:CheckCircle },
+    { label:'Terlambat', value:stats.terlambat,     pctVal:pct(stats.terlambat), color:'amber', Icon:Clock },
+    { label:'Izin',      value:stats.izin,          pctVal:pct(stats.izin),   color:'blue',    Icon:FileText },
+    { label:'Sakit',     value:stats.sakit,         pctVal:pct(stats.sakit),  color:'purple',  Icon:AlertCircle },
+    { label:'Alpha',     value:stats.alpha,         pctVal:pct(stats.alpha),  color:'rose',    Icon:XCircle },
   ]
 
   const colorMap = {
-    slate:   { card: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700', label: 'text-slate-500 dark:text-slate-400', val: 'text-slate-900 dark:text-white', icon: 'bg-teal-50 dark:bg-teal-900/20', iconColor: 'text-teal-600' },
-    emerald: { card: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800', label: 'text-emerald-600', val: 'text-emerald-700 dark:text-emerald-300', icon: 'bg-white dark:bg-slate-800', iconColor: 'text-emerald-600' },
-    amber:   { card: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',         label: 'text-amber-600',   val: 'text-amber-700 dark:text-amber-300',   icon: 'bg-white dark:bg-slate-800', iconColor: 'text-amber-600' },
-    blue:    { card: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',             label: 'text-blue-600',    val: 'text-blue-700 dark:text-blue-300',     icon: 'bg-white dark:bg-slate-800', iconColor: 'text-blue-600' },
-    purple:  { card: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',     label: 'text-purple-600',  val: 'text-purple-700 dark:text-purple-300', icon: 'bg-white dark:bg-slate-800', iconColor: 'text-purple-600' },
-    rose:    { card: 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800',             label: 'text-rose-600',    val: 'text-rose-700 dark:text-rose-300',     icon: 'bg-white dark:bg-slate-800', iconColor: 'text-rose-600' },
+    slate:   { card:'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700', label:'text-slate-500 dark:text-slate-400', val:'text-slate-900 dark:text-white', icon:'bg-teal-50 dark:bg-teal-900/20', iconColor:'text-teal-600' },
+    emerald: { card:'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800', label:'text-emerald-600', val:'text-emerald-700 dark:text-emerald-300', icon:'bg-white dark:bg-slate-800', iconColor:'text-emerald-600' },
+    amber:   { card:'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',         label:'text-amber-600',   val:'text-amber-700 dark:text-amber-300',   icon:'bg-white dark:bg-slate-800', iconColor:'text-amber-600' },
+    blue:    { card:'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',             label:'text-blue-600',    val:'text-blue-700 dark:text-blue-300',     icon:'bg-white dark:bg-slate-800', iconColor:'text-blue-600' },
+    purple:  { card:'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',     label:'text-purple-600',  val:'text-purple-700 dark:text-purple-300', icon:'bg-white dark:bg-slate-800', iconColor:'text-purple-600' },
+    rose:    { card:'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800',             label:'text-rose-600',    val:'text-rose-700 dark:text-rose-300',     icon:'bg-white dark:bg-slate-800', iconColor:'text-rose-600' },
   }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden space-y-4 sm:space-y-6 px-2 sm:px-0">
 
-      {/* Download Modal */}
-      <DownloadModal
-        isOpen={downloadModal.open}
-        onClose={() => setDownloadModal(m => ({ ...m, open: false }))}
-        onConfirm={() => handleExport(downloadModal.format)}
-        format={downloadModal.format}
-        loading={loading}
-        previewData={previewData}
-        dateRange={dateRange()}
+      {/* ── Preview Modal ── */}
+      <ExportPreviewModal
+        isOpen={modal.open}
+        onClose={closeModal}
+        type={modal.type}
+        title={`Laporan Absensi Siswa`}
+        subtitle={`Preview sebelum mengunduh`}
+        meta={{ periode: dateRange(), jumlah: previewData?.length }}
+        pdfBlobUrl={pdfBlobUrl}
+        pdfLoading={pdfLoading}
+        pdfError={pdfError}
+        onRetryPdf={openPdfModal}
+        excelColumns={EXCEL_COLUMNS}
+        excelData={previewData || []}
+        onDownload={handleDownload}
+        downloadLoading={downloadLoading}
+        fileName={`Laporan-Absensi-${getParams().start_date}-sd-${getParams().end_date}`}
       />
 
       {/* Header */}
-      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+      <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-xl"><BarChart3 size={18} className="text-teal-600" /></div>
@@ -232,14 +231,12 @@ export default function Laporan() {
           </div>
         </div>
         <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-xs text-slate-600 dark:text-slate-400">
-          <Calendar size={13} className="text-teal-500" />
-          Periode: {dateRange()}
+          <Calendar size={13} className="text-teal-500" /> Periode: {dateRange()}
         </div>
       </motion.div>
 
       {/* Quick Filters */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        className="flex flex-wrap gap-2">
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }} className="flex flex-wrap gap-2">
         {QUICK_FILTERS.map(f => (
           <button key={f.key} onClick={() => quickFilter(f.key)}
             className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-teal-50 hover:text-teal-600 hover:border-teal-200 dark:hover:bg-teal-900/20 transition-all">
@@ -249,7 +246,7 @@ export default function Laporan() {
       </motion.div>
 
       {/* Stat Cards */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
         {STAT_CARDS.map(({ label, value, pctVal, color, Icon }) => {
           const c = colorMap[color]
@@ -267,157 +264,139 @@ export default function Laporan() {
       </motion.div>
 
       {/* Filter Section */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3 }}
         className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
           <div className="p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg"><Filter size={14} className="text-teal-600" /></div>
           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Filter Laporan</h3>
           {filters.kelas_id && (
             <span className="ml-auto px-2 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 text-xs font-medium rounded-lg border border-teal-200 dark:border-teal-800 flex items-center gap-1">
-              <Info size={10} /> {kelasList.find(k => k.value === filters.kelas_id)?.label}
-              <button onClick={() => setFilters(f => ({ ...f, kelas_id: '' }))} className="ml-1 hover:text-rose-500"><XIcon size={10} /></button>
+              <Info size={10}/> {kelasList.find(k => k.value === filters.kelas_id)?.label}
+              <button onClick={() => setFilters(f => ({ ...f, kelas_id:'' }))} className="ml-1 hover:text-rose-500"><XIcon size={10}/></button>
             </span>
           )}
         </div>
         <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Calendar size={11} className="inline mr-1" />Tanggal Mulai</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Calendar size={11} className="inline mr-1"/>Tanggal Mulai</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={12} />
-                <DatePicker selected={filters.start_date} onChange={(d) => setFilters(f => ({ ...f, start_date: d }))}
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={12}/>
+                <DatePicker selected={filters.start_date} onChange={d => setFilters(f => ({ ...f, start_date:d }))}
                   className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  dateFormat="dd/MM/yyyy" maxDate={filters.end_date} />
+                  dateFormat="dd/MM/yyyy" maxDate={filters.end_date}/>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Calendar size={11} className="inline mr-1" />Tanggal Selesai</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Calendar size={11} className="inline mr-1"/>Tanggal Selesai</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={12} />
-                <DatePicker selected={filters.end_date} onChange={(d) => setFilters(f => ({ ...f, end_date: d }))}
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={12}/>
+                <DatePicker selected={filters.end_date} onChange={d => setFilters(f => ({ ...f, end_date:d }))}
                   className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  dateFormat="dd/MM/yyyy" minDate={filters.start_date} maxDate={new Date()} />
+                  dateFormat="dd/MM/yyyy" minDate={filters.start_date} maxDate={new Date()}/>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Users size={11} className="inline mr-1" />Kelas (Opsional)</label>
-              <Select options={kelasList} value={kelasList.find(k => k.value === filters.kelas_id) || null}
-                onChange={(opt) => setFilters(f => ({ ...f, kelas_id: opt?.value || '' }))}
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"><Users size={11} className="inline mr-1"/>Kelas (Opsional)</label>
+              <Select options={kelasList} value={kelasList.find(k => k.value === filters.kelas_id)||null}
+                onChange={opt => setFilters(f => ({ ...f, kelas_id:opt?.value||'' }))}
                 placeholder="Semua Kelas" isClearable isSearchable menuPortalTarget={document.body} menuPosition="fixed"
                 className="text-sm" classNamePrefix="react-select"
-                styles={{ control: (b) => ({ ...b, borderRadius: '0.75rem', borderColor: '#e2e8f0', minHeight: '38px', boxShadow: 'none', '&:hover': { borderColor: '#14b8a6' } }), menuPortal: (b) => ({ ...b, zIndex: 9999 }) }} />
+                styles={{ control: b => ({ ...b, borderRadius:'0.75rem', borderColor:'#e2e8f0', minHeight:'38px', boxShadow:'none', '&:hover':{ borderColor:'#14b8a6' } }), menuPortal: b => ({ ...b, zIndex:9999 }) }}/>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Preview Section */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+      {/* Data Preview (ringkas) */}
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }}
         className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg"><Eye size={14} className="text-teal-600" /></div>
+            <div className="p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg"><Eye size={14} className="text-teal-600"/></div>
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-              Preview Data {previewData && `(${filteredPreview.length}${searchQuery ? ` dari ${previewData.length}` : ''} Siswa)`}
+              Data {previewData ? `(${filteredPreview.length}${searchQuery ? ` dari ${previewData.length}` : ''} Siswa)` : ''}
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => fetchPreview()} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors" title="Refresh">
-              <RefreshCw size={14} className={`text-slate-400 ${previewLoading ? 'animate-spin' : ''}`} />
+            <button onClick={fetchPreview} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg" title="Refresh">
+              <RefreshCw size={14} className={`text-slate-400 ${previewLoading ? 'animate-spin' : ''}`}/>
             </button>
             <button onClick={() => setShowPreview(v => !v)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
-              <ChevronDown size={14} className={`text-slate-400 transition-transform ${showPreview ? 'rotate-180' : ''}`} />
+              <ChevronDown size={14} className={`text-slate-400 transition-transform ${showPreview ? 'rotate-180' : ''}`}/>
             </button>
           </div>
         </div>
-
-        <AnimatePresence>
-          {showPreview && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-              {/* Search Bar */}
-              <div className="px-4 pt-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Cari nama siswa, NIS, atau kelas..."
-                    className="w-full pl-9 pr-9 py-2 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white dark:focus:bg-slate-800 transition-all" />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><XIcon size={14} /></button>
-                  )}
-                </div>
+        {showPreview && (
+          <div className="p-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14}/>
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Cari nama siswa, NIS, atau kelas..."
+                className="w-full pl-9 pr-9 py-2 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-800 transition-all"/>
+              {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><XIcon size={14}/></button>}
+            </div>
+            {previewLoading ? (
+              <div className="py-8 text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-teal-500"/><p className="text-sm text-slate-500 mt-2">Memuat data...</p></div>
+            ) : filteredPreview.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                <table className="w-full min-w-[640px] text-xs">
+                  <thead><tr className="bg-slate-50 dark:bg-slate-700/50">
+                    {['No','NIS','Nama Siswa','Kelas','H','T','I','S','A','Total'].map((h,i) => (
+                      <th key={h} className={`py-2.5 px-3 font-semibold ${i>=4?'text-center '+['text-emerald-600','text-amber-600','text-blue-600','text-purple-600','text-rose-600','text-slate-600'][i-4]:'text-left text-slate-600 dark:text-slate-300'}`}>{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                    {filteredPreview.slice(0,10).map((item,i) => (
+                      <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td className="py-2 px-3 text-slate-400">{i+1}</td>
+                        <td className="py-2 px-3 font-mono text-slate-700 dark:text-slate-300">{item.nis}</td>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-white max-w-[130px] truncate">{item.nama_lengkap}</td>
+                        <td className="py-2 px-3 text-slate-500 max-w-[80px] truncate">{item.kelas}</td>
+                        <td className="py-2 px-3 text-center font-semibold text-emerald-600">{item.hadir||0}</td>
+                        <td className="py-2 px-3 text-center font-semibold text-amber-600">{item.terlambat||0}</td>
+                        <td className="py-2 px-3 text-center font-semibold text-blue-600">{item.izin||0}</td>
+                        <td className="py-2 px-3 text-center font-semibold text-purple-600">{item.sakit||0}</td>
+                        <td className="py-2 px-3 text-center font-semibold text-rose-600">{item.alpha||0}</td>
+                        <td className="py-2 px-3 text-center font-bold text-slate-900 dark:text-white">{item.total_absensi||0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
-              {previewLoading ? (
-                <div className="p-8 text-center">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-teal-500" />
-                  <p className="text-sm text-slate-500 mt-2">Memuat preview...</p>
+            ) : (
+              <div className="py-8 text-center">
+                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  {searchQuery ? <Search size={20} className="text-slate-400"/> : <EyeOff size={20} className="text-slate-400"/>}
                 </div>
-              ) : filteredPreview.length > 0 ? (
-                <div className="p-4">
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                    <table className="w-full min-w-[700px]">
-                      <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-700/50">
-                          {['No','NIS','Nama Siswa','Kelas','H','T','I','S','A','Total'].map((h, i) => (
-                            <th key={h} className={`py-3 px-3 text-xs font-semibold ${i >= 4 ? 'text-center ' + ['text-emerald-600','text-amber-600','text-blue-600','text-purple-600','text-rose-600','text-slate-600'][i-4] : 'text-left text-slate-600 dark:text-slate-300'}`}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {filteredPreview.slice(0, 15).map((item, i) => (
-                          <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                            <td className="py-2.5 px-3 text-xs text-slate-500">{i + 1}</td>
-                            <td className="py-2.5 px-3 text-xs font-mono text-slate-700 dark:text-slate-300">{item.nis}</td>
-                            <td className="py-2.5 px-3 text-xs font-medium text-slate-900 dark:text-white max-w-[140px] truncate">{item.nama_lengkap}</td>
-                            <td className="py-2.5 px-3 text-xs text-slate-500 max-w-[80px] truncate">{item.kelas}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-semibold text-emerald-600">{item.hadir || 0}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-semibold text-amber-600">{item.terlambat || 0}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-semibold text-blue-600">{item.izin || 0}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-semibold text-purple-600">{item.sakit || 0}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-semibold text-rose-600">{item.alpha || 0}</td>
-                            <td className="py-2.5 px-3 text-xs text-center font-bold text-slate-900 dark:text-white">{item.total_absensi || 0}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {filteredPreview.length > 15 && (
-                    <p className="text-xs text-slate-400 text-center mt-3">Menampilkan 15 dari {filteredPreview.length} data. Download untuk lihat semua.</p>
-                  )}
-                </div>
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    {searchQuery ? <Search size={20} className="text-slate-400" /> : <EyeOff size={20} className="text-slate-400" />}
-                  </div>
-                  <p className="text-sm text-slate-500">{searchQuery ? `Tidak ada siswa dengan kata kunci "${searchQuery}"` : 'Tidak ada data untuk periode yang dipilih'}</p>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <p className="text-sm text-slate-500">{searchQuery ? `Tidak ada hasil untuk "${searchQuery}"` : 'Tidak ada data untuk periode ini'}</p>
+              </div>
+            )}
+            {!previewLoading && filteredPreview.length > 10 && (
+              <p className="text-xs text-slate-400 text-center">Menampilkan 10 dari {filteredPreview.length}. Klik Preview untuk lihat semua.</p>
+            )}
+          </div>
+        )}
       </motion.div>
 
-      {/* Download Buttons */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+      {/* Export Buttons */}
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 }}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* PDF */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow p-5">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-rose-50 dark:bg-rose-900/20 rounded-xl"><FileText size={16} className="text-rose-600" /></div>
+              <div className="p-2 bg-rose-50 dark:bg-rose-900/20 rounded-xl"><FileText size={16} className="text-rose-600"/></div>
               <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Download PDF</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Format dokumen untuk dicetak atau dibagikan</p>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Export PDF</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Preview → cetak atau unduh</p>
               </div>
             </div>
             <span className="px-2 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 text-xs font-bold rounded-lg">.pdf</span>
           </div>
-          <button
-            onClick={() => setDownloadModal({ open: true, format: 'pdf' })}
-            disabled={!previewData || previewData.length === 0}
+          <button onClick={openPdfModal} disabled={!previewData || previewData.length === 0}
             className="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            <Download size={14} /> Download PDF
+            <Eye size={14}/> Preview &amp; Download PDF
           </button>
         </div>
 
@@ -425,28 +404,26 @@ export default function Laporan() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow p-5">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"><FileSpreadsheet size={16} className="text-emerald-600" /></div>
+              <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"><FileSpreadsheet size={16} className="text-emerald-600"/></div>
               <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Download Excel</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Format spreadsheet untuk analisis lebih lanjut</p>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Export Excel</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Preview tabel → unduh spreadsheet</p>
               </div>
             </div>
             <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg">.xlsx</span>
           </div>
-          <button
-            onClick={() => setDownloadModal({ open: true, format: 'excel' })}
-            disabled={!previewData || previewData.length === 0}
+          <button onClick={openExcelModal} disabled={!previewData || previewData.length === 0}
             className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            <Download size={14} /> Download Excel
+            <Eye size={14}/> Preview &amp; Download Excel
           </button>
         </div>
       </motion.div>
 
       {/* Legend */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 }}
         className="bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-900/20 dark:to-blue-900/20 rounded-2xl p-4 border border-teal-200 dark:border-teal-800">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-white dark:bg-slate-800 rounded-xl flex-shrink-0"><Info size={14} className="text-teal-600" /></div>
+          <div className="p-2 bg-white dark:bg-slate-800 rounded-xl flex-shrink-0"><Info size={14} className="text-teal-600"/></div>
           <div>
             <p className="text-sm font-semibold text-teal-800 dark:text-teal-200 mb-1">Keterangan Kolom</p>
             <div className="flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-400">
@@ -459,7 +436,6 @@ export default function Laporan() {
           </div>
         </div>
       </motion.div>
-
     </div>
   )
 }

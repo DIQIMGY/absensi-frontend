@@ -142,6 +142,11 @@ export const adminApi = {
     responseType: 'blob',
     timeout: 120000,
   }),
+  previewPdf: (params) => api.get('/admin/laporan/preview-pdf', {
+    params,
+    responseType: 'blob',
+    timeout: 120000,
+  }),
   
   // Libur Sekolah (per bulan, 7 slot)
   getLiburSekolah: (params) => api.get('/admin/libur-sekolah', { params }),
@@ -163,6 +168,11 @@ export const adminApi = {
     timeout: 120000,
   }),
   exportGuruExcel: (params) => api.get('/admin/laporan-guru/export-excel', { 
+    params,
+    responseType: 'blob',
+    timeout: 120000,
+  }),
+  previewGuruPdf: (params) => api.get('/admin/laporan-guru/preview-pdf', {
     params,
     responseType: 'blob',
     timeout: 120000,
