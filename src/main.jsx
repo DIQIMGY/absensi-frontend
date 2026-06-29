@@ -5,7 +5,6 @@ import { Toaster } from 'react-hot-toast'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import PengaturanProvider from './components/PengaturanProvider'
-import CustomCursor from './components/CustomCursor'
 import { useThemeStore } from './stores/themeStore'
 import './index.css'
 
@@ -80,14 +79,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>,
 )
 
-// CustomCursor di luar StrictMode agar RAF loop tidak double-mount
-// Render di semua device — touch device pakai ripple effect, mouse pakai snake cursor
-const cursorRoot = document.createElement('div')
-document.body.appendChild(cursorRoot)
-ReactDOM.createRoot(cursorRoot).render(
-  <QueryClientProvider client={queryClient}>
-    <PengaturanProvider>
-      <CustomCursor />
-    </PengaturanProvider>
-  </QueryClientProvider>
-)
