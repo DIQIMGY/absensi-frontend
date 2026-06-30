@@ -133,6 +133,10 @@ export const adminApi = {
   getLaporanBulanan: (params) => api.get('/admin/laporan/bulanan', { params }),
   getLaporanPerSiswa: (siswaId, params) => api.get(`/admin/laporan/siswa/${siswaId}`, { params }),
   getLaporanDetailGuru: (guruId, params) => api.get(`/admin/laporan-guru/detail/${guruId}`, { params }),
+  previewSiswaPdf: (siswaId, params) => api.get(`/admin/laporan/siswa/${siswaId}/preview-pdf`, { params, responseType: 'blob', timeout: 120000 }),
+  exportSiswaPdf: (siswaId, params) => api.get(`/admin/laporan/siswa/${siswaId}/export-pdf`, { params, responseType: 'blob', timeout: 120000 }),
+  previewGuruDetailPdf: (guruId, params) => api.get(`/admin/laporan-guru/detail/${guruId}/preview-pdf`, { params, responseType: 'blob', timeout: 120000 }),
+  exportGuruDetailPdf: (guruId, params) => api.get(`/admin/laporan-guru/detail/${guruId}/export-pdf`, { params, responseType: 'blob', timeout: 120000 }),
   exportPdf: (params) => api.get('/admin/laporan/export-pdf', { 
     params,
     responseType: 'blob',
