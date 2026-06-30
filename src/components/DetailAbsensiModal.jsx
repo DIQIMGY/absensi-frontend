@@ -521,19 +521,12 @@ export default function DetailAbsensiModal({ isOpen, onClose, type = 'siswa', id
                   {data ? `${records.length} record • ${periodLabel}` : 'Detail Absensi'}
                 </p>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {/* Preview PDF */}
+                  {/* Satu tombol Download — buka preview dulu, download dari dalam preview */}
                   <button
                     onClick={openPdf}
                     disabled={!data || records.length === 0}
-                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed border ${isSiswa?'border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/20':'border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}>
-                    <FileText size={13}/> <span className="hidden sm:inline">Preview</span> PDF
-                  </button>
-                  {/* Download PDF */}
-                  <button
-                    onClick={downloadPdf}
-                    disabled={!data || records.length === 0 || dlLoading}
-                    className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-rose-500/20">
-                    {dlLoading ? <><Loader2 size={13} className="animate-spin"/> Unduh...</> : <><Download size={13}/> <span className="hidden sm:inline">Download</span> PDF</>}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-rose-500/20">
+                    <Download size={13}/> Download PDF
                   </button>
                   <button onClick={onClose}
                     className="px-3 sm:px-4 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
