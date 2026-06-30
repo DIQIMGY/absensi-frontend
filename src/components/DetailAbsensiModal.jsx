@@ -457,7 +457,7 @@ export default function DetailAbsensiModal({ isOpen, onClose, type = 'siswa', id
                           <table className="w-full text-xs" style={{ minWidth: isSiswa?'700px':'620px' }}>
                             <thead>
                               <tr className={isSiswa?'bg-teal-600 text-white':'bg-indigo-600 text-white'}>
-                                {['No','Tanggal','Hari','Status','Masuk','Pulang','Terlambat','Keterangan','Metode'].map((h,i)=>(
+                                {['No','Tanggal','Hari','Status','Masuk','Pulang','Terlambat','Metode'].map((h,i)=>(
                                   <th key={h} className={`px-3 py-3 font-semibold border-r border-white/20 last:border-r-0 ${i===0?'text-center w-10':i>=4&&i<=6?'text-center':'text-left'}`}>{h}</th>
                                 ))}
                               </tr>
@@ -484,9 +484,6 @@ export default function DetailAbsensiModal({ isOpen, onClose, type = 'siswa', id
                                         ?<span className="text-amber-600 font-semibold">{rec.menit_keterlambatan} mnt</span>
                                         :<span className="text-slate-300 dark:text-slate-600">—</span>}
                                     </td>
-                                    <td className="px-3 py-2.5 text-slate-500 dark:text-slate-400 max-w-[140px] truncate border-r border-slate-100 dark:border-slate-800">
-                                      {rec.keterangan&&rec.keterangan!=='-'?rec.keterangan:<span className="text-slate-300 dark:text-slate-600">—</span>}
-                                    </td>
                                     <td className="px-3 py-2.5 text-center">
                                       <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded capitalize text-[10px]">
                                         {rec.metode&&rec.metode!=='-'?rec.metode.replace('_',' '):'—'}
@@ -504,7 +501,7 @@ export default function DetailAbsensiModal({ isOpen, onClose, type = 'siswa', id
                                 <td className="px-3 py-2.5 text-center text-amber-600 font-bold text-xs">
                                   {records.filter(r=>(r.menit_keterlambatan??0)>0).length > 0 ? `${records.filter(r=>(r.menit_keterlambatan??0)>0).length}x` : '—'}
                                 </td>
-                                <td colSpan={2} className="px-3 py-2.5"/>
+                                <td className="px-3 py-2.5"/>
                               </tr>
                             </tfoot>
                           </table>
