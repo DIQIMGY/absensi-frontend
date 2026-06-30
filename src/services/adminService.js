@@ -132,6 +132,7 @@ export const adminApi = {
   getLaporanHarian: (params) => api.get('/admin/laporan/harian', { params }),
   getLaporanBulanan: (params) => api.get('/admin/laporan/bulanan', { params }),
   getLaporanPerSiswa: (siswaId, params) => api.get(`/admin/laporan/siswa/${siswaId}`, { params }),
+  getLaporanDetailGuru: (guruId, params) => api.get(`/admin/laporan-guru/detail/${guruId}`, { params }),
   exportPdf: (params) => api.get('/admin/laporan/export-pdf', { 
     params,
     responseType: 'blob',

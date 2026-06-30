@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import ExportPreviewModal from '../../components/ExportPreviewModal'
+import DetailAbsensiModal from '../../components/DetailAbsensiModal'
 
 async function downloadBlob(apiFn, fileName, mimeType) {
   const response = await apiFn()
@@ -49,6 +50,9 @@ export default function LaporanGuru() {
   const [pdfError, setPdfError]               = useState(null)
   const [downloadLoading, setDownloadLoading] = useState(false)
   const pdfBlobRef                            = useRef(null)
+
+  // detail modal
+  const [detailModal, setDetailModal] = useState({ open: false, id: null, nama: '' })
 
   const [filters, setFilters] = useState({
     start_date: new Date(new Date().setDate(1)),
@@ -179,6 +183,15 @@ export default function LaporanGuru() {
         fileName={`Laporan-Guru-${getParams().start_date}-sd-${getParams().end_date}`}
       />
 
+      {/* Detail Modal */}
+      <DetailAbsensiModal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal(m => ({ ...m, open: false }))}
+        type="guru"
+        id={detailModal.id}
+        nama={detailModal.nama}
+      />
+
       {/* Header */}
       <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -296,7 +309,13 @@ export default function LaporanGuru() {
                       <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
                         <td className="py-2 px-3 text-slate-400">{i+1}</td>
                         <td className="py-2 px-3 font-mono text-slate-700 dark:text-slate-300">{item.nip||'-'}</td>
-                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-white max-w-[130px] truncate">{item.nama_lengkap}</td>
+                        <td className="py-2 px-3">
+                          <button
+                            onClick={() => setDetailModal({ open: true, id: item.guru_id, nama: item.nama_lengkap })}
+                            className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline text-left truncate max-w-[130px] block">
+                            {item.nama_lengkap}
+                          </button>
+                        </td>
                         <td className="py-2 px-3 text-slate-500 max-w-[100px] truncate">{item.mata_pelajaran||'-'}</td>
                         <td className="py-2 px-3 text-center font-semibold text-emerald-600">{item.hadir||0}</td>
                         <td className="py-2 px-3 text-center font-semibold text-amber-600">{item.terlambat||0}</td>
